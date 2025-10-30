@@ -1,0 +1,40 @@
+from src.dbtui.project import DbtProject
+
+
+# then we test files
+# test that all models from all folders are visible
+
+
+
+
+
+# test that all models from all folders are visible
+def test_all_models_are_visible():
+    all_models = set(
+        [
+            'c_a.sql',
+            'c_b.sql',
+            'c_c1.sql',
+            'c_c2.sql',
+            'c_d.sql',
+            'v_a.sql',
+            'v_b.sql',
+            'v_c1.sql',
+            'v_c2.sql',
+            'v_d.sql',
+        ]
+    )
+    dbt_project = DbtProject('tests/testing')
+    model_filenames = [i.file_name for i in dbt_project.models]
+    assert set(model_filenames) == all_models
+
+# test that the v_a.sql has the same name as its filename
+def test_model_name_is_file_name_by_default():
+    dbt_project = DbtProject('tests/testing')
+    assert dbt_project.get_model_by_file_name('v_a.sql').name == 'v_a'
+
+# test that the c_a.sql has another name
+def test_model_name_is_changed_by_config():
+    dbt_project = DbtProject('tests/testing')
+    assert dbt_project.get_model_by_file_name('c_a.sql').name == 'c_changed_name'
+

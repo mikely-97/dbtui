@@ -36,8 +36,3 @@ def test_open_empty_folder():
     except e:
         raise e
 
-
-# then we test files
-# test that all models from all folders are visible
-# test that the vanilla_prima.sql has the same name as its filename
-# test that the cc_prima.sql has another name
