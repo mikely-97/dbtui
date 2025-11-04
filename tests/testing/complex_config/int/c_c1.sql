@@ -2,4 +2,4 @@
 select
     id,
     concat(name_upper, '_c1') as label
-from {{ ref('v_b') }}
+from {{ ref('c_b') }}

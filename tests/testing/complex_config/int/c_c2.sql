@@ -2,4 +2,4 @@
 select
     id,
     reverse(name_upper) as reversed_name
-from {{ ref('v_b') }}
+from {{ ref('c_b') }}

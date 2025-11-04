@@ -1,34 +1,47 @@
 import os 
 from os.path import join as opj
 import yaml
-from typing import Any, Generator
-from jinja2 import Environment
+from typing import Any, Generator, Self
+from jinja2 import Environment, Template
 from jinja2.nodes import Call, Const
+from networkx import DiGraph
+import logging
+
+class DbtModelNotFoundException(Exception):
+    pass
+
 
 
 class DbtModel:
     file_name: str
     file_path_full: str
+    file_path_relative: str
     template: str
+    parsed_template: Template
 
-    def __init__(self, full_model_path: str):
-        self.file_path_full = full_model_path
-        self.file_name = os.path.basename(full_model_path)
-        with open(full_model_path, 'r', encoding='utf-8') as f:
+    def __init__(self, file_path_full: str, file_path_relative: str):
+        self.file_path_full = file_path_full
+        self.file_path_relative = file_path_relative
+        self.file_name = os.path.basename(file_path_full)
+        with open(file_path_full, 'r', encoding='utf-8') as f:
             self.template = f.read()
+        self.parsed_template = Environment().parse(self.template)
+
+    def _find_calls(self, macro_name: str):
+        return [i for i in self.parsed_template.find_all(Call) if i.node.name == macro_name]
 
     
     @property 
-    def name(self):
+    def name(self) -> str:
         # by default dbt sets model name as its filename without extension
         default_name = self.file_name.rpartition('.')[0]
         # we need to figure out if the model has been renamed with config() macro, so let's find this macro in the model file
-        parsed_template = Environment().parse(self.template)
-        calls = [i for i in parsed_template.find_all(Call) if i.node.name == 'config']
+        calls = self._find_calls('config')
 
         # double config would be invalid
-        # TODO: what do we do in case of double config?
-        assert len(calls) < 2
+        if len(calls) > 1:
+            logging.warn("Duplicated invocation of config() in %s" % self.file_path_relative)
+            return default_name
 
         if not calls:
             return default_name
@@ -36,7 +49,16 @@ class DbtModel:
             config: Call = calls[0]
             kwargs = {item.key: item.value for item in config.kwargs}
             return kwargs.get('name', Const(default_name)).value
-    pass
+    
+    @property
+    def refs(self) -> list[str]:
+        result = []
+        for call in self._find_calls('ref'):
+            if len(call.args) != 1:
+                logging.warn(f"Invalid number of args to ref() in model {self.name}: should be one, but it's {len(call.args)}: {call.args}")
+                continue
+            result.append(call.args[0].value)
+        return result
 
 
 class DbtProject:
@@ -45,6 +67,30 @@ class DbtProject:
     model_folder: str
     full_models_paths: list[str]
     models: list[DbtModel]
+    graph: DiGraph
+
+    def populate_graph(self, fall_back_to_filename: bool=False):
+        self.graph = DiGraph()
+        for model in self.models:
+            self.graph.add_node(model)
+            for ref in model.refs:
+                referenced_model = None
+                try:
+                    referenced_model = self.get_model_by_name(ref)
+                except DbtModelNotFoundException:
+                    if fall_back_to_filename:
+                        try:
+                            referenced_model = self.get_model_by_file_name(ref+'.sql')
+                        except DbtModelNotFoundException:
+                            logging.warn(f"{model.name} references {ref} which is not found as a name or a filename")
+                    else:
+                        logging.warn(f"{model.name} references {ref} which is not found as a name")
+                finally:
+                    if referenced_model:
+                        self.graph.add_node(referenced_model)
+                        self.graph.add_edge(referenced_model, model)
+        pass
+
 
     def parse_dbt_project(self, dbt_project_raw: str) -> None:
         self.dbt_project_yml = yaml.load(dbt_project_raw, yaml.Loader)
@@ -55,7 +101,7 @@ class DbtProject:
         for models_path in self.full_models_paths:
             for root, dirs, files in os.walk(models_path):
                 for file in files:
-                    self.models.append(DbtModel(opj(root, file)))
+                    self.models.append(DbtModel(opj(root, file), file))
 
     def get_model_by_name(self, name: str) -> DbtModel:
         """
@@ -69,13 +115,13 @@ class DbtProject:
         for model in self.models:
             if model.name == name:
                 return model
-        raise Exception("dbt model not found: %s" % name)
+        raise DbtModelNotFoundException("dbt model not found: %s" % name)
     
     def get_model_by_file_name(self, file_name: str) -> DbtModel:
         for model in self.models:
             if model.file_name == file_name:
                 return model
-        raise Exception("dbt model not found: %s" % file_name)
+        raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
 
     def __init__(self, root_folder) -> None:
         self.models = []
