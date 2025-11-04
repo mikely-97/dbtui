@@ -67,9 +67,10 @@ class DbtProject:
     model_folder: str
     full_models_paths: list[str]
     models: list[DbtModel]
+    fall_back_to_filename: bool
     graph: DiGraph
 
-    def populate_graph(self, fall_back_to_filename: bool=False):
+    def populate_graph(self):
         self.graph = DiGraph()
         for model in self.models:
             self.graph.add_node(model)
@@ -78,7 +79,7 @@ class DbtProject:
                 try:
                     referenced_model = self.get_model_by_name(ref)
                 except DbtModelNotFoundException:
-                    if fall_back_to_filename:
+                    if self.fall_back_to_filename:
                         try:
                             referenced_model = self.get_model_by_file_name(ref+'.sql')
                         except DbtModelNotFoundException:
@@ -123,7 +124,7 @@ class DbtProject:
                 return model
         raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
 
-    def __init__(self, root_folder) -> None:
+    def __init__(self, root_folder: str, fall_back_to_filename: bool = False) -> None:
         self.models = []
         if not os.path.exists(root_folder):
             raise FileNotFoundError("Folder not found: %s" % root_folder)
@@ -132,8 +133,11 @@ class DbtProject:
             with open(opj(self.root_folder, 'dbt_project.yml'), 'r', encoding='utf-8') as f:
                 self.parse_dbt_project(f.read())
                 self.load_models()
+                self.fall_back_to_filename = fall_back_to_filename
+                self.populate_graph()
         except FileNotFoundError:
             raise FileNotFoundError("dbt folder is present, but dbt_project.yml is not found: %s" % root_folder)
+        
         
         
 
