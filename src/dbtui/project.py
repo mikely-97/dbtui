@@ -55,7 +55,7 @@ class DbtModel:
         result = []
         for call in self._find_calls('ref'):
             if len(call.args) != 1:
-                logging.warn(f"Invalid number of args to ref() in model {self.name}: should be one, but it's {len(call.args)}: {call.args}")
+                logging.warn(f"Invalid number of args to ref() in model {self.name}: should be one, but it's {len(call.args)}: {[arg.value for arg in call.args]}")
                 continue
             result.append(call.args[0].value)
         return result
@@ -92,6 +92,18 @@ class DbtProject:
                         self.graph.add_edge(referenced_model, model)
         pass
 
+    def refresh(self):
+        if not os.path.exists(self.root_folder):
+            raise FileNotFoundError("Folder not found: %s" % self.root_folder)
+        self.models = []
+        try:
+            with open(opj(self.root_folder, 'dbt_project.yml'), 'r', encoding='utf-8') as f:
+                self.parse_dbt_project(f.read())
+                self.load_models()
+                self.populate_graph()
+        except FileNotFoundError:
+            raise FileNotFoundError("dbt folder is present, but dbt_project.yml is not found: %s" % self.root_folder)
+
 
     def parse_dbt_project(self, dbt_project_raw: str) -> None:
         self.dbt_project_yml = yaml.load(dbt_project_raw, yaml.Loader)
@@ -125,19 +137,13 @@ class DbtProject:
         raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
 
     def __init__(self, root_folder: str, fall_back_to_filename: bool = False) -> None:
-        self.models = []
-        if not os.path.exists(root_folder):
-            raise FileNotFoundError("Folder not found: %s" % root_folder)
+        self.fall_back_to_filename = fall_back_to_filename
         self.root_folder = root_folder
-        try:
-            with open(opj(self.root_folder, 'dbt_project.yml'), 'r', encoding='utf-8') as f:
-                self.parse_dbt_project(f.read())
-                self.load_models()
-                self.fall_back_to_filename = fall_back_to_filename
-                self.populate_graph()
-        except FileNotFoundError:
-            raise FileNotFoundError("dbt folder is present, but dbt_project.yml is not found: %s" % root_folder)
+        self.refresh()
+
         
-        
+    def graph_repr(self):
+        return '\n'.join(sorted([f"({parent.name}) --> ({child.name})" for parent, child in self.graph.edges]))
+            
         
 

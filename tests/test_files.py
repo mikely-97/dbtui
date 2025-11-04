@@ -1,4 +1,5 @@
-from src.dbtui.project import DbtProject
+from src.dbtui.project import DbtProject, DbtModelNotFoundException
+from pytest import LogCaptureFixture, raises
 
 
 # then we test files
@@ -22,6 +23,11 @@ def test_all_models_are_visible():
             'v_c1.sql',
             'v_c2.sql',
             'v_d.sql',
+            'i_d.sql',
+            'i_a.sql',
+            'i_c1.sql',
+            'i_c2.sql',
+            'i_b.sql',
         ]
     )
     dbt_project = DbtProject('tests/testing')
@@ -37,4 +43,14 @@ def test_model_name_is_file_name_by_default():
 def test_model_name_is_changed_by_config():
     dbt_project = DbtProject('tests/testing')
     assert dbt_project.get_model_by_file_name('c_a.sql').name == 'c_changed_name'
+
+def test_not_found_by_name():
+    dbt_project = DbtProject('tests/testing')
+    with raises(DbtModelNotFoundException):
+        dbt_project.get_model_by_name('this_model_does_not_exist')
+
+def test_not_found_by_file_name():
+    dbt_project = DbtProject('tests/testing')
+    with raises(DbtModelNotFoundException):
+        dbt_project.get_model_by_file_name('this_model_does_not_exist.sql')
 

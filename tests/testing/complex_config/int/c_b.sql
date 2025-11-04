@@ -2,4 +2,4 @@
 select
     id,
     upper(name) as name_upper
-from {{ ref('c_a') }}
+from {{ ref('c_changed_name') }}
