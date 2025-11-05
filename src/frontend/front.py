@@ -17,6 +17,25 @@ menu_1 = urwid.ListBox(buttons_1)
 menu_2 = urwid.ListBox(buttons_2)
 menu_3 = urwid.ListBox(buttons_3)
 
+menus = [menu_1, menu_2, menu_3]
+
+keyhints_txt = [
+    ("F2", "show paths"),
+    ("Esc", "close"),
+    ("e", "simple edit"),
+    ("E", "external edit"),
+]
+
+keyhints = [
+    u.Filler(u.Text(': '.join([key, hint])) )
+    for key, hint in keyhints_txt]
+
+keyhints_container = u.Columns(
+    keyhints,
+    # 22,1,1, 'left'
+    )
+
+
 lorem = open('src/frontend/lorem.txt', 'r').read()
 
 txt = urwid.Text(lorem)
@@ -27,10 +46,17 @@ columns = urwid.Columns(
         # urwid.LineBox(menu_2, title='model'),
         # urwid.LineBox(txt, title='model'),
         # urwid.LineBox(urwid.ListBox(txt), title='model'),
-        urwid.LineBox(u.ScrollBar(urwid.Scrollable(txt)), title='model'),
+        ('weight', 3, urwid.LineBox(u.ScrollBar(urwid.Scrollable(txt)), title='model')),
         urwid.LineBox(menu_3, title='children'),
     ]
 )
 
-loop = urwid.MainLoop(columns)
+omnibox = u.Pile([
+    ('weight', 10, columns), 
+    keyhints_container
+    ])
+
+loop = urwid.MainLoop(omnibox)
+#loop = urwid.MainLoop(keyhints_container)
+#loop = urwid.MainLoop(keyhints[0])
 loop.run()
