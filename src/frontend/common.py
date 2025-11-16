@@ -4,7 +4,7 @@ from textual import widgets, containers
 
 isolated = True
 if isolated:
-    from pseudo import DbtModel
+    from .pseudo import DbtModel
 else:
     from ..backend.project import DbtModel
 

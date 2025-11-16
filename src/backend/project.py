@@ -1,27 +1,31 @@
 import os 
 from os.path import join as opj
 import yaml
-from typing import Any, Generator, Self
+from typing import Any, Generator, Iterable, Self
 from jinja2 import Environment, Template
 from jinja2.nodes import Call, Const
 from networkx import DiGraph
 import logging
+
+from ..common import DbtModelAbstract, DbtProjectAbstract
 
 class DbtModelNotFoundException(Exception):
     pass
 
 
 
-class DbtModel:
+class DbtModel(DbtModelAbstract):
     file_name: str
     file_path_full: str
     file_path_relative: str
     template: str
     parsed_template: Template
+    project: 'DbtProject'
 
-    def __init__(self, file_path_full: str, file_path_relative: str):
+    def __init__(self, file_path_full: str, file_path_relative: str, project: 'DbtProject'):
         self.file_path_full = file_path_full
         self.file_path_relative = file_path_relative
+        self.project = project
         self.file_name = os.path.basename(file_path_full)
         with open(file_path_full, 'r', encoding='utf-8') as f:
             self.template = f.read()
@@ -50,6 +54,19 @@ class DbtModel:
             kwargs = {item.key: item.value for item in config.kwargs}
             return kwargs.get('name', Const(default_name)).value
     
+    @property 
+    def children(self) -> Iterable[Self]:
+        return self.project.graph.nodes[self.name].children
+    
+    @property 
+    def parents(self) -> Iterable[Self]:
+        return self.project.graph.nodes[self.name].parents
+    
+    @property
+    def text(self) -> str:
+        return self.template
+    
+    
     @property
     def refs(self) -> list[str]:
         result = []
@@ -59,9 +76,10 @@ class DbtModel:
                 continue
             result.append(call.args[0].value)
         return result
+    
 
 
-class DbtProject:
+class DbtProject(DbtProjectAbstract):
     root_folder: str 
     dbt_project_yml: Generator
     model_folder: str
@@ -90,6 +108,7 @@ class DbtProject:
                     if referenced_model:
                         self.graph.add_node(referenced_model)
                         self.graph.add_edge(referenced_model, model)
+                        
         pass
 
     def refresh(self):
@@ -112,9 +131,9 @@ class DbtProject:
 
     def load_models(self) -> None:
         for models_path in self.full_models_paths:
-            for root, dirs, files in os.walk(models_path):
+            for root, _, files in os.walk(models_path):
                 for file in files:
-                    self.models.append(DbtModel(opj(root, file), file))
+                    self.models.append(DbtModel(opj(root, file), file, self))
 
     def get_model_by_name(self, name: str) -> DbtModel:
         """
@@ -135,6 +154,14 @@ class DbtProject:
             if model.file_name == file_name:
                 return model
         raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
+    
+    def search_model(self, query) -> list[DbtModel]:
+        try:
+            return [self.get_model_by_name(query)]
+        except DbtModelNotFoundException:
+            # TODO: get inspiration from dbt own selector resolver
+            return []
+        
 
     def __init__(self, root_folder: str, fall_back_to_filename: bool = False) -> None:
         self.fall_back_to_filename = fall_back_to_filename

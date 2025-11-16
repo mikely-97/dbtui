@@ -1,4 +1,4 @@
-from src.backend.project import DbtProject, DbtModelNotFoundException
+from src.backend import DbtProject, DbtModelNotFoundException
 from pytest import LogCaptureFixture, raises
 
 

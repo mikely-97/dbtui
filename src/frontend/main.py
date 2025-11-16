@@ -6,12 +6,12 @@ from typing import Any
 isolated = True
 
 if isolated:
-    from pseudo import DbtProject, DbtModel
+    from .pseudo import DbtProject, DbtModel
 else:
     from ..backend.project import DbtProject, DbtModel
 
-from model_search import ModelSearch
-from model_view import ModelView
+from .model_search import ModelSearch
+from .model_view import ModelView
 
 
 

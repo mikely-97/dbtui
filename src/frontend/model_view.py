@@ -2,11 +2,11 @@ from typing import Literal
 
 from textual import widgets, containers, screen
 
-from common import ModelList, ModelListItem
+from .common import ModelList, ModelListItem
 
 isolated = True
 if isolated:
-    from pseudo import DbtProject, DbtModel
+    from .pseudo import DbtProject, DbtModel
 else:
     from ..backend.project import DbtProject, DbtModel
 

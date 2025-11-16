@@ -1,4 +1,4 @@
-from src.backend.project import DbtProject
+from src.backend import DbtProject
 
 
 # test that we can open a valid project
