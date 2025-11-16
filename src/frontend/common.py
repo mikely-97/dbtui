@@ -6,7 +6,7 @@ isolated = True
 if isolated:
     from pseudo import DbtModel
 else:
-    from ..dbtui.project import DbtModel
+    from ..backend.project import DbtModel
 
 class ModelListItem(widgets.ListItem):
 

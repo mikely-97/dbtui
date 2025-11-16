@@ -8,7 +8,7 @@ isolated = True
 if isolated:
     from pseudo import DbtProject, DbtModel
 else:
-    from ..dbtui.project import DbtProject, DbtModel
+    from ..backend.project import DbtProject, DbtModel
 
 from model_search import ModelSearch
 from model_view import ModelView

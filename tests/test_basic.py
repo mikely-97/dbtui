@@ -1,4 +1,4 @@
-from src.dbtui.project import DbtProject
+from src.backend.project import DbtProject
 
 
 # test that we can open a valid project
