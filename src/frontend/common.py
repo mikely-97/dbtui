@@ -4,9 +4,9 @@ from textual import widgets, containers
 
 isolated = True
 if isolated:
-    from pseudo import DbtProject, DbtModel
+    from pseudo import DbtModel
 else:
-    from ..dbtui.project import DbtProject, DbtModel
+    from ..dbtui.project import DbtModel
 
 class ModelListItem(widgets.ListItem):
 
