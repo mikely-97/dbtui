@@ -1,7 +1,7 @@
 import os 
-from os.path import join as opj
+from pathlib import Path
 import yaml
-from typing import Any, Generator, Iterable, Self
+from typing import Generator, Iterable, Self
 from jinja2 import Environment, Template
 from jinja2.nodes import Call, Const
 from networkx import DiGraph
@@ -16,17 +16,23 @@ class DbtModelNotFoundException(Exception):
 
 class DbtModel(DbtModelAbstract):
     file_name: str
-    file_path_full: str
-    file_path_relative: str
+    file_path_full: Path
+    file_path_relative: Path
     template: str
     parsed_template: Template
     project: 'DbtProject'
 
-    def __init__(self, file_path_full: str, file_path_relative: str, project: 'DbtProject'):
+    @property 
+    def file_path_relative(self):
+        return self.file_path_full.relative_to(self.project.root_folder)
+    
+    @property
+    def file_name(self):
+        return self.file_path_full.name
+
+    def __init__(self, file_path_full: Path, project: 'DbtProject'):
         self.file_path_full = file_path_full
-        self.file_path_relative = file_path_relative
         self.project = project
-        self.file_name = os.path.basename(file_path_full)
         with open(file_path_full, 'r', encoding='utf-8') as f:
             self.template = f.read()
         self.parsed_template = Environment().parse(self.template)
@@ -80,10 +86,10 @@ class DbtModel(DbtModelAbstract):
 
 
 class DbtProject(DbtProjectAbstract):
-    root_folder: str 
+    root_folder: Path 
     dbt_project_yml: Generator
     model_folder: str
-    full_models_paths: list[str]
+    full_models_paths: list[Path]
     models: list[DbtModel]
     fall_back_to_filename: bool
     graph: DiGraph
@@ -116,7 +122,7 @@ class DbtProject(DbtProjectAbstract):
             raise FileNotFoundError("Folder not found: %s" % self.root_folder)
         self.models = []
         try:
-            with open(opj(self.root_folder, 'dbt_project.yml'), 'r', encoding='utf-8') as f:
+            with open(self.root_folder / 'dbt_project.yml', 'r', encoding='utf-8') as f:
                 self.parse_dbt_project(f.read())
                 self.load_models()
                 self.populate_graph()
@@ -126,14 +132,14 @@ class DbtProject(DbtProjectAbstract):
 
     def parse_dbt_project(self, dbt_project_raw: str) -> None:
         self.dbt_project_yml = yaml.load(dbt_project_raw, yaml.Loader)
-        self.full_models_paths = [opj(self.root_folder, folder) for folder in self.dbt_project_yml['model-paths']]
+        self.full_models_paths = [self.root_folder / folder for folder in self.dbt_project_yml['model-paths']]
         pass
 
     def load_models(self) -> None:
         for models_path in self.full_models_paths:
-            for root, _, files in os.walk(models_path):
+            for root, _, files in models_path.walk():
                 for file in files:
-                    self.models.append(DbtModel(opj(root, file), file, self))
+                    self.models.append(DbtModel(root / file, self))
 
     def get_model_by_name(self, name: str) -> DbtModel:
         """
@@ -163,7 +169,9 @@ class DbtProject(DbtProjectAbstract):
             return []
         
 
-    def __init__(self, root_folder: str, fall_back_to_filename: bool = False) -> None:
+    def __init__(self, root_folder: Path|str, fall_back_to_filename: bool = False) -> None:
+        if isinstance(root_folder, str):
+            root_folder = Path(root_folder) # TODO: raise some fancy error if not convertible
         self.fall_back_to_filename = fall_back_to_filename
         self.root_folder = root_folder
         self.refresh()
