@@ -21,7 +21,6 @@ class ModelSearchList(ModelList):
         model_preview.text = list_item.dbt_model.text
 
 
-
 class ModelSearchInput(widgets.Input):
     
     def on_input_changed(self, message: widgets.Input.Changed):
@@ -43,7 +42,6 @@ class ModelSearch(screen.Screen):
         
         yield containers.Horizontal(
             ModelSearchList(
-                #w.Placeholder,
                 id='model_list',
                 name='model list'
                 ),
@@ -62,11 +60,14 @@ class ModelSearch(screen.Screen):
         yield ModelSearchInput(
             id='search_input',
             placeholder='Enter the model name or dbt search string'
-            
         )
     
     def on_mount(self):
         self.app.set_focus(
             self.get_widget_by_id('search_input')
         )
+    
+    def on_model_change(self):
+        self.app.push_screen('model_view')
+        pass
 
