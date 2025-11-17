@@ -15,6 +15,14 @@ class ModelRelativesList(ModelList):
     
     def on_list_view_highlighted(self, event: widgets.ListView.Highlighted) -> None:
         list_item: ModelListItem = event.item
+        pass 
+
+    def on_list_view_selected(self, event: widgets.ListView.Selected) -> None: 
+        list_item: ModelListItem = event.item 
+        dbt_model = list_item.dbt_model
+        assert isinstance(dbt_model, DbtModel)
+        self.app.ctx['active_model'] = dbt_model
+        self.screen.on_model_change()
     
     def on_model_change(self, relatives_type: Literal['parents', 'children']):
         model: DbtModel = self.app.ctx['active_model']
