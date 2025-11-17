@@ -19,7 +19,7 @@ class ModelRelativesList(ModelList):
         pass 
 
     def on_model_change(self, relatives_type: Literal['parents', 'children']):
-        model: DbtModel = self.app.ctx['active_model']
+        model: DbtModel = self.app.ctx.active_model
         if relatives_type == 'parents':
             self.populate_with_models(model.parents())
         elif relatives_type == 'children':
@@ -64,7 +64,7 @@ class ModelView(screen.Screen):
         yield widgets.Footer()
     
     def on_model_change(self):
-        model: DbtModel = self.app.ctx['active_model']
+        model: DbtModel = self.app.ctx.active_model
         # model_content
         model_content = self.get_widget_by_id('model_content')
         assert isinstance(model_content, widgets.TextArea)
@@ -80,10 +80,11 @@ class ModelView(screen.Screen):
         children.on_model_change('children')
         # TODO: model properties
         pass
+        self.app.save_context()
 
     def on_mount(self):
-        if self.app.ctx['active_model'] is None:
+        if self.app.ctx.active_model is None:
             self.app.push_screen('model_search')
-        assert isinstance(self.app.ctx['active_model'], DbtModel)
+        assert isinstance(self.app.ctx.active_model, DbtModel)
         self.on_model_change()   
 

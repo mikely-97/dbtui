@@ -1,4 +1,5 @@
 from src.backend import DbtProject
+from src.common import NonePathException
 
 
 # test that we can open a valid project
@@ -36,3 +37,13 @@ def test_open_empty_folder():
     except e:
         raise e
 
+
+# test that a null folder not opens and returns exactly the expected type of exception 
+def test_open_null_folder():
+    try:
+        DbtProject(None)
+        raise Exception("Doesn't fail when opening a null folder")
+    except NonePathException as e:
+        return
+    except e:
+        raise e

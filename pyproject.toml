@@ -10,7 +10,8 @@ requires-python = ">=3.12, <4.0"
 dependencies = [
     "pyyaml (>=6.0.3,<7.0.0)",
     "pytest",
-    "textual[syntax] (>=6.5.0,<7.0.0)"
+    "textual[syntax] (>=6.5.0,<7.0.0)",
+    "platformdirs (>=4.5.0,<5.0.0)"
 ]
 
 [tool.poetry]

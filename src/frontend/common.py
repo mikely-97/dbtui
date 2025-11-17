@@ -42,5 +42,5 @@ class ModelList(widgets.ListView):
         list_item: ModelListItem = event.item 
         dbt_model = list_item.dbt_model
         assert isinstance(dbt_model, DbtModel)
-        self.app.ctx['active_model'] = dbt_model
+        self.app.ctx.active_model = dbt_model
         self.screen.on_model_change()

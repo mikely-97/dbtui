@@ -7,10 +7,9 @@ from jinja2.nodes import Call, Const
 from networkx import DiGraph
 import logging
 
-from ..common import DbtModelAbstract, DbtProjectAbstract
+from ..common import DbtModelAbstract, DbtProjectAbstract, \
+NonePathException, DbtModelNotFoundException
 
-class DbtModelNotFoundException(Exception):
-    pass
 
 
 
@@ -170,6 +169,8 @@ class DbtProject(DbtProjectAbstract):
         
 
     def __init__(self, root_folder: Path|str, fall_back_to_filename: bool = False) -> None:
+        if root_folder is None:
+            raise NonePathException("root_folder is None")
         if isinstance(root_folder, str):
             root_folder = Path(root_folder) # TODO: raise some fancy error if not convertible
         self.fall_back_to_filename = fall_back_to_filename

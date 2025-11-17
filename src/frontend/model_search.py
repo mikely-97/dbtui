@@ -26,8 +26,8 @@ class ModelSearchList(ModelList):
 class ModelSearchInput(widgets.Input):
     
     def on_input_changed(self, message: widgets.Input.Changed):
-        assert isinstance(self.app.ctx['project'], DbtProject)
-        models = self.app.ctx['project'].search_model(message.value)
+        assert isinstance(self.app.ctx.project, DbtProject)
+        models = self.app.ctx.project.search_model(message.value)
         model_list = self.screen.get_widget_by_id('model_list')
         assert isinstance(model_list, ModelSearchList)
         model_list.populate_with_models(models=models)
@@ -70,6 +70,7 @@ class ModelSearch(screen.Screen):
         )
     
     def on_model_change(self):
+        self.app.save_context()
         self.app.push_screen('model_view')
         pass
 
