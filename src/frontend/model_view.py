@@ -67,6 +67,7 @@ class ModelView(screen.Screen):
                 name='model children',
             )
         )
+        yield widgets.Footer()
     
     def on_model_change(self):
         model: DbtModel = self.app.ctx['active_model']
