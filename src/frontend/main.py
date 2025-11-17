@@ -1,9 +1,11 @@
 
+from os.path import exists
+
 from textual.app import App 
 from textual import widgets
 from typing import Any 
 
-isolated = True
+isolated = exists('.isolated')
 
 if isolated:
     from .pseudo import DbtProject, DbtModel

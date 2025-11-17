@@ -1,10 +1,11 @@
+from os.path import exists
 from typing import Literal
 
 from textual import widgets, containers, screen
 
 from .common import ModelList, ModelListItem
 
-isolated = True
+isolated = exists('.isolated')
 if isolated:
     from .pseudo import DbtProject, DbtModel
 else:

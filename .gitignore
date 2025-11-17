@@ -4,3 +4,4 @@ src/dbtui/__pycache__/
 tests/__pycache__/
 logs/dbt.log
 *.pyc
+.isolated

@@ -1,8 +1,10 @@
+from os.path import exists
+
 from typing import Iterable
 
 from textual import widgets, containers
 
-isolated = True
+isolated = exists('.isolated')
 if isolated:
     from .pseudo import DbtModel
 else:
