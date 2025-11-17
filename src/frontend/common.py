@@ -20,7 +20,7 @@ class ModelListItem(widgets.ListItem):
             containers.VerticalGroup(
                 widgets.Label(model.name),
                 widgets.Rule(),
-                widgets.Label(model.filepath),
+                widgets.Label(str(model.file_path_relative)),
             ),
             **kwargs
         )

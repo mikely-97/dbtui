@@ -76,7 +76,6 @@ class dbtuiFrontend(App):
 
 
     def compose(self):
-        assert isolated # TODO: choose the initial screen based on dbtui cache
         yield widgets.Footer()
         # yield ModelSearch(id='model_search')
     

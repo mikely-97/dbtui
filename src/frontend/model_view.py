@@ -21,9 +21,9 @@ class ModelRelativesList(ModelList):
     def on_model_change(self, relatives_type: Literal['parents', 'children']):
         model: DbtModel = self.app.ctx.active_model
         if relatives_type == 'parents':
-            self.populate_with_models(model.parents())
+            self.populate_with_models(model.parents)
         elif relatives_type == 'children':
-            self.populate_with_models(model.children())
+            self.populate_with_models(model.children)
         else:
             raise NotImplementedError
 

@@ -60,12 +60,12 @@ class DbtModel(DbtModelAbstract):
             return kwargs.get('name', Const(default_name)).value
     
     @property 
-    def children(self) -> Iterable[Self]:
-        return self.project.graph.nodes[self.name].children
+    def children(self) -> list[Self]:
+        return sorted(list(self.project.graph.successors(self)), key=lambda n: n.name)
     
     @property 
     def parents(self) -> Iterable[Self]:
-        return self.project.graph.nodes[self.name].parents
+        return sorted(list(self.project.graph.predecessors(self)), key=lambda n: n.name)
     
     @property
     def text(self) -> str:
@@ -168,13 +168,13 @@ class DbtProject(DbtProjectAbstract):
             return []
         
 
-    def __init__(self, root_folder: Path|str, fall_back_to_filename: bool = False) -> None:
-        if root_folder is None:
-            raise NonePathException("root_folder is None")
-        if isinstance(root_folder, str):
-            root_folder = Path(root_folder) # TODO: raise some fancy error if not convertible
+    def __init__(self, project_path: Path|str, fall_back_to_filename: bool = False) -> None:
+        if project_path is None:
+            raise NonePathException("project_path is None")
+        if isinstance(project_path, str):
+            project_path = Path(project_path) # TODO: raise some fancy error if not convertible
         self.fall_back_to_filename = fall_back_to_filename
-        self.root_folder = root_folder
+        self.root_folder = project_path
         self.refresh()
 
         

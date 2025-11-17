@@ -18,12 +18,12 @@ class DbtModel(DbtModelAbstract):
     useful for testing and such, just to decouple stuff
     """
     name: str 
-    filepath: str
+    file_path_relative: str
     text: str
 
     def __init__(self, name, filepath):
         self.name_raw = name 
-        self.filepath = filepath
+        self.file_path_relative = filepath
     
     @classmethod
     def generate_random(cls):
@@ -34,13 +34,14 @@ class DbtModel(DbtModelAbstract):
                 rand_uuid()
             ])
         )
-
+    @property
     def parents(self) -> list[Self]:
         result = []
         for _ in range(random.randint(2, 5)):
             result.append(self.generate_random())
         return result
 
+    @property
     def children(self) -> list[Self]:
         result = []
         for _ in range(random.randint(2, 5)):

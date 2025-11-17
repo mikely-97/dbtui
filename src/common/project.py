@@ -19,6 +19,6 @@ class DbtProjectAbstract(ABC):
         NotImplemented
     
     @abstractmethod
-    def __init__(self, project_path: Path):
+    def __init__(self, project_path: Path|str):
         NotImplemented
 
