@@ -26,6 +26,10 @@ class ModelListItem(widgets.ListItem):
         )
         self.dbt_model = model
     
+    def become_active(self):
+        self.app.
+
+    
 
 class ModelList(widgets.ListView):
 
@@ -37,6 +41,7 @@ class ModelList(widgets.ListView):
                     model=model
                 )
             )
+        
     
     def on_list_view_selected(self, event: widgets.ListView.Selected) -> None: 
         list_item: ModelListItem = event.item 

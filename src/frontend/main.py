@@ -28,7 +28,32 @@ class AppContext:
 
 class dbtuiFrontend(App):
 
-    ctx: AppContext
+    _ctx: AppContext
+
+
+    @property
+    def active_model(self):
+        return self.ctx.active_model
+    
+    @active_model.setter()
+    def active_model(self, value: DbtModel):
+        assert isinstance(value, DbtModel)
+        self.ctx.active_model = value
+        self.on_model_change()
+
+    
+    def change_model(self, model: DbtModel):
+        assert isinstance(model, DbtModel)
+        self.active_model = model
+    
+    @property
+    def project(self):
+        return self.ctx.project
+    
+    @project.setter()
+    def project(self, value: DbtProject):
+        assert isinstance(value, DbtProject)
+        self.ctx.project = value
 
     BINDINGS = [
         # ("O", "options", "open options"),
@@ -94,7 +119,13 @@ class dbtuiFrontend(App):
     
     def on_model_change(self):
         # TODO: update context
+        for screen in self.screen_stack:
+            screen.on_model_change()
         pass
+
+    def change_model(self, model: DbtModel):
+        assert isinstance(model, DbtModel)
+        self.active_model = model
 
 if __name__ == '__main__':
 

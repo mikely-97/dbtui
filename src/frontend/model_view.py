@@ -26,6 +26,11 @@ class ModelRelativesList(ModelList):
             self.populate_with_models(model.children)
         else:
             raise NotImplementedError
+    
+    def on_key_left(self) -> None:
+        if self.id == 'parents' and self.highlighted_child:
+            assert(isinstance(self.highlighted_child, ModelListItem))
+            self.highlighted_child.on
 
 
 class ModelView(screen.Screen):
@@ -37,30 +42,26 @@ class ModelView(screen.Screen):
     ]
 
     def compose(self):
-        yield containers.ScrollableContainer(
-            widgets.TextArea(
-                id='model_content',
-                name='content',
-                read_only=True, # TODO: not read-only when pressing Enter, back to read-only when pressing Esc 
-                show_line_numbers=True,
-                language='sql',
-            ),
-        )
-        yield containers.Horizontal(
+        yield containers.HorizontalGroup(
             ModelRelativesList(
                 id='parents',
                 name='model_parents',
             ),
-            widgets.TextArea(
-                id='model_properties',
-                name='model properties',
-                read_only=True,
+            containers.ScrollableContainer(
+                    widgets.TextArea(
+                        id='model_content',
+                        name='content',
+                        read_only=True, # TODO: not read-only when pressing Enter, back to read-only when pressing Esc 
+                        show_line_numbers=True,
+                        language='sql',
+                )
             ),
             ModelRelativesList(
                 id='children',
                 name='model children',
             )
         )
+            
         yield widgets.Footer()
     
     def on_model_change(self):

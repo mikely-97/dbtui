@@ -35,7 +35,7 @@ def ensure_cache_path() -> Path:
 
 def load_cache(clear_cache:bool=False) -> dbtuiCache:
     cache_path = ensure_cache_path() / 'cache.json'
-    if True or clear_cache or not cache_path.exists():
+    if clear_cache or not cache_path.exists():
         with open(cache_path, 'w', encoding='utf-8') as f:
             json.dump(asdict(dbtuiCache()), f)
     with open(cache_path, 'r', encoding='utf-8') as f:
