@@ -54,6 +54,8 @@ class ModelListItem(widgets.ListItem):
 
 class ModelList(widgets.ListView):
 
+    app: 'dbtuiFrontend'
+
     def populate_with_models(self, models: Iterable[DbtModel]):
         self.clear()
         for model in models:
@@ -63,16 +65,20 @@ class ModelList(widgets.ListView):
                 )
             )
         
+    def change_model(self, model: DbtModel):
+        # triggers the reactive component
+        self.app.model = model
+
+        
     
     def on_list_view_selected(self, event: widgets.ListView.Selected) -> None: 
         list_item: ModelListItem = event.item 
         dbt_model = list_item.dbt_model
         assert isinstance(dbt_model, DbtModel)
+        self.change_model(dbt_model)
 
-        self.app: 'dbtuiFrontend'
-        # triggers the reactive component
-        # self.app.model = dbt_model
-        self.app.change_model(dbt_model)
+
+        
 
 
 

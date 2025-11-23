@@ -70,9 +70,6 @@ class dbtuiFrontend(App):
         
         self.on_model_change(new_model)
 
-    def change_model(self, model: DbtModel|None):
-        self.model = model
-
 
     BINDINGS = [
         # ("O", "options", "open options"),
