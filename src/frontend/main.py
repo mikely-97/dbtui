@@ -16,7 +16,7 @@ else:
     from ..backend.project import DbtProject, DbtModel
 
 from .model_search import ModelSearch
-from .model_view import ModelView
+from .model_tree import ModelTree
 from ..common import dbtuiCache, load_cache, save_cache, NonePathException
 from .common import DbtuiScreen
 import logging
@@ -79,7 +79,7 @@ class dbtuiFrontend(App):
 
     SCREENS = {
         'model_search': ModelSearch,
-        'model_view': ModelView,
+        'model_view': ModelTree,
         }
     
 

@@ -82,7 +82,7 @@ class ChildrenList(ModelRelativesList):
     
 
 
-class ModelView(DbtuiScreen):
+class ModelTree(DbtuiScreen):
 
 
     BINDINGS = [
