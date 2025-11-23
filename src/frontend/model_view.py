@@ -1,9 +1,11 @@
 from os.path import exists
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 
 from textual import widgets, containers, screen
 
-from .common import ModelList, ModelListItem
+from .common import ModelList, ModelListItem, DbtuiScreen
+if TYPE_CHECKING:
+    from .main import dbtuiFrontend
 
 isolated = exists('.isolated')
 if isolated:
@@ -19,7 +21,7 @@ class ModelRelativesList(ModelList):
         pass 
 
     def on_model_change(self, relatives_type: Literal['parents', 'children']):
-        model: DbtModel = self.app.ctx.active_model
+        model: DbtModel = self.app.model
         if relatives_type == 'parents':
             self.populate_with_models(model.parents)
         elif relatives_type == 'children':
@@ -30,10 +32,10 @@ class ModelRelativesList(ModelList):
     def on_key_left(self) -> None:
         if self.id == 'parents' and self.highlighted_child:
             assert(isinstance(self.highlighted_child, ModelListItem))
-            self.highlighted_child.on
+            # self.highlighted_child.on
 
 
-class ModelView(screen.Screen):
+class ModelView(DbtuiScreen):
 
 
     BINDINGS = [
@@ -64,13 +66,15 @@ class ModelView(screen.Screen):
             
         yield widgets.Footer()
     
-    def on_model_change(self):
-        model: DbtModel = self.app.ctx.active_model
+    def on_model_change(self, model: DbtModel|None):
+        if not model:
+            self.app.push_screen('model_search')
+            return
         # model_content
         model_content = self.get_widget_by_id('model_content')
         assert isinstance(model_content, widgets.TextArea)
         model_content.clear()
-        model_content.text = model.text
+        model_content.load_text(model.text)
         # parents
         parents = self.get_widget_by_id('parents')
         assert isinstance(parents, ModelRelativesList)
@@ -79,13 +83,7 @@ class ModelView(screen.Screen):
         children = self.get_widget_by_id('children')
         assert isinstance(children, ModelRelativesList)
         children.on_model_change('children')
-        # TODO: model properties
-        pass
-        self.app.save_context()
 
     def on_mount(self):
-        if self.app.ctx.active_model is None:
-            self.app.push_screen('model_search')
-        assert isinstance(self.app.ctx.active_model, DbtModel)
-        self.on_model_change()   
+        self.on_model_change(self.app.model)   
 

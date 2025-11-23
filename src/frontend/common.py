@@ -1,14 +1,36 @@
 from os.path import exists
+from abc import ABC, abstractmethod, ABCMeta
+from typing import Iterable, TYPE_CHECKING
 
-from typing import Iterable
+from textual import widgets, containers, screen
 
-from textual import widgets, containers
+if TYPE_CHECKING:
+    from .main import dbtuiFrontend
 
 isolated = exists('.isolated')
 if isolated:
-    from .pseudo import DbtModel
+    from .pseudo import DbtModel, DbtProject
 else:
-    from ..backend.project import DbtModel
+    from ..backend.project import DbtModel, DbtProject
+
+screen_metaclass = type(screen.Screen)
+
+class ScreenABCMeta(screen_metaclass, ABCMeta):
+    pass
+
+class DbtuiScreen(screen.Screen, ABC, metaclass=ScreenABCMeta):
+
+    app: 'dbtuiFrontend'
+
+    #@abstractmethod
+    def on_model_change(self, model: DbtModel):
+        NotImplemented
+
+    #@abstractmethod
+    def on_project_change(self, project: DbtProject):
+        NotImplemented
+
+
 
 class ModelListItem(widgets.ListItem):
 
@@ -26,8 +48,7 @@ class ModelListItem(widgets.ListItem):
         )
         self.dbt_model = model
     
-    def become_active(self):
-        self.app.
+
 
     
 
@@ -47,5 +68,11 @@ class ModelList(widgets.ListView):
         list_item: ModelListItem = event.item 
         dbt_model = list_item.dbt_model
         assert isinstance(dbt_model, DbtModel)
-        self.app.ctx.active_model = dbt_model
-        self.screen.on_model_change()
+
+        self.app: 'dbtuiFrontend'
+        # triggers the reactive component
+        # self.app.model = dbt_model
+        self.app.change_model(dbt_model)
+
+
+

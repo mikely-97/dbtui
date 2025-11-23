@@ -1,9 +1,14 @@
 from os.path import exists
-from typing import Literal
+from typing import TYPE_CHECKING
 
 from textual import widgets, containers, screen
 
-from .common import ModelList, ModelListItem
+from src.backend.project import DbtProject
+from src.frontend.pseudo import DbtProject
+
+from .common import ModelList, ModelListItem, DbtuiScreen
+if TYPE_CHECKING:
+    from .main import dbtuiFrontend
 
 
 isolated = exists('.isolated')
@@ -16,7 +21,9 @@ else:
 class ModelSearchList(ModelList):
 
     def on_list_view_highlighted(self, event: widgets.ListView.Highlighted) -> None:
-        list_item: ModelListItem = event.item
+        list_item = event.item
+        if not isinstance(list_item, ModelListItem):
+            return
         model_preview = self.screen.get_widget_by_id('model_preview')
         assert isinstance(model_preview, widgets.TextArea)
         model_preview.clear()
@@ -24,17 +31,19 @@ class ModelSearchList(ModelList):
 
 
 class ModelSearchInput(widgets.Input):
+
+    app: 'dbtuiFrontend'
     
     def on_input_changed(self, message: widgets.Input.Changed):
-        assert isinstance(self.app.ctx.project, DbtProject)
-        models = self.app.ctx.project.search_model(message.value)
+        assert isinstance(self.app.project, DbtProject)
+        models = self.app.project.search_model(message.value)
         model_list = self.screen.get_widget_by_id('model_list')
         assert isinstance(model_list, ModelSearchList)
         model_list.populate_with_models(models=models)
 
 
 
-class ModelSearch(screen.Screen):
+class ModelSearch(DbtuiScreen):
 
     BINDINGS = [
         ("O", "options", "open options")
@@ -69,8 +78,10 @@ class ModelSearch(screen.Screen):
             self.get_widget_by_id('search_input')
         )
     
-    def on_model_change(self):
-        self.app.save_context()
-        self.app.push_screen('model_view')
-        pass
-
+    def on_model_change(self, model: DbtModel|None):
+        # reset the search and its results
+        self.compose()
+    
+    def on_project_change(self, project: DbtProject|None):
+        # reset the search and its results
+        self.compose()

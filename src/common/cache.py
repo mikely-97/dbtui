@@ -43,12 +43,12 @@ def load_cache(clear_cache:bool=False) -> dbtuiCache:
     dbtui_cache = dbtuiCache(**cache_raw)
     return dbtui_cache
 
-def save_cache(project_path: Path, active_model_name: str):
+def save_cache(project_path: Path, model_name: str):
     cache_path = ensure_cache_path() / 'cache.json'
     with open(cache_path, 'w', encoding='utf-8') as f:
         json.dump(asdict(dbtuiCache(
             last_open_project_raw=str(project_path), 
-            last_active_model=active_model_name)),
+            last_active_model=model_name)),
             f)
 
 
