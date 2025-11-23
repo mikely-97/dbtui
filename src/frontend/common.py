@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod, ABCMeta
 from typing import Iterable, TYPE_CHECKING
 
 from textual import widgets, containers, screen
+from textual.binding import Binding
 
 if TYPE_CHECKING:
     from .main import dbtuiFrontend
@@ -54,6 +55,11 @@ class ModelListItem(widgets.ListItem):
 
 class ModelList(widgets.ListView):
 
+    BINDINGS =  [
+        Binding("j", "cursor_down()", show=False),
+        Binding("k", "cursor_up()", show=True,),
+    ]
+
     app: 'dbtuiFrontend'
 
     def populate_with_models(self, models: Iterable[DbtModel]):
@@ -64,6 +70,11 @@ class ModelList(widgets.ListView):
                     model=model
                 )
             )
+        # we want to instantly focus on the first index
+        self.index = None
+        self.action_cursor_down()
+        # TODO: when tampering with CSS, check out how u can fix the invisible highlight
+        
         
     def change_model(self, model: DbtModel):
         # triggers the reactive component

@@ -4,7 +4,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 from textual.app import App 
-from textual import widgets
+from textual.binding import Binding
 from textual.reactive import reactive
 from typing import Any 
 

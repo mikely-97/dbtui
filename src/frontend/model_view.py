@@ -1,8 +1,9 @@
 from os.path import exists
 from typing import Literal, TYPE_CHECKING
 
-from textual import widgets, containers, screen
+from textual import events, widgets, containers, screen
 from textual.binding import Binding
+from textual.events import Mount
 
 from .common import ModelList, ModelListItem, DbtuiScreen
 if TYPE_CHECKING:
@@ -22,31 +23,22 @@ class ModelRelativesList(ModelList):
 
     id: Literal['parents', 'children']
     
-    def on_list_view_highlighted(self, event: widgets.ListView.Highlighted) -> None:
-        list_item: ModelListItem = event.item
-        pass 
-
     def on_model_change(self, model: DbtModel):
-        if self.id == 'parents':
+        if self.id == PARENTS_ID:
             self.populate_with_models(model.parents)
-        elif self.id == 'children':
+        elif self.id == CHILDREN_ID:
             self.populate_with_models(model.children)
         else:
             raise NotImplementedError
+
     
-    def on_key_left(self) -> None:
-        if self.id == 'parents' and self.highlighted_child:
-            assert(isinstance(self.highlighted_child, ModelListItem))
-            self.app.change_model(self.highlighted_child.dbt_model)
 
 
 class ParentsList(ModelRelativesList):
 
-    BINDINGS = [
-        Binding("left", "quick_move()", "select parent",),
-        Binding("h", "quick_move()", "select parent",),
-        Binding("right", "refocus_on_children()", "focus on children",),
-        Binding("l", "refocus_on_children()", "focus on children",),
+    BINDINGS =  [
+        Binding("left, h", "quick_move()", "select parent",),
+        Binding("right, l", "refocus_on_children()", "focus on children",),
     ]
 
     def on_mount(self):
@@ -68,10 +60,8 @@ class ParentsList(ModelRelativesList):
 class ChildrenList(ModelRelativesList):
 
     BINDINGS = [
-        Binding("right", "quick_move()", "select child",),
-        Binding("l", "quick_move()", "select child",),
-        Binding("left", "refocus_on_parents()", "focus on parents",),
-        Binding("h", "refocus_on_parents()", "focus on parents",),
+        Binding("right, l", "quick_move()", "select child",),
+        Binding("left, h", "refocus_on_parents()", "focus on parents",),
     ]
 
     def on_mount(self):
@@ -105,6 +95,7 @@ class ModelView(DbtuiScreen):
             ParentsList(
                 id=PARENTS_ID,
                 name='model_parents',
+                initial_index=1,
             ),
             containers.ScrollableContainer(
                     widgets.TextArea(
@@ -118,6 +109,7 @@ class ModelView(DbtuiScreen):
             ChildrenList(
                 id=CHILDREN_ID,
                 name='model children',
+                initial_index=1,
             )
         )
             
@@ -140,6 +132,7 @@ class ModelView(DbtuiScreen):
         children = self.get_widget_by_id('children')
         assert isinstance(children, ChildrenList)
         children.on_model_change(model)
+        self.recompose()
 
     def on_mount(self):
         self.on_model_change(self.app.model)   
