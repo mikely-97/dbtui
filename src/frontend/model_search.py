@@ -45,10 +45,6 @@ class ModelSearchInput(widgets.Input):
 
 class ModelSearch(DbtuiScreen):
 
-    BINDINGS = [
-        ("O", "options", "open options")
-    ]
-
     def compose(self):
         
         yield containers.Horizontal(

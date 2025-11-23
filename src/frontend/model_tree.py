@@ -84,12 +84,6 @@ class ChildrenList(ModelRelativesList):
 
 class ModelTree(DbtuiScreen):
 
-
-    BINDINGS = [
-        # ("O", "options", "open options"),
-        ("f", "push_screen('model_search')", "search models"),
-    ]
-
     def compose(self):
         yield containers.HorizontalGroup(
             ParentsList(

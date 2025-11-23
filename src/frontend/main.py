@@ -17,6 +17,7 @@ else:
 
 from .model_search import ModelSearch
 from .model_tree import ModelTree
+from .options import Options
 from ..common import dbtuiCache, load_cache, save_cache, NonePathException
 from .common import DbtuiScreen
 import logging
@@ -31,6 +32,10 @@ class AppContext:
 class dbtuiFrontend(App):
 
     screen_stack: list[DbtuiScreen]
+    external_editor_command: reactive[str] = reactive('vi')
+
+    def watch_external_editor_command(self, old_value: str, new_value: str):
+        self.save_context()
 
     # TODO: decompose into mixins
     model: reactive[DbtProject|None] = reactive(None, always_update=True, init=True)
@@ -72,7 +77,7 @@ class dbtuiFrontend(App):
 
 
     BINDINGS = [
-        # ("O", "options", "open options"),
+        ("o", "push_screen('options')", "open options"),
         ("f", "push_screen('model_search')", "search models"),
 
     ]
@@ -80,6 +85,7 @@ class dbtuiFrontend(App):
     SCREENS = {
         'model_search': ModelSearch,
         'model_view': ModelTree,
+        'options': Options,
         }
     
 
@@ -100,11 +106,13 @@ class dbtuiFrontend(App):
                 logging.warn(e.args)
         self.project = project 
         self.model = model
+        self.external_editor_command = cache.external_editor_command
         
     def save_context(self):
         save_cache(
             project_path=self.project.root_folder if isinstance(self.project, DbtProject) else None,
             model_name=self.model.name if isinstance(self.model, DbtModel) else None,
+            external_editor_command=self.external_editor_command,
         )
     
 
