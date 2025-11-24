@@ -1,5 +1,6 @@
 from os.path import exists
 from typing import Literal, TYPE_CHECKING
+import os 
 
 from textual import events, widgets, containers, screen
 from textual.binding import Binding
@@ -83,6 +84,16 @@ class ChildrenList(ModelRelativesList):
 
 
 class ModelTree(DbtuiScreen):
+
+    BINDINGS = [
+        Binding("E", "external_edit()", "edit externally",),
+    ]
+
+    def action_external_edit(self):
+        if self.app.model is None:
+            pass # TODO: alert that there's no active model
+        with self.app.suspend():
+            os.system(' '.join([self.app.external_editor_command, self.app.model.file_path_full]))
 
     def compose(self):
         yield containers.HorizontalGroup(
