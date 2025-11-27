@@ -69,6 +69,8 @@ class DbtModel(DbtModelAbstract):
     
     @property
     def text(self) -> str:
+        with open(self.file_path_full, 'r', encoding='utf-8') as f:
+            self.template = f.read()
         return self.template
     
     

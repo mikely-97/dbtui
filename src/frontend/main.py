@@ -31,6 +31,18 @@ class AppContext:
 
 class dbtuiFrontend(App):
 
+    BINDINGS = [
+        ("o", "push_screen('options')", "open options"),
+        ("f", "push_screen('model_search')", "search models"),
+
+    ]
+
+    SCREENS = {
+        'model_search': ModelSearch,
+        'model_view': ModelTree,
+        'options': Options,
+        }
+
     screen_stack: list[DbtuiScreen]
     external_editor_command: reactive[str] = reactive('vi')
 
@@ -76,17 +88,6 @@ class dbtuiFrontend(App):
         self.on_model_change(new_model)
 
 
-    BINDINGS = [
-        ("o", "push_screen('options')", "open options"),
-        ("f", "push_screen('model_search')", "search models"),
-
-    ]
-
-    SCREENS = {
-        'model_search': ModelSearch,
-        'model_view': ModelTree,
-        'options': Options,
-        }
     
 
     def load_context(self, clear_cache: bool=False):

@@ -1,4 +1,6 @@
 from os.path import exists
+from os import system
+import subprocess
 from abc import ABC, abstractmethod, ABCMeta
 from typing import Iterable, TYPE_CHECKING
 
@@ -23,13 +25,30 @@ class DbtuiScreen(screen.Screen, ABC, metaclass=ScreenABCMeta):
 
     app: 'dbtuiFrontend'
 
-    #@abstractmethod
+    @abstractmethod
     def on_model_change(self, model: DbtModel):
         NotImplemented
 
-    #@abstractmethod
+    # @abstractmethod
     def on_project_change(self, project: DbtProject):
         NotImplemented
+
+    def action_external_edit(self):
+        if self.app.model is None:
+            self.app.notify("No model selected.")
+            return  
+        args = [self.app.external_editor_command, self.app.model.file_path_full.as_posix()]
+        with self.app.suspend():
+            try:
+                subprocess.run(args=args, check=True)
+            except FileNotFoundError:
+                self.app.notify(f"Editor not found: {self.app.external_editor_command}")
+            except subprocess.CalledProcessError as e:
+                self.app.notify(f"Editor failed with exit code {e.returncode}")
+            except Exception as e:
+                raise e 
+        # it will trigger reactive update bc changing a reactive's attribute doesn't trigger it
+        self.app.model = self.app.model
 
 
 

@@ -89,11 +89,6 @@ class ModelTree(DbtuiScreen):
         Binding("E", "external_edit()", "edit externally",),
     ]
 
-    def action_external_edit(self):
-        if self.app.model is None:
-            pass # TODO: alert that there's no active model
-        with self.app.suspend():
-            os.system(' '.join([self.app.external_editor_command, self.app.model.file_path_full]))
 
     def compose(self):
         yield containers.HorizontalGroup(
