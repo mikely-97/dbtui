@@ -21,8 +21,32 @@ else:
     from ..backend.project import DbtProject, DbtModel
 
 
+class DirectorySelector(widgets.DirectoryTree):
+
+    screen: 'ProjectSearch'
+
+    def on_directory_tree_directory_selected(self, event: widgets.DirectoryTree.DirectorySelected):
+        # isn't the best way, but tbh im not making a fs explorer
+        if Path.exists(event.path/'dbt_project.yml'):
+            self.screen.project_path = event.path
+
+class DirectoryInput(widgets.Input):
+
+    screen: 'ProjectSearch'
+
+    def on_input_submitted(self, event: widgets.Input.Submitted):
+        self.screen.project_path = event.value
+
+
+
 
 class ProjectSearch(DbtuiScreen):
+
+    """
+    we're not making a fs explorer here, but in case you need to look up another dbt project - here you go
+    i basically think it would be the best option to launch a project as `dbtui path/to/project`
+    but i leave an option to select with directory input or manual input inside the app
+    """
 
     # only add it if we actually have an active project
     active_project_binding = binding.Binding("p", "reset_path('active_project')", "to active_project"),
@@ -67,12 +91,12 @@ class ProjectSearch(DbtuiScreen):
     def compose(self):
 
         yield containers.VerticalScroll(
-            widgets.DirectoryTree(
+            DirectorySelector(
                 path=Path.home(),
                 name='Select project.yml',
                 id='directory_selector',
             ),
-            widgets.Input(
+            DirectoryInput(
                 id='directory_input',
             ),
             widgets.Footer(),
@@ -87,10 +111,10 @@ class ProjectSearch(DbtuiScreen):
     
     def on_project_change(self, project: DbtProject|None):
         dir_selector = self.get_widget_by_id('directory_selector')
-        assert isinstance(dir_selector, widgets.DirectoryTree)
+        assert isinstance(dir_selector, DirectorySelector)
         dir_selector.path = project.root_folder
         dir_input = self.get_widget_by_id('directory_input')
-        assert isinstance(dir_input, widgets.Input)
+        assert isinstance(dir_input, DirectoryInput)
         if not dir_input.has_focus:
             dir_input.value = project.root_folder.as_posix()
 
