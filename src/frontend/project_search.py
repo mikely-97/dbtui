@@ -1,10 +1,10 @@
 from os.path import exists
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from pathlib import Path
 
 
 
-from textual import widgets, containers, screen
+from textual import widgets, containers, reactive, binding
 
 from src.backend.project import DbtProject
 from src.frontend.pseudo import DbtProject
@@ -24,27 +24,61 @@ else:
 
 class ProjectSearch(DbtuiScreen):
 
-    @property
-    def project_path(self) -> Path:
-        if isinstance(self.app.project, DbtProject):
-            return self.app.project.root_folder
-        else:
-            return Path.home()
+    # only add it if we actually have an active project
+    active_project_binding = binding.Binding("p", "reset_path('active_project')", "to active_project"),
+
+    BINDINGS = [
+        binding.Binding("h", "reset_path('home')", "to home dir"),
+    ]
+
+    project_path: reactive.reactive[Path] = reactive.reactive(Path.home())
+
+    def validate_project_path(self, value: str|Path) -> Path:
+        new_project_path = Path(value)
+        if new_project_path.exists():
+            return new_project_path
+        if not new_project_path.exists():
+            self.notify("Path doesn't exist")
+            return self.project_path
+    
+    def watch_project_path(self, old_value: Path, new_value: Path):
+        if old_value == new_value: # meaning it wasn't validated
+            return 
+
+        try:
+            self.app.project = DbtProject(new_value)
+        except FileNotFoundError as e:
+            self.notify(e.args[0])
+            return
+
+
+    def action_reset_path(self, to=Literal['home', 'active_project']):
+        default = Path.home()
+        if not self.app.has_active_project:
+            return default
+        match to:
+            case 'active_project':
+                self.project_path = self.app.project.root_folder
+            case 'home':
+                self.project_path = default 
+            case _:
+                raise NotImplementedError("Unknown argument to reset_path: %s" % to)
 
     def compose(self):
 
-        
-        
         yield containers.VerticalScroll(
             widgets.DirectoryTree(
-                path=self.project_path,
+                path=Path.home(),
                 name='Select project.yml',
                 id='directory_selector',
             ),
             widgets.Input(
-                value=self.project_path,
-            )
+                id='directory_input',
+            ),
+            widgets.Footer(),
         )
+
+        self.action_reset_path('active_project')
     
     
     def on_model_change(self, model: DbtModel|None):
@@ -52,5 +86,13 @@ class ProjectSearch(DbtuiScreen):
         pass
     
     def on_project_change(self, project: DbtProject|None):
+        dir_selector = self.get_widget_by_id('directory_selector')
+        assert isinstance(dir_selector, widgets.DirectoryTree)
+        dir_selector.path = project.root_folder
+        dir_input = self.get_widget_by_id('directory_input')
+        assert isinstance(dir_input, widgets.Input)
+        if not dir_input.has_focus:
+            dir_input.value = project.root_folder.as_posix()
 
-        self.recompose()
+        if not self.active_project_binding in self.BINDINGS:
+            self.BINDINGS.append(self.active_project_binding)

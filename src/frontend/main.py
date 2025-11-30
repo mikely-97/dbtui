@@ -18,6 +18,8 @@ else:
 from .model_search import ModelSearch
 from .model_tree import ModelTree
 from .options import Options
+from .project_search import ProjectSearch
+
 from ..common import dbtuiCache, load_cache, save_cache, NonePathException
 from .common import DbtuiScreen
 import logging
@@ -34,6 +36,7 @@ class dbtuiFrontend(App):
     BINDINGS = [
         ("o", "push_screen('options')", "open options"),
         ("f", "push_screen('model_search')", "search models"),
+        ("p", "push_screen('project_search')", "select project"),
 
     ]
 
@@ -41,6 +44,7 @@ class dbtuiFrontend(App):
         'model_search': ModelSearch,
         'model_view': ModelTree,
         'options': Options,
+        'project_search': ProjectSearch,
         }
 
     screen_stack: list[DbtuiScreen]
@@ -87,8 +91,18 @@ class dbtuiFrontend(App):
         
         self.on_model_change(new_model)
 
-
+    @property
+    def has_active_model(self) -> bool:
+        if isinstance(self.model, DbtModel):
+            return True
+        return False
     
+    @property
+    def has_active_project(self) -> bool:
+        if isinstance(self.project, DbtProject):
+            return True
+        return False
+        
 
     def load_context(self, clear_cache: bool=False):
         cache: dbtuiCache = load_cache(clear_cache)
