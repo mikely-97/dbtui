@@ -87,6 +87,7 @@ class ModelTree(DbtuiScreen):
 
     BINDINGS = [
         Binding("E", "external_edit()", "edit externally",),
+        Binding("n", "raise()", "new model from current",),
     ]
 
 
