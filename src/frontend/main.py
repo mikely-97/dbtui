@@ -28,7 +28,6 @@ class dbtuiFrontend(App):
         ("o", "push_screen('options')", "open options"),
         ("f", "push_screen('model_search')", "search models"),
         ("p", "push_screen('project_search')", "select project"),
-
     ]
 
     SCREENS = {
