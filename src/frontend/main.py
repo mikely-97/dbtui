@@ -1,5 +1,3 @@
-
-from os.path import exists
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -8,20 +6,13 @@ from textual.binding import Binding
 from textual.reactive import reactive
 from typing import Any 
 
-isolated = exists('.isolated')
-
-if isolated:
-    from .pseudo import DbtProject, DbtModel
-else:
-    from ..backend.project import DbtProject, DbtModel
-
 from .model_search.model_search import ModelSearch
-from .model_tree import ModelTree
-from .options import Options
-from .project_search import ProjectSearch
+from .model_tree.model_tree import ModelTree
+from .options.options import Options
+from .project_search.project_search import ProjectSearch
 
 from ..common import dbtuiCache, load_cache, save_cache, NonePathException
-from .common import DbtuiScreen
+from .common import DbtuiScreen, DbtProject, DbtModel
 import logging
 
 @dataclass
@@ -142,8 +133,6 @@ class dbtuiFrontend(App):
             self.push_screen('model_search')
         else:
             self.push_screen('model_view')
-    
-
 
 if __name__ == '__main__':
 

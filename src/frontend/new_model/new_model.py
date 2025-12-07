@@ -5,47 +5,29 @@ from pathlib import Path
 
 
 from textual import widgets, containers, reactive, binding
+from textual.screen import ModalScreen
 
 from src.backend.project import DbtProject
-from src.frontend.pseudo import DbtProject
+from src.frontend.pseudo.pseudo import DbtProject
 
-from .common import ModelList, ModelListItem, DbtuiScreen
+from ..common.common import ModelList, ModelListItem, DbtuiScreen
 if TYPE_CHECKING:
-    from .main import dbtuiFrontend
+    from ..main import dbtuiFrontend
 
 
 isolated = exists('.isolated')
 if isolated:
-    from .pseudo import DbtProject, DbtModel
+    from ..pseudo.pseudo import DbtProject, DbtModel
 else:
-    from ..backend.project import DbtProject, DbtModel
-
-
-class DirectorySelector(widgets.DirectoryTree):
-
-    screen: 'ProjectSearch'
-
-    def on_directory_tree_directory_selected(self, event: widgets.DirectoryTree.DirectorySelected):
-        # isn't the best way, but tbh im not making a fs explorer
-        if Path.exists(event.path/'dbt_project.yml'):
-            self.screen.project_path = event.path
-
-class DirectoryInput(widgets.Input):
-
-    screen: 'ProjectSearch'
-
-    def on_input_submitted(self, event: widgets.Input.Submitted):
-        self.screen.project_path = event.value
+    from ...backend.project import DbtProject, DbtModel
 
 
 
-
-class ProjectSearch(DbtuiScreen):
+class NewModel(ModalScreen):
 
     """
-    we're not making a fs explorer here, but in case you need to look up another dbt project - here you go
-    i basically think it would be the best option to launch a project as `dbtui path/to/project`
-    but i leave an option to select with directory input or manual input inside the app
+    i override key bindings to not have to process "change project/model" events
+    if project or model changes, i actually raise an error bc i have no clue what i'm supposed to do
     """
 
     # only add it if we actually have an active project

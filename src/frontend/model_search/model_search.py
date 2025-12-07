@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 from textual import widgets, containers
 
 from src.backend.project import DbtProject
-from src.frontend.pseudo import DbtProject
 from .model_search_input import ModelSearchInput
 from .model_search_list import ModelSearchList
 

@@ -1,16 +1,9 @@
 import random
-import uuid
+
 from typing import Self
-from pathlib import Path
-from ..common import DbtModelAbstract, DbtProjectAbstract, NonePathException
 
-lorem = open('src/frontend/lorem.txt', 'r').read()
-
-def rand_uuid() -> str:
-
-    raw = uuid.uuid4()
-    return raw.urn
-
+from ...common import DbtModelAbstract
+from .utils import rand_uuid, lorem
 
 class DbtModel(DbtModelAbstract):
     """
@@ -55,32 +48,3 @@ class DbtModel(DbtModelAbstract):
     @property
     def text(self) -> str:
         return lorem
-
-
-    
-class DbtProject(DbtProjectAbstract):
-    name: str
-    root_folder: str
-    
-    #models: list[DbtModel]
-
-    def __init__(self, project_path: Path|str):
-        self.name = 'name placeholder'
-        if project_path is None:
-            raise NonePathException
-        else:
-            self.root_folder = Path(project_path)
-
-    def search_model(self, query) -> list[DbtModel]:
-        result = []
-        for _ in range(random.randint(2,5)):
-            result.append(DbtModel.generate_random())
-        return result
-    
-    def get_model_by_file_name(self, file_name: str) -> DbtModel:
-        return DbtModel.generate_random()
-
-    def get_model_by_name(self, name: str) -> DbtModel:
-        return DbtModel.generate_random()
-
-

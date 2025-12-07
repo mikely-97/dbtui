@@ -1,21 +1,14 @@
 from os.path import exists
 from typing import TYPE_CHECKING
 
-from textual import widgets, containers, screen
+from textual import widgets, containers
 
-from src.backend.project import DbtProject
-from src.frontend.pseudo import DbtProject
+from src.backend.project import DbtProject, DbtModel
 
-from .common import ModelList, ModelListItem, DbtuiScreen
+from ..common import DbtuiScreen
 if TYPE_CHECKING:
-    from .main import dbtuiFrontend
+    from ..main import dbtuiFrontend
 
-
-isolated = exists('.isolated')
-if isolated:
-    from .pseudo import DbtProject, DbtModel
-else:
-    from ..backend.project import DbtProject, DbtModel
 
 class ExternalEditorOption(widgets.Input):
 
