@@ -1,49 +1,20 @@
-from os.path import exists
 from typing import TYPE_CHECKING
 
-from textual import widgets, containers, screen
+from textual import widgets, containers
 
 from src.backend.project import DbtProject
 from src.frontend.pseudo import DbtProject
+from .model_search_input import ModelSearchInput
+from .model_search_list import ModelSearchList
 
-from .common import ModelList, ModelListItem, DbtuiScreen
+from ..common import DbtProject, DbtModel, DbtuiScreen
 if TYPE_CHECKING:
-    from .main import dbtuiFrontend
-
-
-isolated = exists('.isolated')
-if isolated:
-    from .pseudo import DbtProject, DbtModel
-else:
-    from ..backend.project import DbtProject, DbtModel
-
-
-class ModelSearchList(ModelList):
-
-    def on_list_view_highlighted(self, event: widgets.ListView.Highlighted) -> None:
-        list_item = event.item
-        if not isinstance(list_item, ModelListItem):
-            return
-        model_preview = self.screen.get_widget_by_id('model_preview')
-        assert isinstance(model_preview, widgets.TextArea)
-        model_preview.clear()
-        model_preview.text = list_item.dbt_model.text
-
-
-class ModelSearchInput(widgets.Input):
-
-    app: 'dbtuiFrontend'
-    
-    def on_input_changed(self, message: widgets.Input.Changed):
-        assert isinstance(self.app.project, DbtProject)
-        models = self.app.project.search_model(message.value)
-        model_list = self.screen.get_widget_by_id('model_list')
-        assert isinstance(model_list, ModelSearchList)
-        model_list.populate_with_models(models=models)
-
+    from ..main import dbtuiFrontend
 
 
 class ModelSearch(DbtuiScreen):
+
+    app: 'dbtuiFrontend'
 
     def compose(self):
         

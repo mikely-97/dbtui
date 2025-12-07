@@ -1,5 +1,4 @@
 from os.path import exists
-from os import system
 import subprocess
 from abc import ABC, abstractmethod, ABCMeta
 from typing import Iterable, TYPE_CHECKING

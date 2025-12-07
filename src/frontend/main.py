@@ -15,7 +15,7 @@ if isolated:
 else:
     from ..backend.project import DbtProject, DbtModel
 
-from .model_search import ModelSearch
+from .model_search.model_search import ModelSearch
 from .model_tree import ModelTree
 from .options import Options
 from .project_search import ProjectSearch
