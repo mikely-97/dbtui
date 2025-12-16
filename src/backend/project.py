@@ -7,8 +7,11 @@ from jinja2.nodes import Call, Const
 from networkx import DiGraph
 import logging
 
+from src.common.model import DbtModelAbstract
+
 from ..common import DbtModelAbstract, DbtProjectAbstract, \
-NonePathException, DbtModelNotFoundException
+NonePathException, DbtModelNotFoundException, \
+IncorrectFileExtensionException
 
 
 
@@ -183,5 +186,25 @@ class DbtProject(DbtProjectAbstract):
     def graph_repr(self):
         return '\n'.join(sorted([f"({parent.name}) --> ({child.name})" for parent, child in self.graph.edges]))
             
+    
+    def get_model_folders(self) -> list[Path]:
+        """
+        Notice: this returns all folders in which models are,
+        not the model folder ROOTS that are defined in dbt_project.yml!
+        We need this method to suggest where to save a new model!
+        """
+        result_set: set[Path] = set()
+        for model in self.models:
+            result_set.add(model.file_path_relative.parent)
+        return sorted(list(result_set))
+
+    def create_new_model(self, filepath: Path, from_: DbtModel | None=None) -> None:
+        if filepath.is_dir():
+            raise IsADirectoryError(f"This filepath is an existing folder: {filepath.as_posix()}")
+        elif filepath.exists():
+            raise FileExistsError(f"Another file exists at this path: {filepath.as_posix()}")
+        elif filepath.suffix != '.sql':
+            raise IncorrectFileExtensionException(f"dbt models should be <.sql> files, but <{filepath.suffix}> given")
         
+
 

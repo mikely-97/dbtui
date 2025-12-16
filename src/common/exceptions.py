@@ -3,3 +3,6 @@ class NonePathException(Exception):
 
 class DbtModelNotFoundException(Exception):
     pass
+
+class IncorrectFileExtensionException(Exception):
+    pass

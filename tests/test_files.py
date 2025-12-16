@@ -1,13 +1,5 @@
 from src.backend import DbtProject, DbtModelNotFoundException
-from pytest import LogCaptureFixture, raises
-
-
-# then we test files
-# test that all models from all folders are visible
-
-
-
-
+from pytest import raises
 
 # test that all models from all folders are visible
 def test_all_models_are_visible():

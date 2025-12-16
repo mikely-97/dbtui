@@ -21,4 +21,12 @@ class DbtProjectAbstract(ABC):
     @abstractmethod
     def __init__(self, project_path: Path|str):
         NotImplemented
+    
+    @abstractmethod
+    def get_model_folders(self) -> list[Path]:
+        NotImplemented
+    
+    @abstractmethod
+    def create_new_model(self, filepath: Path, from_: DbtModelAbstract|None=None) -> None:
+        NotImplemented
 

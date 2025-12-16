@@ -6,20 +6,15 @@ from pathlib import Path
 
 from textual import widgets, containers, reactive, binding
 from textual.screen import ModalScreen
+from textual.suggester import SuggestFromList
 
-from src.backend.project import DbtProject
-from src.frontend.pseudo.pseudo import DbtProject
 
-from ..common.common import ModelList, ModelListItem, DbtuiScreen
+from ..common import DbtModel, DbtProject
+
 if TYPE_CHECKING:
     from ..main import dbtuiFrontend
 
 
-isolated = exists('.isolated')
-if isolated:
-    from ..pseudo.pseudo import DbtProject, DbtModel
-else:
-    from ...backend.project import DbtProject, DbtModel
 
 
 

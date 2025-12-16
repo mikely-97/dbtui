@@ -7,9 +7,9 @@ from .dbt_model import DbtModel
 
 class DbtProject(DbtProjectAbstract):
     name: str
-    root_folder: str
+    root_folder: Path
     
-    #models: list[DbtModel]
+    models: list[DbtModel]
 
     def __init__(self, project_path: Path|str):
         self.name = 'name placeholder'
@@ -29,3 +29,6 @@ class DbtProject(DbtProjectAbstract):
 
     def get_model_by_name(self, name: str) -> DbtModel:
         return DbtModel.generate_random()
+    
+    def get_model_folders(self) -> list[Path]:
+        return [self.root_folder/'models']
