@@ -1,8 +1,16 @@
 from typing import TYPE_CHECKING
 from textual.widgets import Input
-from textual.validation import ValidationResult
+from pathlib import Path
+from textual.validation import ValidationResult, Validator
 if TYPE_CHECKING:
     from ..main import dbtuiFrontend
+
+class IsRelPathString(Validator):
+    def validate(self, value: str) -> ValidationResult:
+        if Path(value).is_absolute():
+            return self.failure('The path must be relative to the project root')
+        
+        return self.success()
 
 
 class SelectFilepath(Input):

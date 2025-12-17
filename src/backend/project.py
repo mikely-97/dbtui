@@ -11,7 +11,7 @@ from src.common.model import DbtModelAbstract
 
 from ..common import DbtModelAbstract, DbtProjectAbstract, \
 NonePathException, DbtModelNotFoundException, \
-IncorrectFileExtensionException
+IncorrectFileExtensionException, NotWithinSubdirectoryException
 
 
 
@@ -199,12 +199,28 @@ class DbtProject(DbtProjectAbstract):
         return sorted(list(result_set))
 
     def create_new_model(self, filepath: Path, from_: DbtModel | None=None) -> None:
+        # TODO: cover with tests (when u're sure it works as u imagined)
         if filepath.is_dir():
             raise IsADirectoryError(f"This filepath is an existing folder: {filepath.as_posix()}")
         elif filepath.exists():
             raise FileExistsError(f"Another file exists at this path: {filepath.as_posix()}")
         elif filepath.suffix != '.sql':
             raise IncorrectFileExtensionException(f"dbt models should be <.sql> files, but <{filepath.suffix}> given")
+        elif filepath.is_absolute():
+            # will raise an exception with required details if not a subfolder
+            filepath.relative_to(self.root_folder)
+
+        if isinstance(from_, DbtModel):
+            text = "SELECT * FROM {{ ref('%s') }}" % from_.name
+        else: 
+            text = ''
+
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(filepath, mode='w', encoding='utf-8') as f:
+            f.write(text)
+        
+        self.refresh()
         
 
 

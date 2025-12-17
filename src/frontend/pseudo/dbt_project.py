@@ -2,6 +2,8 @@ import random
 
 from pathlib import Path
 
+from src.common.model import DbtModelAbstract
+
 from ...common import DbtProjectAbstract, NonePathException
 from .dbt_model import DbtModel
 
@@ -32,3 +34,7 @@ class DbtProject(DbtProjectAbstract):
     
     def get_model_folders(self) -> list[Path]:
         return [self.root_folder/'models']
+    
+    def create_new_model(self, filepath: Path, from_: DbtModelAbstract | None = None) -> None:
+        # we're generating randomly, so we don't need that
+        return None

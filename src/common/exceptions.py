@@ -6,3 +6,6 @@ class DbtModelNotFoundException(Exception):
 
 class IncorrectFileExtensionException(Exception):
     pass
+
+class NotWithinSubdirectoryException(Exception):
+    pass
