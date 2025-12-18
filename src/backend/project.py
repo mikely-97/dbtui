@@ -198,7 +198,7 @@ class DbtProject(DbtProjectAbstract):
             result_set.add(model.file_path_relative.parent)
         return sorted(list(result_set))
 
-    def create_new_model(self, filepath: Path, from_: DbtModel | None=None) -> None:
+    def create_new_model(self, filepath: Path, from_: DbtModel | None=None) -> DbtModel:
         # TODO: cover with tests (when u're sure it works as u imagined)
         if filepath.is_dir():
             raise IsADirectoryError(f"This filepath is an existing folder: {filepath.as_posix()}")
@@ -221,6 +221,8 @@ class DbtProject(DbtProjectAbstract):
             f.write(text)
         
         self.refresh()
+
+        return self.get_model_by_name(filepath.stem)
         
 
 

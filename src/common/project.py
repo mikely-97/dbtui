@@ -27,6 +27,6 @@ class DbtProjectAbstract(ABC):
         NotImplemented
     
     @abstractmethod
-    def create_new_model(self, filepath: Path, from_: DbtModelAbstract|None=None) -> None:
+    def create_new_model(self, filepath: Path, from_: DbtModelAbstract|None=None) -> DbtModelAbstract:
         NotImplemented
 
