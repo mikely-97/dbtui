@@ -214,15 +214,27 @@ class DbtProject(DbtProjectAbstract):
             text = "SELECT * FROM {{ ref('%s') }}" % from_.name
         else: 
             text = ''
-
-        filepath.parent.mkdir(parents=True, exist_ok=True)
         
-        with open(filepath, mode='w', encoding='utf-8') as f:
+        filepath_prepared = filepath if filepath.is_absolute() else self.root_folder / filepath
+
+        check_if_in_model_paths = 0
+        for model_path in self.full_models_paths:
+            try:
+                check_if_in_model_paths += bool(filepath_prepared.relative_to(model_path))
+            except ValueError:
+                pass 
+        if not check_if_in_model_paths:
+            raise ValueError('The filepath is not in model folders as defined by dbt_project.yml')
+  
+
+        filepath_prepared.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(filepath_prepared, mode='w', encoding='utf-8') as f:
             f.write(text)
         
         self.refresh()
 
-        return self.get_model_by_name(filepath.stem)
+        return self.get_model_by_name(filepath_prepared.stem)
         
 
 

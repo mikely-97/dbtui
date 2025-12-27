@@ -10,6 +10,7 @@ from .model_search.model_search import ModelSearch
 from .model_tree.model_tree import ModelTree
 from .options.options import Options
 from .project_search.project_search import ProjectSearch
+from .new_model import NewModel
 
 from ..common import dbtuiCache, load_cache, save_cache, NonePathException
 from .common import DbtuiScreen, DbtProject, DbtModel
@@ -35,6 +36,7 @@ class dbtuiFrontend(App):
         'model_view': ModelTree,
         'options': Options,
         'project_search': ProjectSearch,
+        'new_model': NewModel,
         }
 
     screen_stack: list[DbtuiScreen]

@@ -19,7 +19,7 @@ class ModelTree(DbtuiScreen):
 
     BINDINGS = [
         Binding("E", "external_edit()", "edit externally",),
-        Binding("n", "raise()", "new model from current",),
+        Binding("n", "app.push_screen('new_model')", "new model from current",),
     ]
 
 
