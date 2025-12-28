@@ -1,92 +1,18 @@
 import os 
 from pathlib import Path
 import yaml
-from typing import Generator, Iterable, Self
-from jinja2 import Environment, Template
-from jinja2.nodes import Call, Const
+from typing import Generator
 from networkx import DiGraph
 import logging
 
-from src.common.model import DbtModelAbstract
 
-from ..common import DbtModelAbstract, DbtProjectAbstract, \
+from ..common import DbtProjectAbstract, \
 NonePathException, DbtModelNotFoundException, \
 IncorrectFileExtensionException, NotWithinSubdirectoryException
 
 
-
-
-class DbtModel(DbtModelAbstract):
-    file_name: str
-    file_path_full: Path
-    file_path_relative: Path
-    template: str
-    parsed_template: Template
-    project: 'DbtProject'
-
-    @property 
-    def file_path_relative(self):
-        return self.file_path_full.relative_to(self.project.root_folder)
-    
-    @property
-    def file_name(self):
-        return self.file_path_full.name
-
-    def __init__(self, file_path_full: Path, project: 'DbtProject'):
-        self.file_path_full = file_path_full
-        self.project = project
-        with open(file_path_full, 'r', encoding='utf-8') as f:
-            self.template = f.read()
-        self.parsed_template = Environment().parse(self.template)
-
-    def _find_calls(self, macro_name: str):
-        return [i for i in self.parsed_template.find_all(Call) if i.node.name == macro_name]
-
-    
-    @property 
-    def name(self) -> str:
-        # by default dbt sets model name as its filename without extension
-        default_name = self.file_name.rpartition('.')[0]
-        # we need to figure out if the model has been renamed with config() macro, so let's find this macro in the model file
-        calls = self._find_calls('config')
-
-        # double config would be invalid
-        if len(calls) > 1:
-            logging.warn("Duplicated invocation of config() in %s" % self.file_path_relative)
-            return default_name
-
-        if not calls:
-            return default_name
-        else:
-            config: Call = calls[0]
-            kwargs = {item.key: item.value for item in config.kwargs}
-            return kwargs.get('name', Const(default_name)).value
-    
-    @property 
-    def children(self) -> list[Self]:
-        return sorted(list(self.project.graph.successors(self)), key=lambda n: n.name)
-    
-    @property 
-    def parents(self) -> Iterable[Self]:
-        return sorted(list(self.project.graph.predecessors(self)), key=lambda n: n.name)
-    
-    @property
-    def text(self) -> str:
-        with open(self.file_path_full, 'r', encoding='utf-8') as f:
-            self.template = f.read()
-        return self.template
-    
-    
-    @property
-    def refs(self) -> list[str]:
-        result = []
-        for call in self._find_calls('ref'):
-            if len(call.args) != 1:
-                logging.warn(f"Invalid number of args to ref() in model {self.name}: should be one, but it's {len(call.args)}: {[arg.value for arg in call.args]}")
-                continue
-            result.append(call.args[0].value)
-        return result
-    
+#if TYPE_CHECKING:
+from .model import DbtModel
 
 
 class DbtProject(DbtProjectAbstract):
@@ -97,6 +23,10 @@ class DbtProject(DbtProjectAbstract):
     models: list[DbtModel]
     fall_back_to_filename: bool
     graph: DiGraph
+
+    # optimizations for fetching models
+    models_by_name: dict[str, DbtModel]
+    models_by_file_name: dict[str, DbtModel]
 
     def populate_graph(self):
         self.graph = DiGraph()
@@ -120,16 +50,32 @@ class DbtProject(DbtProjectAbstract):
                         self.graph.add_edge(referenced_model, model)
                         
         pass
+    
+    def reset_models(self) -> None:
+        self.models = []
+        self.models_by_name = dict()
+        self.models_by_file_name = dict()
+
+
+    def load_models(self) -> None:
+        self.reset_models()
+        for models_path in self.full_models_paths:
+            for root, _, files in models_path.walk():
+                for file in files:
+                    model = DbtModel(root / file, self)
+                    self.models.append(model)
+                    self.models_by_name[model.name] = model 
+                    self.models_by_file_name[model.file_name] = model
+
 
     def refresh(self):
         if not os.path.exists(self.root_folder):
             raise FileNotFoundError("Folder not found: %s" % self.root_folder)
-        self.models = []
         try:
             with open(self.root_folder / 'dbt_project.yml', 'r', encoding='utf-8') as f:
                 self.parse_dbt_project(f.read())
-                self.load_models()
-                self.populate_graph()
+            self.load_models()
+            self.populate_graph()
         except FileNotFoundError:
             raise FileNotFoundError("dbt folder is present, but dbt_project.yml is not found: %s" % self.root_folder)
 
@@ -139,31 +85,17 @@ class DbtProject(DbtProjectAbstract):
         self.full_models_paths = [self.root_folder / folder for folder in self.dbt_project_yml['model-paths']]
         pass
 
-    def load_models(self) -> None:
-        for models_path in self.full_models_paths:
-            for root, _, files in models_path.walk():
-                for file in files:
-                    self.models.append(DbtModel(root / file, self))
-
     def get_model_by_name(self, name: str) -> DbtModel:
-        """
-        I don't do dict interface, because I'm still not sure what I'm doing
-        but gut feeling tells me I should use list as the basic structure
-        sunce we can change names, directories, whatever, and this would require full update of dict each time
-        then again, how large is a big dbt project? 100 models? 200?
-        O(log(N)) vs O(N) wouldn't make that big of a difference here, but might introduce additional issues
-        in any case, I will change this method if I change my mind
-        """
-        for model in self.models:
-            if model.name == name:
-                return model
-        raise DbtModelNotFoundException("dbt model not found: %s" % name)
+        model = self.models_by_name.get(name)
+        if not model:
+            raise DbtModelNotFoundException("dbt model not found: %s" % name)
+        return model
     
     def get_model_by_file_name(self, file_name: str) -> DbtModel:
-        for model in self.models:
-            if model.file_name == file_name:
-                return model
-        raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
+        model = self.models_by_file_name.get(file_name)
+        if not model:
+            raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
+        return model
     
     def search_model(self, query) -> list[DbtModel]:
         try:
