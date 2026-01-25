@@ -62,9 +62,12 @@ class DbtProject(DbtProjectAbstract):
         for models_path in self.full_models_paths:
             for root, _, files in models_path.walk():
                 for file in files:
+                    # Only load SQL files as models
+                    if not file.endswith('.sql'):
+                        continue
                     model = DbtModel(root / file, self)
                     self.models.append(model)
-                    self.models_by_name[model.name] = model 
+                    self.models_by_name[model.name] = model
                     self.models_by_file_name[model.file_name] = model
 
 

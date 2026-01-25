@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: v_b
+    description: "Vanilla intermediate model"
+    config:
+      materialized: table
+
+  - name: v_c1
+    description: "Vanilla intermediate variant 1"
+    meta:
+      priority: high
+
+  - name: v_c2
+    description: "Vanilla intermediate variant 2"
+    meta:
+      priority: low

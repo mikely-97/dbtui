@@ -61,7 +61,7 @@ def save_cache(project_path: Path, model_name: str, external_editor_command: str
         json.dump(
                 asdict(
                     dbtuiCache(
-                        last_open_project_raw=str(project_path), 
+                        last_open_project_raw=str(project_path) if project_path is not None else None,
                         last_active_model=model_name,
                         external_editor_command=external_editor_command,
                     )

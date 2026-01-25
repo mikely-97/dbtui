@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: c_changed_name
+    description: "Staging model with changed name via config"
+    columns:
+      - name: id
+        description: "Primary key"
+      - name: name
+        description: "Name field"
+    config:
+      materialized: table
+      tags:
+        - staging
+        - important
+
+  - name: c_b
+    description: "Intermediate model that depends on c_changed_name"
+    config:
+      materialized: view
+      schema: intermediate
+
+  - name: c_c1
+    description: "Intermediate variant 1"
+    meta:
+      owner: "data-team"
+    config:
+      enabled: true

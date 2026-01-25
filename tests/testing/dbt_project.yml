@@ -34,3 +34,17 @@ models:
     # Config indicated by + and applies to all files under models/example/
     example:
       +materialized: view
+    # Project-level configs for testing precedence
+    +materialized: view
+    +schema: public
+    complex_config:
+      +tags: ["project_level"]
+      +database: analytics
+      stg:
+        +materialized: table
+      int:
+        +materialized: incremental
+    vanilla:
+      +tags: ["vanilla_root"]
+      stg:
+        +schema: staging

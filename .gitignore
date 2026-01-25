@@ -6,3 +6,4 @@ logs/dbt.log
 *.pyc
 .isolated
 .reminder
+.claude/settings.json
