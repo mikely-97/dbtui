@@ -1,14 +1,17 @@
-import os 
+import os
 from pathlib import Path
 import yaml
 from typing import Generator
 from networkx import DiGraph
 import logging
+import fnmatch
+from difflib import SequenceMatcher
 
 
 from ..common import DbtProjectAbstract, \
 NonePathException, DbtModelNotFoundException, \
-IncorrectFileExtensionException, NotWithinSubdirectoryException
+IncorrectFileExtensionException, NotWithinSubdirectoryException, \
+InvalidProjectPathException
 
 
 from .model import DbtModel
@@ -114,19 +117,84 @@ class DbtProject(DbtProjectAbstract):
             raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
         return model
     
-    def search_model(self, query) -> list[DbtModel]:
+    def search_model(self, query: str, fuzzy_threshold: float = 0.6) -> list[DbtModel]:
+        """
+        Search for models using multiple strategies:
+        1. Exact name match
+        2. Glob/wildcard patterns (*, ?)
+        3. Path prefix matching (path:models/staging)
+        4. Tag matching (tag:my_tag) - if tags are available
+        5. Fuzzy matching for typo tolerance
+
+        Results are sorted by relevance (exact > glob > fuzzy).
+        """
+        query = query.strip()
+        if not query:
+            return []
+
+        # 1. Try exact match first
         try:
             return [self.get_model_by_name(query)]
         except DbtModelNotFoundException:
-            # TODO: get inspiration from dbt own selector resolver
-            return []
+            pass
+
+        results: list[tuple[float, DbtModel]] = []  # (score, model)
+
+        # 2. Check for dbt-style selectors
+        if query.startswith('path:'):
+            path_prefix = query[5:]
+            for model in self.models:
+                if model.file_path_relative.as_posix().startswith(path_prefix):
+                    results.append((1.0, model))
+            return [m for _, m in sorted(results, key=lambda x: x[1].name)]
+
+        if query.startswith('tag:'):
+            tag = query[4:]
+            for model in self.models:
+                if hasattr(model, 'tags') and tag in getattr(model, 'tags', []):
+                    results.append((1.0, model))
+            return [m for _, m in sorted(results, key=lambda x: x[1].name)]
+
+        # 3. Glob/wildcard matching
+        if '*' in query or '?' in query:
+            for model in self.models:
+                if fnmatch.fnmatch(model.name, query):
+                    results.append((0.95, model))
+            if results:
+                return [m for _, m in sorted(results, key=lambda x: x[1].name)]
+
+        # 4. Fuzzy matching
+        query_lower = query.lower()
+        for model in self.models:
+            name_lower = model.name.lower()
+
+            # Substring match (high priority)
+            if query_lower in name_lower:
+                # Score based on how much of the name is matched
+                score = len(query_lower) / len(name_lower)
+                results.append((0.9 + score * 0.1, model))
+                continue
+
+            # Fuzzy match using SequenceMatcher
+            ratio = SequenceMatcher(None, query_lower, name_lower).ratio()
+            if ratio >= fuzzy_threshold:
+                results.append((ratio, model))
+
+        # Sort by score descending, then by name
+        results.sort(key=lambda x: (-x[0], x[1].name))
+        return [m for _, m in results]
         
 
     def __init__(self, project_path: Path|str, fall_back_to_filename: bool = False) -> None:
         if project_path is None:
             raise NonePathException("project_path is None")
         if isinstance(project_path, str):
-            project_path = Path(project_path) # TODO: raise some fancy error if not convertible
+            try:
+                project_path = Path(project_path)
+            except TypeError as e:
+                raise InvalidProjectPathException(
+                    f"Cannot convert '{project_path}' to a valid path: {e}"
+                )
         self.fall_back_to_filename = fall_back_to_filename
         self.root_folder = project_path
         self.refresh()
@@ -148,23 +216,24 @@ class DbtProject(DbtProjectAbstract):
         return sorted(list(result_set))
 
     def create_new_model(self, filepath: Path, from_: DbtModel | None=None) -> DbtModel:
-        # TODO: cover with tests (when u're sure it works as u imagined)
-        if filepath.is_dir():
-            raise IsADirectoryError(f"This filepath is an existing folder: {filepath.as_posix()}")
-        elif filepath.exists():
-            raise FileExistsError(f"Another file exists at this path: {filepath.as_posix()}")
-        elif filepath.suffix != '.sql':
-            raise IncorrectFileExtensionException(f"dbt models should be <.sql> files, but <{filepath.suffix}> given")
-        elif filepath.is_absolute():
+        if filepath.is_absolute():
             # will raise an exception with required details if not a subfolder
             filepath.relative_to(self.root_folder)
+            filepath_prepared = filepath
+        else:
+            filepath_prepared = self.root_folder / filepath
+
+        if filepath_prepared.is_dir():
+            raise IsADirectoryError(f"This filepath is an existing folder: {filepath_prepared.as_posix()}")
+        if filepath_prepared.exists():
+            raise FileExistsError(f"Another file exists at this path: {filepath_prepared.as_posix()}")
+        if filepath.suffix != '.sql':
+            raise IncorrectFileExtensionException(f"dbt models should be <.sql> files, but <{filepath.suffix}> given")
 
         if isinstance(from_, DbtModel):
             text = "SELECT * FROM {{ ref('%s') }}" % from_.name
-        else: 
+        else:
             text = ''
-        
-        filepath_prepared = filepath if filepath.is_absolute() else self.root_folder / filepath
 
         check_if_in_model_paths = 0
         for model_path in self.full_models_paths:

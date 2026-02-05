@@ -1,4 +1,3 @@
-from pathlib import Path
 from dataclasses import dataclass
 
 from textual.app import App 
@@ -45,20 +44,17 @@ class dbtuiFrontend(App):
     def watch_external_editor_command(self, old_value: str, new_value: str):
         self.save_context()
 
-    # TODO: decompose into mixins
-    model: reactive[DbtProject|None] = reactive(None, always_update=True, init=True)
+    project: reactive[DbtProject|None] = reactive(None, always_update=True, init=True)
 
     def validate_project(self, project: Any) -> DbtProject|None:
         if not isinstance(project, DbtProject):
-            return None 
+            return None
         return DbtProject
-    
+
     def on_project_change(self, project: DbtProject|None):
         self.save_context()
         for screen in self.screen_stack:
-            # TODO: inherit screens from an ABC with on_project_change
-            screen.on_project_change()
-        pass
+            screen.on_project_change(project)
     
     def watch_project(self, old_project: DbtProject|None, new_project: DbtProject|None):
         self.on_project_change(new_project)
@@ -126,11 +122,8 @@ class dbtuiFrontend(App):
     def on_mount(self):
         self.load_context()
         if self.project is None:
-            # we will open a screen to select the folder
-            # but for now we default to the testing project
-            # TODO
-            self.project = DbtProject(project_path=Path('tests/testing'))
-        if self.model is None:
+            self.push_screen('project_search')
+        elif self.model is None:
             self.push_screen('model_search')
         else:
             self.push_screen('model_view')

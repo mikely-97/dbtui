@@ -27,7 +27,6 @@ class ModelList(ListView):
         # we want to instantly focus on the first index
         self.index = None
         self.action_cursor_down()
-        # TODO: when tampering with CSS, check out how u can fix the invisible highlight
         
         
     def change_model(self, model: DbtModel):

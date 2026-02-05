@@ -1,36 +1,34 @@
 from pathlib import Path
 import json
 from dataclasses import dataclass, asdict
-from logging import warn
 
 from platformdirs import user_cache_dir
 
-# TODO: something more fitting for a config. .ini? .yaml? .toml?
 
 @dataclass
 class dbtuiCache:
-    """
-    I am sure I kinda screwed up here
-    and it is lowkey unreadable
-    so # TODO refactor it
-    """
+    """Cache for persisting application state between sessions."""
+
+    last_open_project_raw: str | None = None
+    last_active_model: str | None = None
+    external_editor_command: str = 'vi'
+
     @property
-    def last_open_project(self) -> Path|None:
+    def last_open_project(self) -> Path | None:
+        """Get the last opened project as a Path."""
         if self.last_open_project_raw is None:
             return None
         return Path(self.last_open_project_raw)
-    
+
     @last_open_project.setter
-    def last_open_project(self, value):
-        if isinstance(value, str):
-            self.last_open_project_raw = value
+    def last_open_project(self, value: str | Path | None):
+        """Set the last opened project from a string or Path."""
+        if value is None:
+            self.last_open_project_raw = None
         elif isinstance(value, Path):
             self.last_open_project_raw = str(value)
-
-
-    last_open_project_raw: Path|None=None
-    last_active_model: str|None=None
-    external_editor_command: str='vi'
+        else:
+            self.last_open_project_raw = value
 
 def ensure_cache_path() -> Path:
     cache_dir = Path(user_cache_dir("dbtui"))

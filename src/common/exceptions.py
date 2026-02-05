@@ -9,3 +9,6 @@ class IncorrectFileExtensionException(Exception):
 
 class NotWithinSubdirectoryException(Exception):
     pass
+
+class InvalidProjectPathException(Exception):
+    pass

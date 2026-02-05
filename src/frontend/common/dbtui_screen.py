@@ -18,19 +18,24 @@ class DbtuiScreen(Screen, ABC, metaclass=ScreenABCMeta):
     app: 'dbtuiFrontend'
 
     @abstractmethod
-    def on_model_change(self, model: DbtModel):
+    def on_model_change(self, model: DbtModel | None):
         NotImplemented
 
-    # @abstractmethod
-    def on_project_change(self, project: DbtProject):
+    @abstractmethod
+    def on_project_change(self, project: DbtProject | None):
         NotImplemented
 
-    def action_external_edit(self):
-        # TODO: external edit for an arbitrary model
-        if self.app.model is None:
+    def action_external_edit(self, model: DbtModel | None = None):
+        """Open a model in an external editor.
+
+        Args:
+            model: The model to edit. If None, edits the currently selected model.
+        """
+        target_model = model or self.app.model
+        if target_model is None:
             self.app.notify("No model selected.")
-            return  
-        args = [self.app.external_editor_command, self.app.model.file_path_full.as_posix()]
+            return
+        args = [self.app.external_editor_command, target_model.file_path_full.as_posix()]
         with self.app.suspend():
             try:
                 subprocess.run(args=args, check=True)
@@ -39,6 +44,7 @@ class DbtuiScreen(Screen, ABC, metaclass=ScreenABCMeta):
             except subprocess.CalledProcessError as e:
                 self.app.notify(f"Editor failed with exit code {e.returncode}")
             except Exception as e:
-                raise e 
-        # it will trigger reactive update bc changing a reactive's attribute doesn't trigger it
-        self.app.model = self.app.model
+                raise e
+        # Trigger reactive update if we edited the current model
+        if target_model == self.app.model:
+            self.app.model = self.app.model

@@ -1,5 +1,10 @@
-# TODO: i don't know what to do with it, but let it be for now
+"""
+Isolated mode support for UI development.
 
+When a '.isolated' file exists in the working directory, the frontend uses
+mock backend classes from the pseudo module. This allows developing and
+testing the UI without a real dbt project.
+"""
 from os.path import exists
 
 isolated = exists('.isolated')
