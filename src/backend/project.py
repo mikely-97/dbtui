@@ -11,8 +11,9 @@ NonePathException, DbtModelNotFoundException, \
 IncorrectFileExtensionException, NotWithinSubdirectoryException
 
 
-#if TYPE_CHECKING:
 from .model import DbtModel
+from .property_claim import PropertyClaimAggregate
+from .property_discovery import collect_model_claims
 
 
 class DbtProject(DbtProjectAbstract):
@@ -48,8 +49,20 @@ class DbtProject(DbtProjectAbstract):
                     if referenced_model:
                         self.graph.add_node(referenced_model)
                         self.graph.add_edge(referenced_model, model)
-                        
-        pass
+
+    def collect_property_claims(self) -> None:
+        """
+        Collect all PropertyClaims for all models in the project.
+
+        This method creates a PropertyClaimAggregate for each model and populates
+        it with claims from all sources (dbt_project.yml, schema.yml, model SQL).
+        The aggregates handle precedence resolution lazily when accessed.
+        """
+        for model in self.models:
+            aggregate = PropertyClaimAggregate(model)
+            claims = collect_model_claims(model)
+            aggregate.add_all(claims)
+            model.property_claims = aggregate
     
     def reset_models(self) -> None:
         self.models = []
@@ -79,6 +92,7 @@ class DbtProject(DbtProjectAbstract):
                 self.parse_dbt_project(f.read())
             self.load_models()
             self.populate_graph()
+            self.collect_property_claims()
         except FileNotFoundError:
             raise FileNotFoundError("dbt folder is present, but dbt_project.yml is not found: %s" % self.root_folder)
 

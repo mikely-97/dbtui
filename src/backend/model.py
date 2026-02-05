@@ -10,6 +10,7 @@ from ..common import DbtModelAbstract, NotWithinSubdirectoryException
 from typing import TYPE_CHECKING, Iterable, Self
 if TYPE_CHECKING:
     from .project import DbtProject
+    from .property_claim import PropertyClaimAggregate
 
 
 class DbtModel(DbtModelAbstract):
@@ -19,6 +20,7 @@ class DbtModel(DbtModelAbstract):
     template: str
     parsed_template: Template
     project: 'DbtProject'
+    property_claims: 'PropertyClaimAggregate | None'
 
     @property 
     def file_path_relative(self):
@@ -31,6 +33,7 @@ class DbtModel(DbtModelAbstract):
     def __init__(self, file_path_full: Path, project: 'DbtProject'):
         self.file_path_full = file_path_full
         self.project = project
+        self.property_claims = None  # Populated by DbtProject.collect_property_claims()
         with open(file_path_full, 'r', encoding='utf-8') as f:
             self.template = f.read()
         self.parsed_template = Environment().parse(self.template)

@@ -416,3 +416,143 @@ class TestIntegration:
             # Should be able to resolve without errors
             resolved = resolve_property_precedence(claims)
             assert isinstance(resolved, dict)
+
+
+class TestPropertyClaimAggregate:
+    """Tests for the PropertyClaimAggregate class."""
+
+    def test_model_has_property_claims(self, dbt_project):
+        """Every model should have a PropertyClaimAggregate after project load."""
+        for model in dbt_project.models:
+            assert model.property_claims is not None
+            assert hasattr(model.property_claims, 'effective')
+            assert hasattr(model.property_claims, 'overridden')
+
+    def test_aggregate_contains_claims(self, dbt_project):
+        """PropertyClaimAggregate should contain claims from all sources."""
+        model = dbt_project.get_model_by_name('c_changed_name')
+        aggregate = model.property_claims
+
+        # Should have claims
+        assert len(aggregate) > 0
+
+        # All claims should be for this model
+        for claim in aggregate:
+            assert claim.model == model
+
+    def test_aggregate_effective_properties(self, dbt_project):
+        """Should return effective (winning) claims."""
+        model = dbt_project.get_model_by_name('c_changed_name')
+        effective = model.property_claims.effective
+
+        # Should have resolved properties
+        assert len(effective) > 0
+
+        # Each should be a PropertyClaim
+        for prop_name, claim in effective.items():
+            assert isinstance(claim, PropertyClaim)
+            assert claim.name == prop_name
+
+    def test_aggregate_effective_values(self, dbt_project):
+        """Should return just the property values."""
+        model = dbt_project.get_model_by_name('c_changed_name')
+        values = model.property_claims.effective_values
+
+        # Should have properties
+        assert len(values) > 0
+
+        # Should be a dict of name -> value (not PropertyClaim)
+        for name, value in values.items():
+            assert isinstance(name, str)
+            # value can be any type
+
+    def test_aggregate_get_claim(self, dbt_project):
+        """get_claim should return the effective claim for a property."""
+        model = dbt_project.get_model_by_name('c_changed_name')
+
+        # Get a claim that we know exists (name config from SQL)
+        claim = model.property_claims.get_claim('name')
+
+        if claim:
+            assert claim.name == 'name'
+            assert claim.model == model
+
+    def test_aggregate_get_value(self, dbt_project):
+        """get_value should return the effective value for a property."""
+        model = dbt_project.get_model_by_name('c_changed_name')
+
+        # Get materialized value
+        value = model.property_claims.get_value('materialized')
+
+        # Should be a string if it exists
+        if value:
+            assert isinstance(value, str)
+
+    def test_aggregate_get_value_default(self, dbt_project):
+        """get_value should return default for missing properties."""
+        model = dbt_project.get_model_by_name('v_a')
+
+        # Get a property that doesn't exist
+        value = model.property_claims.get_value('nonexistent_property', default='my_default')
+        assert value == 'my_default'
+
+    def test_aggregate_overridden_claims(self, dbt_project):
+        """Should track overridden claims."""
+        model = dbt_project.get_model_by_name('c_changed_name')
+        overridden = model.property_claims.overridden
+
+        # Should be a dict
+        assert isinstance(overridden, dict)
+
+        # Each entry should be a list of PropertyClaims
+        for prop_name, claims_list in overridden.items():
+            assert isinstance(claims_list, list)
+            for claim in claims_list:
+                assert isinstance(claim, PropertyClaim)
+
+    def test_aggregate_lazy_resolution(self, dbt_project):
+        """Resolution should happen lazily on first access."""
+        model = dbt_project.get_model_by_name('v_a')
+        aggregate = model.property_claims
+
+        # Before accessing effective, _is_resolved should be False
+        assert aggregate._is_resolved == False
+
+        # Access effective to trigger resolution
+        _ = aggregate.effective
+
+        # Now should be resolved
+        assert aggregate._is_resolved == True
+
+    def test_aggregate_repr(self, dbt_project):
+        """__repr__ should return a useful string."""
+        model = dbt_project.get_model_by_name('v_a')
+        repr_str = repr(model.property_claims)
+
+        assert 'PropertyClaimAggregate' in repr_str
+        assert 'v_a' in repr_str
+
+    def test_aggregate_iteration(self, dbt_project):
+        """Should be iterable over claims."""
+        model = dbt_project.get_model_by_name('c_changed_name')
+
+        claims_list = list(model.property_claims)
+        assert len(claims_list) == len(model.property_claims)
+
+        for claim in claims_list:
+            assert isinstance(claim, PropertyClaim)
+
+    def test_project_refresh_repopulates_claims(self, dbt_project):
+        """Refreshing the project should repopulate all property claims."""
+        model = dbt_project.get_model_by_name('v_a')
+        original_claims_count = len(model.property_claims)
+
+        # Refresh the project
+        dbt_project.refresh()
+
+        # Get the model again (it's a new instance after refresh)
+        model = dbt_project.get_model_by_name('v_a')
+
+        # Should still have property_claims
+        assert model.property_claims is not None
+        assert len(model.property_claims) == original_claims_count
