@@ -3,9 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import widgets, containers
 
-from src.backend.project import DbtProject, DbtModel
-
-from ..common import DbtuiScreen
+from ..common import DbtuiScreen, DbtProject, DbtModel
 if TYPE_CHECKING:
     from ..main import dbtuiFrontend
 

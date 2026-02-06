@@ -1,5 +1,5 @@
-from src.backend import DbtProject
-from src.common import NonePathException
+from dbtui.backend import DbtProject
+from dbtui.common import NonePathException
 
 
 # test that we can open a valid project

@@ -1,8 +1,8 @@
 from pathlib import Path
 import shutil
 import tempfile
-from src.backend import DbtProject, DbtModelNotFoundException
-from src.common import IncorrectFileExtensionException
+from dbtui.backend import DbtProject, DbtModelNotFoundException
+from dbtui.common import IncorrectFileExtensionException
 from pytest import LogCaptureFixture, raises
 
 

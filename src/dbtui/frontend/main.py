@@ -7,6 +7,7 @@ from typing import Any
 
 from .model_search.model_search import ModelSearch
 from .model_tree.model_tree import ModelTree
+from .model_view import ModelView
 from .options.options import Options
 from .project_search.project_search import ProjectSearch
 from .new_model import NewModel
@@ -28,11 +29,13 @@ class dbtuiFrontend(App):
         ("o", "push_screen('options')", "open options"),
         ("f", "push_screen('model_search')", "search models"),
         ("p", "push_screen('project_search')", "select project"),
+        ("v", "push_screen('model_properties')", "model properties"),
     ]
 
     SCREENS = {
         'model_search': ModelSearch,
         'model_view': ModelTree,
+        'model_properties': ModelView,
         'options': Options,
         'project_search': ProjectSearch,
         'new_model': NewModel,
@@ -49,12 +52,13 @@ class dbtuiFrontend(App):
     def validate_project(self, project: Any) -> DbtProject|None:
         if not isinstance(project, DbtProject):
             return None
-        return DbtProject
+        return project
 
     def on_project_change(self, project: DbtProject|None):
         self.save_context()
         for screen in self.screen_stack:
-            screen.on_project_change(project)
+            if not screen.id == '_default':
+                screen.on_project_change(project)
     
     def watch_project(self, old_project: DbtProject|None, new_project: DbtProject|None):
         self.on_project_change(new_project)

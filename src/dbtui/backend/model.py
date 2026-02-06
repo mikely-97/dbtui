@@ -1,5 +1,3 @@
-
-from src.common.model import DbtModelAbstract
 from pathlib import Path
 from jinja2 import Environment, Template
 from jinja2.nodes import Call, Const
