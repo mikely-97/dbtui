@@ -14,6 +14,7 @@ from .new_model import NewModel
 
 from ..common import dbtuiCache, load_cache, save_cache, NonePathException
 from .common import DbtuiScreen, DbtProject, DbtModel
+from .common.timing import TimingContext
 import logging
 
 @dataclass
@@ -44,8 +45,12 @@ class dbtuiFrontend(App):
     screen_stack: list[DbtuiScreen]
     external_editor_command: reactive[str] = reactive('vi')
 
+    # For debounced save
+    _save_timer = None
+    _SAVE_DEBOUNCE_SECONDS = 0.5  # Save at most every 500ms
+
     def watch_external_editor_command(self, old_value: str, new_value: str):
-        self.save_context()
+        self.save_context_debounced()
 
     project: reactive[DbtProject|None] = reactive(None, always_update=True, init=True)
 
@@ -55,7 +60,7 @@ class dbtuiFrontend(App):
         return project
 
     def on_project_change(self, project: DbtProject|None):
-        self.save_context()
+        self.save_context_debounced()
         for screen in self.screen_stack:
             if not screen.id == '_default':
                 screen.on_project_change(project)
@@ -72,12 +77,20 @@ class dbtuiFrontend(App):
         return model
     
     def on_model_change(self, model: DbtModel|None):
-        self.save_context()
+        timing = TimingContext("on_model_change")
+
+        with timing.step("save_context_debounced"):
+            self.save_context_debounced()
+
         for screen in self.screen_stack:
             if not screen.id == '_default':
-                screen.on_model_change(model)
-        self.push_screen('model_view')
-        pass
+                with timing.step(f"screen.{screen.__class__.__name__}.on_model_change"):
+                    screen.on_model_change(model)
+
+        with timing.step("push_screen"):
+            self.push_screen('model_view')
+
+        timing.log()
     
     def watch_model(self, old_model: DbtModel|None, new_model: DbtModel|None):
         
@@ -116,11 +129,26 @@ class dbtuiFrontend(App):
         self.external_editor_command = cache.external_editor_command
         
     def save_context(self):
+        """Save context immediately (blocking)."""
         save_cache(
             project_path=self.project.root_folder if isinstance(self.project, DbtProject) else None,
             model_name=self.model.name if isinstance(self.model, DbtModel) else None,
             external_editor_command=self.external_editor_command,
         )
+
+    def save_context_debounced(self):
+        """Schedule a debounced save - coalesces rapid changes into one save."""
+        if self._save_timer is not None:
+            self._save_timer.stop()
+        self._save_timer = self.set_timer(
+            self._SAVE_DEBOUNCE_SECONDS,
+            self._do_debounced_save
+        )
+
+    def _do_debounced_save(self):
+        """Callback for debounced save timer."""
+        self._save_timer = None
+        self.save_context()
     
 
     def on_mount(self):

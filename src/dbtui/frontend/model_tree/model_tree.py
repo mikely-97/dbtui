@@ -6,6 +6,7 @@ from textual.binding import Binding
 from textual.events import Key
 
 from ..common import DbtuiScreen, DbtModel, DbtProject
+from ..common.timing import TimingContext
 if TYPE_CHECKING:
     from ..main import dbtuiFrontend
 
@@ -73,20 +74,44 @@ class ModelTree(DbtuiScreen):
         if not model:
             self.app.push_screen('model_search')
             return
+
+        timing = TimingContext("ModelTree.on_model_change")
+
         # model_content
-        model_content = self.get_widget_by_id('model_content')
+        with timing.step("get_widget(model_content)"):
+            model_content = self.get_widget_by_id('model_content')
         assert isinstance(model_content, TextArea)
-        model_content.clear()
-        model_content.load_text(model.text)
+
+        with timing.step("model_content.clear"):
+            model_content.clear()
+
+        with timing.step("model.text (file read)"):
+            text = model.text
+
+        with timing.step("model_content.load_text"):
+            model_content.load_text(text)
+
         # parents
-        parents = self.get_widget_by_id('parents')
+        with timing.step("get_widget(parents)"):
+            parents = self.get_widget_by_id('parents')
         assert isinstance(parents, ParentsList)
-        parents.on_model_change(model)
+
+        with timing.step("parents.on_model_change"):
+            parents.on_model_change(model)
+
         # children
-        children = self.get_widget_by_id('children')
+        with timing.step("get_widget(children)"):
+            children = self.get_widget_by_id('children')
         assert isinstance(children, ChildrenList)
-        children.on_model_change(model)
-        self.recompose()
+
+        with timing.step("children.on_model_change"):
+            children.on_model_change(model)
+
+        # Note: recompose() removed - unnecessary since:
+        # - TextArea is updated via load_text()
+        # - ListViews are updated via clear() and append()
+
+        timing.log()
 
     def on_project_change(self, project: DbtProject | None):
         # When project changes, redirect to model search

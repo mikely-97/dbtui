@@ -16,11 +16,12 @@ InvalidProjectPathException
 
 from .model import DbtModel
 from .property_claim import PropertyClaimAggregate
-from .property_discovery import collect_model_claims
+from .property_discovery import collect_model_claims_cached, PropertyDiscoveryCache
+from .metrics import LoadMetrics, Timer
 
 
 class DbtProject(DbtProjectAbstract):
-    root_folder: Path 
+    root_folder: Path
     dbt_project_yml: Generator
     model_folder: str
     full_models_paths: list[Path]
@@ -31,6 +32,9 @@ class DbtProject(DbtProjectAbstract):
     # optimizations for fetching models
     models_by_name: dict[str, DbtModel]
     models_by_file_name: dict[str, DbtModel]
+
+    # performance metrics from last load
+    load_metrics: LoadMetrics | None
 
     def populate_graph(self):
         self.graph = DiGraph()
@@ -60,10 +64,17 @@ class DbtProject(DbtProjectAbstract):
         This method creates a PropertyClaimAggregate for each model and populates
         it with claims from all sources (dbt_project.yml, schema.yml, model SQL).
         The aggregates handle precedence resolution lazily when accessed.
+
+        Uses PropertyDiscoveryCache to read and parse YAML files only once,
+        dramatically improving performance for projects with many models.
         """
+        # Initialize cache once for all models
+        cache = PropertyDiscoveryCache()
+        cache.initialize(self)
+
         for model in self.models:
             aggregate = PropertyClaimAggregate(model)
-            claims = collect_model_claims(model)
+            claims = collect_model_claims_cached(model, cache)
             aggregate.add_all(claims)
             model.property_claims = aggregate
     
@@ -90,12 +101,36 @@ class DbtProject(DbtProjectAbstract):
     def refresh(self):
         if not os.path.exists(self.root_folder):
             raise FileNotFoundError("Folder not found: %s" % self.root_folder)
+
+        total_timer = Timer()
+        self.load_metrics = LoadMetrics()
+
         try:
-            with open(self.root_folder / 'dbt_project.yml', 'r', encoding='utf-8') as f:
-                self.parse_dbt_project(f.read())
-            self.load_models()
-            self.populate_graph()
-            self.collect_property_claims()
+            with total_timer:
+                # Parse dbt_project.yml
+                with Timer() as t:
+                    with open(self.root_folder / 'dbt_project.yml', 'r', encoding='utf-8') as f:
+                        self.parse_dbt_project(f.read())
+                self.load_metrics.parse_dbt_project_yml_ms = t.elapsed_ms
+
+                # Load models
+                with Timer() as t:
+                    self.load_models()
+                self.load_metrics.load_models_ms = t.elapsed_ms
+
+                # Build graph
+                with Timer() as t:
+                    self.populate_graph()
+                self.load_metrics.populate_graph_ms = t.elapsed_ms
+
+                # Collect property claims
+                with Timer() as t:
+                    self.collect_property_claims()
+                self.load_metrics.collect_property_claims_ms = t.elapsed_ms
+
+            self.load_metrics.total_load_ms = total_timer.elapsed_ms
+            self.load_metrics.model_count = len(self.models)
+
         except FileNotFoundError:
             raise FileNotFoundError("dbt folder is present, but dbt_project.yml is not found: %s" % self.root_folder)
 
@@ -197,6 +232,7 @@ class DbtProject(DbtProjectAbstract):
                 )
         self.fall_back_to_filename = fall_back_to_filename
         self.root_folder = project_path
+        self.load_metrics = None
         self.refresh()
 
         
