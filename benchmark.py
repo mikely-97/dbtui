@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Benchmark script for dbtui performance testing.
+Benchmark script for dbt-tui performance testing.
 Run with: python benchmark.py <path_to_dbt_project>
 """
 
@@ -11,7 +11,7 @@ from pathlib import Path
 
 def benchmark_project_load(project_path: str):
     """Benchmark project loading and model operations."""
-    from dbtui.backend.project import DbtProject
+    from dbt_tui.backend.project import DbtProject
 
     print(f"Benchmarking with project: {project_path}")
     print("=" * 60)

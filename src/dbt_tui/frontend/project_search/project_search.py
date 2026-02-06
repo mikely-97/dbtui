@@ -3,9 +3,9 @@ from pathlib import Path
 
 from textual import widgets, containers, reactive, binding
 
-from ..common import DbtuiScreen, DbtProject, DbtModel
+from ..common import DbtTuiScreen, DbtProject, DbtModel
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 
 class DirectorySelector(widgets.DirectoryTree):
@@ -25,15 +25,15 @@ class DirectoryInput(widgets.Input):
         self.screen.project_path = event.value
 
 
-class ProjectSearch(DbtuiScreen):
+class ProjectSearch(DbtTuiScreen):
 
     """
     we're not making a fs explorer here, but in case you need to look up another dbt project - here you go
-    i basically think it would be the best option to launch a project as `dbtui path/to/project`
+    i basically think it would be the best option to launch a project as `dbt-tui path/to/project`
     but i leave an option to select with directory input or manual input inside the app
     """
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
     # only add it if we actually have an active project
     active_project_binding = binding.Binding("p", "reset_path('active_project')", "to active_project"),

@@ -5,19 +5,19 @@ from textual.containers import HorizontalGroup, ScrollableContainer
 from textual.binding import Binding
 from textual.events import Key
 
-from ..common import DbtuiScreen, DbtModel, DbtProject
+from ..common import DbtTuiScreen, DbtModel, DbtProject
 from ..common.timing import TimingContext
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 from .parents_list import ParentsList
 from .children_list import ChildrenList
 from .constants import PARENTS_ID, CHILDREN_ID
 
 
-class ModelTree(DbtuiScreen):
+class ModelTree(DbtTuiScreen):
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
     BINDINGS = [
         Binding("E", "external_edit()", "edit externally",),

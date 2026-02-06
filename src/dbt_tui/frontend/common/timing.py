@@ -1,7 +1,7 @@
 """
 Timing utilities for frontend performance debugging.
 
-Set DBTUI_TIMING=1 environment variable to enable timing output.
+Set DBT_TUI_TIMING=1 environment variable to enable timing output.
 """
 
 import os
@@ -11,10 +11,10 @@ from contextlib import contextmanager
 from functools import wraps
 
 # Check if timing is enabled via environment variable
-TIMING_ENABLED = os.environ.get('DBTUI_TIMING', '').lower() in ('1', 'true', 'yes')
+TIMING_ENABLED = os.environ.get('DBT_TUI_TIMING', '').lower() in ('1', 'true', 'yes')
 
 # Set up a dedicated logger for timing
-timing_logger = logging.getLogger('dbtui.timing')
+timing_logger = logging.getLogger('dbt_tui.timing')
 if TIMING_ENABLED:
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     timing_logger.setLevel(logging.INFO)

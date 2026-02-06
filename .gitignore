@@ -1,5 +1,5 @@
 .env
-src/dbtui/__pycache__/
+src/dbt_tui/__pycache__/
 .pytest_cache/
 tests/__pycache__/
 logs/dbt.log

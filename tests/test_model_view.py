@@ -10,9 +10,9 @@ These tests verify that:
 from pathlib import Path
 import pytest
 
-from dbtui.backend import DbtProject
-from dbtui.backend.property_claim import PropertyClaim, PropertyClaimAggregate
-from dbtui.frontend.model_view.properties_panel import (
+from dbt_tui.backend import DbtProject
+from dbt_tui.backend.property_claim import PropertyClaim, PropertyClaimAggregate
+from dbt_tui.frontend.model_view.properties_panel import (
     PropertiesPanel,
     PropertyItem,
     SOURCE_TYPE_COLORS,
@@ -219,22 +219,22 @@ class TestModelViewScreenRegistration:
 
     def test_model_view_import(self):
         """ModelView should be importable from model_view module."""
-        from dbtui.frontend.model_view import ModelView
+        from dbt_tui.frontend.model_view import ModelView
         assert ModelView is not None
 
     def test_properties_panel_import(self):
         """PropertiesPanel should be importable from model_view module."""
-        from dbtui.frontend.model_view import PropertiesPanel
+        from dbt_tui.frontend.model_view import PropertiesPanel
         assert PropertiesPanel is not None
 
     def test_model_properties_screen_registered(self):
         """model_properties screen should be registered in the app."""
-        from dbtui.frontend.main import dbtuiFrontend
-        assert 'model_properties' in dbtuiFrontend.SCREENS
+        from dbt_tui.frontend.main import DbtTuiFrontend
+        assert 'model_properties' in DbtTuiFrontend.SCREENS
 
     def test_v_binding_exists(self):
         """'v' keybinding should exist to access model_properties."""
-        from dbtui.frontend.main import dbtuiFrontend
-        bindings = [b for b in dbtuiFrontend.BINDINGS if b[0] == 'v']
+        from dbt_tui.frontend.main import DbtTuiFrontend
+        bindings = [b for b in DbtTuiFrontend.BINDINGS if b[0] == 'v']
         assert len(bindings) == 1
         assert 'model_properties' in bindings[0][1]

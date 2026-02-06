@@ -2,11 +2,11 @@ from typing import TYPE_CHECKING
 from textual.widgets import Input
 from pathlib import Path
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 
 class SelectFilepath(Input):
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
     def on_input_submitted(self, event: Input.Submitted):
         if not event.validation_result.is_valid:

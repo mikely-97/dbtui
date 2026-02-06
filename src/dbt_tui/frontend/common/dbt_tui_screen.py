@@ -5,7 +5,7 @@ from textual.screen import Screen
 from .isolated import DbtModel, DbtProject
 
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 screen_metaclass = type(Screen)
 
@@ -13,9 +13,9 @@ class ScreenABCMeta(screen_metaclass, ABCMeta):
     pass
 
 
-class DbtuiScreen(Screen, ABC, metaclass=ScreenABCMeta):
+class DbtTuiScreen(Screen, ABC, metaclass=ScreenABCMeta):
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
     @abstractmethod
     def on_model_change(self, model: DbtModel | None):

@@ -1,4 +1,4 @@
-from dbtui.backend import DbtProject, DbtModelNotFoundException
+from dbt_tui.backend import DbtProject, DbtModelNotFoundException
 from pytest import raises
 
 # test that all models from all folders are visible

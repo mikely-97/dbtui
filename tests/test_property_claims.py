@@ -9,9 +9,9 @@ These tests verify that:
 
 from pathlib import Path
 import pytest
-from dbtui.backend import DbtProject
-from dbtui.backend.property_claim import PropertyClaim
-from dbtui.backend.property_discovery import (
+from dbt_tui.backend import DbtProject
+from dbt_tui.backend.property_claim import PropertyClaim
+from dbt_tui.backend.property_discovery import (
     collect_model_claims,
     collect_project_configs,
     collect_schema_properties,

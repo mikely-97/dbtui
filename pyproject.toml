@@ -33,11 +33,10 @@ Homepage = "https://github.com/sortia/dbt-tui"
 Repository = "https://github.com/sortia/dbt-tui"
 
 [project.scripts]
-dbt-tui = "dbtui.__main__:main"
-dbtui = "dbtui.__main__:main"
+dbt-tui = "dbt_tui.__main__:main"
 
 [tool.poetry]
-packages = [{include = "dbtui", from = "src"}]
+packages = [{include = "dbt_tui", from = "src"}]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.0"

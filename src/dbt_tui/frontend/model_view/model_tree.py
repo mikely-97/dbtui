@@ -11,14 +11,14 @@ from textual.widgets import Footer, TextArea
 from textual.containers import Horizontal, Vertical, ScrollableContainer
 from textual.binding import Binding
 
-from ..common import DbtuiScreen, DbtModel, DbtProject
+from ..common import DbtTuiScreen, DbtModel, DbtProject
 from .properties_panel import PropertiesPanel
 
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 
-class ModelView(DbtuiScreen):
+class ModelView(DbtTuiScreen):
     """
     Screen showing the active model with its SQL content and properties.
 
@@ -27,7 +27,7 @@ class ModelView(DbtuiScreen):
     - Right: PropertiesPanel showing effective properties from all sources
     """
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
     DEFAULT_CSS = """
     ModelView {

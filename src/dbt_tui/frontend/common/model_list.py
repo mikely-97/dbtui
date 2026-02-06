@@ -5,7 +5,7 @@ from .isolated import DbtModel
 from .model_list_item import ModelListItem
 
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 class ModelList(ListView):
 
@@ -14,7 +14,7 @@ class ModelList(ListView):
         Binding("k", "cursor_up()", show=True,),
     ]
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
     def populate_with_models(self, models: Iterable[DbtModel]):
         self.clear()

@@ -1,5 +1,5 @@
 """
-Performance metrics for dbtui.
+Performance metrics for dbt-tui.
 
 Provides timing instrumentation for project loading and other operations.
 Metrics can be accessed after project load to diagnose performance issues.

@@ -1,8 +1,8 @@
-# dbtui
+# dbt-tui
 
 A Terminal User Interface (TUI) for navigating and managing [dbt (data build tool)](https://www.getdbt.com/) projects.
 
-**dbtui** provides an interactive command-line interface for exploring dbt models, their relationships, and configurations without leaving your terminal.
+**dbt-tui** provides an interactive command-line interface for exploring dbt models, their relationships, and configurations without leaving your terminal.
 
 ## Features
 
@@ -27,7 +27,7 @@ A Terminal User Interface (TUI) for navigating and managing [dbt (data build too
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd dbtui
+cd dbt-tui
 
 # Install dependencies using pip
 pip install -e .
@@ -43,18 +43,18 @@ poetry install
 Navigate to a dbt project directory and run:
 
 ```bash
-python -m dbtui
+python -m dbt_tui
 ```
 
 Or if installed via poetry:
 
 ```bash
-poetry run python -m dbtui
+poetry run python -m dbt_tui
 ```
 
 ### First Launch
 
-On first launch, dbtui will:
+On first launch, dbt-tui will:
 1. Load the test project (if no cached project exists)
 2. Open the model search screen
 3. Allow you to search for and select a model
@@ -100,11 +100,11 @@ On first launch, dbtui will:
 
 ### Cache and Settings
 
-dbtui stores its configuration in your system's cache directory:
+dbt-tui stores its configuration in your system's cache directory:
 
-- **Linux**: `~/.cache/dbtui/cache.json`
-- **macOS**: `~/Library/Caches/dbtui/cache.json`
-- **Windows**: `%LOCALAPPDATA%\dbtui\cache.json`
+- **Linux**: `~/.cache/dbt-tui/cache.json`
+- **macOS**: `~/Library/Caches/dbt-tui/cache.json`
+- **Windows**: `%LOCALAPPDATA%\dbt-tui\cache.json`
 
 The cache stores:
 - Last opened project path
@@ -123,24 +123,25 @@ To configure your preferred external editor, open the options screen (`o` key) a
 ## Project Structure
 
 ```
-dbtui/
+dbt-tui/
 ├── src/
-│   ├── backend/          # Core dbt project logic
-│   │   ├── project.py    # DbtProject class
-│   │   ├── model.py      # DbtModel class
-│   │   ├── fetch.py      # Property fetching utilities
-│   │   ├── property_claim.py      # Property precedence logic
-│   │   └── property_discovery.py  # Property discovery from configs
-│   ├── frontend/         # TUI screens and widgets
-│   │   ├── main.py       # Main application
-│   │   ├── model_search/ # Model search interface
-│   │   ├── model_tree/   # Model dependency tree view
-│   │   ├── new_model/    # New model creation
-│   │   └── options/      # Settings screen
-│   └── common/           # Shared abstractions and utilities
-│       ├── model.py      # Abstract model interface
-│       ├── project.py    # Abstract project interface
-│       └── cache.py      # Configuration persistence
+│   ├── dbt_tui/
+│   │   ├── backend/          # Core dbt project logic
+│   │   │   ├── project.py    # DbtProject class
+│   │   │   ├── model.py      # DbtModel class
+│   │   │   ├── fetch.py      # Property fetching utilities
+│   │   │   ├── property_claim.py      # Property precedence logic
+│   │   │   └── property_discovery.py  # Property discovery from configs
+│   │   ├── frontend/         # TUI screens and widgets
+│   │   │   ├── main.py       # Main application
+│   │   │   ├── model_search/ # Model search interface
+│   │   │   ├── model_tree/   # Model dependency tree view
+│   │   │   ├── new_model/    # New model creation
+│   │   │   └── options/      # Settings screen
+│   │   └── common/           # Shared abstractions and utilities
+│   │       ├── model.py      # Abstract model interface
+│   │       ├── project.py    # Abstract project interface
+│   │       └── cache.py      # Configuration persistence
 ├── tests/                # Test suite
 │   └── testing/          # Test dbt project
 └── pyproject.toml        # Project dependencies
@@ -167,7 +168,7 @@ Built with [Textual](https://textual.textualize.io/), the frontend provides:
 
 ### Property Precedence
 
-dbtui correctly implements dbt's configuration precedence rules:
+dbt-tui correctly implements dbt's configuration precedence rules:
 
 1. **Model-level** (highest): `{{ config(...) }}` in SQL files
 2. **Schema-level**: `config:` blocks in schema.yml
@@ -204,10 +205,10 @@ The `tests/testing/` directory contains a sample dbt project used for testing:
 
 ### Adding New Features
 
-1. **Backend changes**: Extend DbtProject or DbtModel in `src/backend/`
-2. **Frontend changes**: Create new screens/widgets in `src/frontend/`
+1. **Backend changes**: Extend DbtProject or DbtModel in `src/dbt_tui/backend/`
+2. **Frontend changes**: Create new screens/widgets in `src/dbt_tui/frontend/`
 3. **Add tests**: Write tests in `tests/` following existing patterns
-4. **Update abstractions**: Modify `src/common/` interfaces if needed
+4. **Update abstractions**: Modify `src/dbt_tui/common/` interfaces if needed
 
 ## Roadmap
 

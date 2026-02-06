@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 
 class ModelSearchInput(Input):
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
     
     def on_input_changed(self, message: Input.Changed):
         assert isinstance(self.app.project, DbtProject)

@@ -12,8 +12,8 @@ from .options.options import Options
 from .project_search.project_search import ProjectSearch
 from .new_model import NewModel
 
-from ..common import dbtuiCache, load_cache, save_cache, NonePathException
-from .common import DbtuiScreen, DbtProject, DbtModel
+from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
+from .common import DbtTuiScreen, DbtProject, DbtModel
 from .common.timing import TimingContext
 import logging
 
@@ -24,7 +24,7 @@ class AppContext:
 
 
 
-class dbtuiFrontend(App):
+class DbtTuiFrontend(App):
 
     BINDINGS = [
         ("o", "push_screen('options')", "open options"),
@@ -42,7 +42,7 @@ class dbtuiFrontend(App):
         'new_model': NewModel,
         }
 
-    screen_stack: list[DbtuiScreen]
+    screen_stack: list[DbtTuiScreen]
     external_editor_command: reactive[str] = reactive('vi')
 
     # For debounced save
@@ -110,7 +110,7 @@ class dbtuiFrontend(App):
         
 
     def load_context(self, clear_cache: bool=False):
-        cache: dbtuiCache = load_cache(clear_cache)
+        cache: DbtTuiCache = load_cache(clear_cache)
         project = None
         model = None
         try:
@@ -162,5 +162,5 @@ class dbtuiFrontend(App):
 
 if __name__ == '__main__':
 
-    dbtui_front = dbtuiFrontend()
-    dbtuiFrontend().run()
+    dbt_tui_front = DbtTuiFrontend()
+    DbtTuiFrontend().run()

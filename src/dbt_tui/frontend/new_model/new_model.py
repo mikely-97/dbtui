@@ -14,7 +14,7 @@ from .select_filepath import SelectFilepath
 from ..common import DbtModel, DbtProject
 
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 
 
@@ -31,7 +31,7 @@ class IsRelPathString(Validator):
 
 class NewModel(ModalScreen):
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
 
     def compose(self):

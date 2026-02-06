@@ -6,7 +6,7 @@ from platformdirs import user_cache_dir
 
 
 @dataclass
-class dbtuiCache:
+class DbtTuiCache:
     """Cache for persisting application state between sessions."""
 
     last_open_project_raw: str | None = None
@@ -31,15 +31,15 @@ class dbtuiCache:
             self.last_open_project_raw = value
 
 def ensure_cache_path() -> Path:
-    cache_dir = Path(user_cache_dir("dbtui"))
+    cache_dir = Path(user_cache_dir("dbt-tui"))
     cache_dir.mkdir(parents=True, exist_ok=True)
     return cache_dir
 
 def create_empty_cache(cache_path: Path):
     with open(cache_path, 'w', encoding='utf-8') as f:
-        json.dump(asdict(dbtuiCache()), f)
+        json.dump(asdict(DbtTuiCache()), f)
 
-def load_cache(clear_cache:bool=False) -> dbtuiCache:
+def load_cache(clear_cache:bool=False) -> DbtTuiCache:
     cache_path = ensure_cache_path() / 'cache.json'
     if clear_cache or not cache_path.exists():
        create_empty_cache(cache_path)
@@ -50,15 +50,15 @@ def load_cache(clear_cache:bool=False) -> dbtuiCache:
         create_empty_cache(cache_path)
         with open(cache_path, 'r', encoding='utf-8') as f:
             cache_raw = json.load(f)
-    dbtui_cache = dbtuiCache(**cache_raw)
-    return dbtui_cache
+    dbt_tui_cache = DbtTuiCache(**cache_raw)
+    return dbt_tui_cache
 
 def save_cache(project_path: Path, model_name: str, external_editor_command: str):
     cache_path = ensure_cache_path() / 'cache.json'
     with open(cache_path, 'w', encoding='utf-8') as f:
         json.dump(
                 asdict(
-                    dbtuiCache(
+                    DbtTuiCache(
                         last_open_project_raw=str(project_path) if project_path is not None else None,
                         last_active_model=model_name,
                         external_editor_command=external_editor_command,

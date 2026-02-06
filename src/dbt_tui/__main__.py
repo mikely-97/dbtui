@@ -1,8 +1,8 @@
 """
-dbtui - Terminal UI for dbt projects
+dbt-tui - Terminal UI for dbt projects
 
 Usage:
-    python -m dbtui [project_dir]
+    python -m dbt_tui [project_dir]
 
 If project_dir is not specified, launches with the last opened project.
 """
@@ -10,13 +10,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from .frontend import frontend as dbtuiFrontend
+from .frontend import frontend as DbtTuiFrontend
 from .common import load_cache, save_cache
 
 
 def main():
     parser = argparse.ArgumentParser(
-        prog='dbtui',
+        prog='dbt-tui',
         description='Terminal UI for exploring and managing dbt projects'
     )
     parser.add_argument(
@@ -51,7 +51,7 @@ def main():
         )
 
     # Launch the app
-    app = dbtuiFrontend()
+    app = DbtTuiFrontend()
     app.run()
 
 

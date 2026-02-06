@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import json
 import tempfile
-from dbtui.backend import DbtProject
-from dbtui.common import dbtuiCache, load_cache, save_cache
+from dbt_tui.backend import DbtProject
+from dbt_tui.common import DbtTuiCache, load_cache, save_cache
 
 
 @pytest.fixture
@@ -62,12 +62,12 @@ class TestCacheOperations:
     def test_load_cache_creates_if_missing(self, tmp_path, monkeypatch):
         """Should create cache file if it doesn't exist."""
         # Mock the cache directory
-        monkeypatch.setattr('dbtui.common.cache.user_cache_dir', lambda x: str(tmp_path))
+        monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
 
         cache = load_cache()
 
-        # Should return a dbtuiCache instance
-        assert isinstance(cache, dbtuiCache)
+        # Should return a DbtTuiCache instance
+        assert isinstance(cache, DbtTuiCache)
 
         # Cache file should be created
         cache_file = tmp_path / 'cache.json'
@@ -75,7 +75,7 @@ class TestCacheOperations:
 
     def test_load_cache_with_clear_flag(self, tmp_path, monkeypatch):
         """Should clear cache when clear_cache=True."""
-        monkeypatch.setattr('dbtui.common.cache.user_cache_dir', lambda x: str(tmp_path))
+        monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
 
         # Create cache with some data
         cache_file = tmp_path / 'cache.json'
@@ -97,7 +97,7 @@ class TestCacheOperations:
 
     def test_save_and_load_cache(self, tmp_path, monkeypatch):
         """Should persist cache data correctly."""
-        monkeypatch.setattr('dbtui.common.cache.user_cache_dir', lambda x: str(tmp_path))
+        monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
 
         project_path = Path('/test/project')
         model_name = 'test_model'
@@ -116,7 +116,7 @@ class TestCacheOperations:
 
     def test_cache_handles_none_values(self, tmp_path, monkeypatch):
         """Should handle None values correctly."""
-        monkeypatch.setattr('dbtui.common.cache.user_cache_dir', lambda x: str(tmp_path))
+        monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
 
         # Save with None values
         save_cache(None, None, 'vi')
@@ -130,7 +130,7 @@ class TestCacheOperations:
 
     def test_cache_handles_invalid_json(self, tmp_path, monkeypatch):
         """Should recreate cache if JSON is invalid."""
-        monkeypatch.setattr('dbtui.common.cache.user_cache_dir', lambda x: str(tmp_path))
+        monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
 
         # Create invalid JSON file
         cache_file = tmp_path / 'cache.json'
@@ -141,12 +141,12 @@ class TestCacheOperations:
         # Should not raise exception, should recreate cache
         cache = load_cache()
 
-        assert isinstance(cache, dbtuiCache)
+        assert isinstance(cache, DbtTuiCache)
         assert cache.last_open_project is None
 
     def test_cache_path_conversion(self):
         """Should convert between Path and string correctly."""
-        cache = dbtuiCache()
+        cache = DbtTuiCache()
 
         # Test setting with Path
         test_path = Path('/test/project')

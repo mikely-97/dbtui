@@ -5,14 +5,14 @@ from textual import widgets, containers
 from .model_search_input import ModelSearchInput
 from .model_search_list import ModelSearchList
 
-from ..common import DbtProject, DbtModel, DbtuiScreen
+from ..common import DbtProject, DbtModel, DbtTuiScreen
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 
-class ModelSearch(DbtuiScreen):
+class ModelSearch(DbtTuiScreen):
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
     def compose(self):
         

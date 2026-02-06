@@ -3,21 +3,21 @@ from typing import TYPE_CHECKING
 
 from textual import widgets, containers
 
-from ..common import DbtuiScreen, DbtProject, DbtModel
+from ..common import DbtTuiScreen, DbtProject, DbtModel
 if TYPE_CHECKING:
-    from ..main import dbtuiFrontend
+    from ..main import DbtTuiFrontend
 
 
 class ExternalEditorOption(widgets.Input):
 
-    app: 'dbtuiFrontend'
+    app: 'DbtTuiFrontend'
 
     def on_input_submitted(self, event: widgets.Input.Submitted):
         self.app.external_editor_command = event.value
 
 
 
-class Options(DbtuiScreen):
+class Options(DbtTuiScreen):
 
     def compose(self):
         
