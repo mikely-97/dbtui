@@ -1,23 +1,17 @@
 """
 Timing utilities for frontend performance debugging.
 
-Set DBT_TUI_TIMING=1 environment variable to enable timing output.
+Timing logs are output at INFO level. Use --log-level INFO to see them.
 """
 
-import os
 import time
-import logging
 from contextlib import contextmanager
 from functools import wraps
 
-# Check if timing is enabled via environment variable
-TIMING_ENABLED = os.environ.get('DBT_TUI_TIMING', '').lower() in ('1', 'true', 'yes')
+from ...common.logging import get_logger
 
-# Set up a dedicated logger for timing
-timing_logger = logging.getLogger('dbt_tui.timing')
-if TIMING_ENABLED:
-    logging.basicConfig(level=logging.INFO, format='%(message)s')
-    timing_logger.setLevel(logging.INFO)
+# Get timing logger
+timing_logger = get_logger('timing')
 
 
 @contextmanager
@@ -58,8 +52,7 @@ class TimingContext:
         self.timings[step_name] = (time.perf_counter() - start) * 1000
 
     def log(self):
-        if not TIMING_ENABLED:
-            return
+        """Log accumulated timing info at INFO level."""
         total = sum(self.timings.values())
         timing_logger.info(f"{self.name} total: {total:.1f}ms")
         for step, ms in self.timings.items():

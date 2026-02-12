@@ -1,0 +1,191 @@
+/* CSS for PropertiesPanel and related modals */
+
+/* PropertyDetailModal */
+PropertyDetailModal {
+    align: center middle;
+}
+
+PropertyDetailModal > Container {
+    width: 60;
+    height: auto;
+    max-height: 80%;
+    border: thick $primary;
+    background: $surface;
+    padding: 1 2;
+}
+
+PropertyDetailModal .modal-header {
+    text-style: bold;
+    padding-bottom: 1;
+}
+
+PropertyDetailModal .detail-row {
+    height: 1;
+}
+
+PropertyDetailModal .detail-label {
+    width: 12;
+    text-style: bold;
+}
+
+PropertyDetailModal .detail-value {
+    width: 1fr;
+}
+
+PropertyDetailModal .value-full {
+    padding: 1 0;
+    max-height: 10;
+}
+
+PropertyDetailModal .overrides-header {
+    text-style: bold;
+    padding-top: 1;
+}
+
+PropertyDetailModal .override-item {
+    height: 1;
+    color: $text-muted;
+}
+
+PropertyDetailModal Button {
+    margin-top: 1;
+    width: 100%;
+}
+
+/* PropertyEditModal */
+PropertyEditModal {
+    align: center middle;
+}
+
+PropertyEditModal > Container {
+    width: 60;
+    height: auto;
+    border: thick $primary;
+    background: $surface;
+    padding: 1 2;
+}
+
+PropertyEditModal .modal-header {
+    text-style: bold;
+    padding-bottom: 1;
+}
+
+PropertyEditModal .info-row {
+    height: 1;
+    color: $text-muted;
+    padding-bottom: 1;
+}
+
+PropertyEditModal Input {
+    margin: 1 0;
+}
+
+PropertyEditModal .button-row {
+    padding-top: 1;
+}
+
+PropertyEditModal Button {
+    width: 1fr;
+    margin: 0 1;
+}
+
+/* AddPropertyModal */
+AddPropertyModal {
+    align: center middle;
+}
+
+AddPropertyModal > Container {
+    width: 60;
+    height: auto;
+    border: thick $primary;
+    background: $surface;
+    padding: 1 2;
+}
+
+AddPropertyModal .modal-header {
+    text-style: bold;
+    padding-bottom: 1;
+}
+
+AddPropertyModal Input {
+    margin: 1 0;
+}
+
+AddPropertyModal Select {
+    margin: 1 0;
+}
+
+AddPropertyModal .override-warning {
+    color: $warning;
+    padding: 1 0;
+}
+
+AddPropertyModal .file-conflict {
+    color: $warning;
+    padding: 1 0;
+}
+
+AddPropertyModal #custom-path-input {
+    display: none;
+}
+
+AddPropertyModal #custom-path-input.visible {
+    display: block;
+}
+
+AddPropertyModal .button-row {
+    padding-top: 1;
+}
+
+AddPropertyModal Button {
+    width: 1fr;
+    margin: 0 1;
+}
+
+/* PropertiesPanel */
+PropertiesPanel {
+    width: 1fr;
+    height: 100%;
+    border: solid $primary;
+    padding: 0 1;
+}
+
+PropertiesPanel > #properties-header {
+    height: 3;
+    text-style: bold;
+    content-align: center middle;
+    background: $surface;
+}
+
+PropertiesPanel > #properties-list {
+    height: 1fr;
+}
+
+PropertiesPanel PropertyItem {
+    height: auto;
+    max-height: 1;
+    padding: 0;
+}
+
+PropertiesPanel PropertyItem > Horizontal {
+    height: 1;
+}
+
+PropertiesPanel .property-name {
+    text-style: bold;
+    color: $text;
+}
+
+PropertiesPanel .property-value {
+    color: $secondary;
+}
+
+PropertiesPanel .property-source {
+    color: $text-muted;
+}
+
+PropertiesPanel #no-properties {
+    text-align: center;
+    color: $text-muted;
+    padding: 2;
+}

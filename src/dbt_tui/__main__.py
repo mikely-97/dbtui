@@ -2,7 +2,8 @@
 dbt-tui - Terminal UI for dbt projects
 
 Usage:
-    python -m dbt_tui [project_dir]
+    python -m dbt_tui [project_dir] [--log-level LEVEL]
+    python -m dbt_tui --logs-dir
 
 If project_dir is not specified, launches with the last opened project.
 """
@@ -11,7 +12,7 @@ import sys
 from pathlib import Path
 
 from .frontend import frontend as DbtTuiFrontend
-from .common import load_cache, save_cache
+from .common import load_cache, save_cache, get_logs_dir, setup_logging, parse_log_level
 
 
 def main():
@@ -25,8 +26,29 @@ def main():
         default=None,
         help='Path to dbt project directory (optional, uses last project if not specified)'
     )
+    parser.add_argument(
+        '--log-level',
+        type=str,
+        default='WARNING',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
+        help='Set logging level (default: WARNING). INFO includes speed metrics.'
+    )
+    parser.add_argument(
+        '--logs-dir',
+        action='store_true',
+        help='Print the logs directory path and exit'
+    )
 
     args = parser.parse_args()
+
+    # Handle --logs-dir: print path and exit
+    if args.logs_dir:
+        print(get_logs_dir())
+        sys.exit(0)
+
+    # Setup logging with specified level
+    log_level = parse_log_level(args.log_level)
+    setup_logging(log_level)
 
     # If project_dir is provided, validate it and save to cache
     if args.project_dir:

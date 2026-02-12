@@ -1,2 +1,2 @@
-from .model_tree import ModelView
+from .model_view import ModelView
 from .properties_panel import PropertiesPanel

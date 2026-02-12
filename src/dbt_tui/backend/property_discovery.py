@@ -14,10 +14,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import yaml
 import re
-import logging
 from dataclasses import dataclass, field
 
 from .property_claim import PropertyClaim
+from ..common.logging import get_logger
+
+logger = get_logger('backend.property_discovery')
 
 if TYPE_CHECKING:
     from .model import DbtModel
@@ -57,7 +59,7 @@ class PropertyDiscoveryCache:
             try:
                 self.dbt_project_data = yaml.safe_load(project_file.read_text()) or {}
             except Exception as e:
-                logging.warning(f"Failed to parse {project_file}: {e}")
+                logger.warning(f"Failed to parse {project_file}: {e}")
                 self.dbt_project_data = {}
 
         # 2. Find and parse all schema files in the project
@@ -96,7 +98,7 @@ class PropertyDiscoveryCache:
                                 data = yaml.safe_load(schema_file.read_text()) or {}
                                 self.schema_data_by_path[schema_file] = data
                             except Exception as e:
-                                logging.debug(f"Failed to parse {schema_file}: {e}")
+                                logger.debug(f"Failed to parse {schema_file}: {e}")
                                 self.schema_data_by_path[schema_file] = {}
 
     def _index_models_in_schemas(self) -> None:
@@ -258,7 +260,7 @@ def collect_project_configs(
     try:
         data = yaml.safe_load(project_file.read_text()) or {}
     except Exception as e:
-        logging.warning(f"Failed to parse {project_file}: {e}")
+        logger.warning(f"Failed to parse {project_file}: {e}")
         return claims
 
     models = data.get("models", {})
@@ -359,7 +361,7 @@ def collect_schema_properties(
     try:
         data = yaml.safe_load(schema_file.read_text()) or {}
     except Exception as e:
-        logging.debug(f"Failed to parse {schema_file}: {e}")
+        logger.debug(f"Failed to parse {schema_file}: {e}")
         return claims
 
     models_list = data.get("models", [])
@@ -453,7 +455,7 @@ def collect_sql_configs(
                     )
                 )
     except Exception as e:
-        logging.debug(f"Jinja2 parsing failed for {model_path}, falling back to regex: {e}")
+        logger.debug(f"Jinja2 parsing failed for {model_path}, falling back to regex: {e}")
 
         # Fallback to regex-based parsing
         try:
@@ -483,7 +485,7 @@ def collect_sql_configs(
                         )
                     )
         except Exception as e:
-            logging.warning(f"Failed to parse SQL configs from {model_path}: {e}")
+            logger.warning(f"Failed to parse SQL configs from {model_path}: {e}")
 
     return claims
 
@@ -550,7 +552,7 @@ def resolve_property_precedence(
                     properties[claim.name] = claim
             except Exception as e:
                 # Log conflicts but keep the existing one
-                logging.warning(
+                logger.warning(
                     f"Property conflict for '{claim.name}' in model {claim.model.name}: {e}"
                 )
 

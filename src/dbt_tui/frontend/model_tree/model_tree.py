@@ -59,14 +59,20 @@ class ModelTree(DbtTuiScreen):
             textarea.read_only = False
             self.app.notify("Editing mode - press Escape to save and exit")
 
-    def action_exit_edit_mode(self):
+    async def action_exit_edit_mode(self):
         """Exit edit mode and save changes when pressing Escape."""
         textarea = self.query_one('#model_content', TextArea)
         if not textarea.read_only:
             textarea.read_only = True
-            # Save changes to the model file
+            # Save changes to the model file asynchronously
             if self.app.model:
-                self.app.model.file_path_full.write_text(textarea.text)
+                import asyncio
+                loop = asyncio.get_event_loop()
+                await loop.run_in_executor(
+                    None,
+                    self.app.model.file_path_full.write_text,
+                    textarea.text
+                )
                 self.app.notify("Changes saved")
             textarea.blur()
     

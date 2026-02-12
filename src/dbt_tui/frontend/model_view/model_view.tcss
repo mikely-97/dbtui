@@ -1,0 +1,33 @@
+/* CSS for ModelView screen */
+
+ModelView {
+    layout: horizontal;
+}
+
+ModelView > Horizontal {
+    width: 100%;
+    height: 100%;
+}
+
+ModelView #editor-container {
+    width: 2fr;
+    height: 100%;
+    border: solid $primary;
+}
+
+ModelView #model-content {
+    width: 100%;
+    height: 100%;
+}
+
+ModelView #model-header {
+    height: 3;
+    text-style: bold;
+    content-align: center middle;
+    background: $surface;
+    padding: 0 1;
+}
+
+ModelView PropertiesPanel {
+    width: 1fr;
+}

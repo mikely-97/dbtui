@@ -8,9 +8,11 @@ These tests verify that:
 4. The default screen is properly skipped in event handlers
 """
 import pytest
+from unittest.mock import patch
 from textual.widgets import TextArea, ListView, Static
 
 from dbt_tui.backend import DbtProject
+from dbt_tui.common import DbtTuiCache
 from dbt_tui.frontend.main import DbtTuiFrontend
 from dbt_tui.frontend.model_view import ModelView
 from dbt_tui.frontend.model_view.properties_panel import PropertiesPanel, PropertyItem
@@ -22,16 +24,28 @@ def dbt_project():
     return DbtProject('tests/testing')
 
 
+@pytest.fixture
+def empty_cache():
+    """Fixture that mocks load_cache to return empty cache."""
+    empty = DbtTuiCache(
+        last_open_project_raw=None,
+        last_active_model=None,
+        external_editor_command='vi'
+    )
+    with patch('dbt_tui.frontend.main.load_cache', return_value=empty):
+        yield empty
+
+
 class TestAppStartup:
     """Test that the app starts correctly."""
 
-    async def test_app_starts_without_error(self):
+    async def test_app_starts_without_error(self, empty_cache):
         """App should start without throwing errors."""
         app = DbtTuiFrontend()
         async with app.run_test() as pilot:
             assert app.is_running
 
-    async def test_app_pushes_screen_on_mount(self):
+    async def test_app_pushes_screen_on_mount(self, empty_cache):
         """With no cached project, should push a screen."""
         app = DbtTuiFrontend()
         async with app.run_test() as pilot:
@@ -65,9 +79,9 @@ class TestModelViewScreen:
         assert 'escape' in binding_keys
 
     def test_model_view_has_css(self):
-        """ModelView should have CSS defined."""
-        assert ModelView.DEFAULT_CSS is not None
-        assert 'ModelView' in ModelView.DEFAULT_CSS
+        """ModelView should have CSS defined via CSS_PATH."""
+        assert hasattr(ModelView, 'CSS_PATH')
+        assert ModelView.CSS_PATH == "model_view.tcss"
 
 
 class TestPropertiesPanelUnit:
@@ -79,9 +93,9 @@ class TestPropertiesPanelUnit:
         assert panel is not None
 
     def test_properties_panel_has_css(self):
-        """PropertiesPanel should have CSS defined."""
-        assert PropertiesPanel.DEFAULT_CSS is not None
-        assert 'PropertiesPanel' in PropertiesPanel.DEFAULT_CSS
+        """PropertiesPanel should have CSS defined via CSS_PATH."""
+        assert hasattr(PropertiesPanel, 'CSS_PATH')
+        assert PropertiesPanel.CSS_PATH == "properties_panel.tcss"
 
     def test_property_item_instantiation(self, dbt_project):
         """PropertyItem should be instantiable with a claim."""
@@ -235,7 +249,7 @@ class TestValidateProject:
 class TestDefaultScreenHandling:
     """Test that the default screen is properly handled."""
 
-    async def test_app_starts_with_screen_stack(self):
+    async def test_app_starts_with_screen_stack(self, empty_cache):
         """App should have screens in stack after mount."""
         app = DbtTuiFrontend()
         async with app.run_test() as pilot:
@@ -246,7 +260,7 @@ class TestDefaultScreenHandling:
 class TestAppQuit:
     """Test app quit functionality."""
 
-    async def test_app_can_exit(self):
+    async def test_app_can_exit(self, empty_cache):
         """App should be able to exit cleanly."""
         app = DbtTuiFrontend()
         async with app.run_test() as pilot:

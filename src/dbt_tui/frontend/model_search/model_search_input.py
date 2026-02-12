@@ -1,6 +1,6 @@
-from ..common import DbtProject
 from .model_search_list import ModelSearchList
 from textual.widgets import Input
+from textual.events import Key
 from typing import TYPE_CHECKING
 
 
@@ -11,9 +11,32 @@ if TYPE_CHECKING:
 class ModelSearchInput(Input):
 
     app: 'DbtTuiFrontend'
-    
+
+    def on_key(self, event: Key) -> None:
+        """Forward navigation keys to the model list."""
+        model_list = self.screen.get_widget_by_id('model_list')
+        if not isinstance(model_list, ModelSearchList):
+            return
+
+        # Forward these keys to the list for navigation
+        if event.key in ("down", "j"):
+            model_list.action_cursor_down()
+            event.prevent_default()
+            event.stop()
+        elif event.key in ("up", "k"):
+            model_list.action_cursor_up()
+            event.prevent_default()
+            event.stop()
+        elif event.key == "enter":
+            # Select the highlighted item in the list
+            if model_list.highlighted_child is not None:
+                model_list.action_select_cursor()
+                event.prevent_default()
+                event.stop()
+
     def on_input_changed(self, message: Input.Changed):
-        assert isinstance(self.app.project, DbtProject)
+        if self.app.project is None:
+            return
         models = self.app.project.search_model(message.value)
         model_list = self.screen.get_widget_by_id('model_list')
         assert isinstance(model_list, ModelSearchList)

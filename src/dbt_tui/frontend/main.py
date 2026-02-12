@@ -13,9 +13,11 @@ from .project_search.project_search import ProjectSearch
 from .new_model import NewModel
 
 from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
+from ..common.logging import get_logger
 from .common import DbtTuiScreen, DbtProject, DbtModel
 from .common.timing import TimingContext
-import logging
+
+logger = get_logger('frontend.main')
 
 @dataclass
 class AppContext:
@@ -118,12 +120,12 @@ class DbtTuiFrontend(App):
         except NonePathException:
             pass # that means we don't have anything saved, so don't log anything
         except Exception as e:
-            logging.warn(f"Failed to load project {cache.last_open_project} for reason: {e.args}")
+            logger.warning(f"Failed to load project {cache.last_open_project} for reason: {e.args}")
         if project is not None:
             try:
                 model = project.get_model_by_name(cache.last_active_model)
             except Exception as e:
-                logging.warn(e.args)
+                logger.warning(f"Failed to load model: {e.args}")
         self.project = project 
         self.model = model
         self.external_editor_command = cache.external_editor_command
@@ -152,12 +154,16 @@ class DbtTuiFrontend(App):
     
 
     def on_mount(self):
+        logger.debug("App mounting, loading context")
         self.load_context()
         if self.project is None:
+            logger.debug("No project loaded, showing project search")
             self.push_screen('project_search')
         elif self.model is None:
+            logger.debug(f"Project loaded ({self.project.root_folder.name}), showing model search")
             self.push_screen('model_search')
         else:
+            logger.info(f"Loaded project '{self.project.root_folder.name}' with model '{self.model.name}'")
             self.push_screen('model_view')
 
 if __name__ == '__main__':

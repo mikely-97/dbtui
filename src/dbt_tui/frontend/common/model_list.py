@@ -9,9 +9,9 @@ if TYPE_CHECKING:
 
 class ModelList(ListView):
 
-    BINDINGS =  [
-        Binding("j", "cursor_down()", show=False),
-        Binding("k", "cursor_up()", show=True,),
+    BINDINGS = [
+        Binding("down, j", "cursor_down()", show=False),
+        Binding("up, k", "cursor_up()", show=False),
     ]
 
     app: 'DbtTuiFrontend'
@@ -27,6 +27,9 @@ class ModelList(ListView):
         # we want to instantly focus on the first index
         self.index = None
         self.action_cursor_down()
+        # ensure the highlighted item is visible in the viewport
+        if self.highlighted_child is not None:
+            self.scroll_to_widget(self.highlighted_child)
         
         
     def change_model(self, model: DbtModel):

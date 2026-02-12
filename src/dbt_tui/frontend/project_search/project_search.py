@@ -90,8 +90,12 @@ class ProjectSearch(DbtTuiScreen):
         )
 
         self.action_reset_path('active_project')
-    
-    
+
+    def on_mount(self):
+        self.app.set_focus(
+            self.get_widget_by_id('directory_selector')
+        )
+
     def on_model_change(self, model: DbtModel|None):
         # we don't care here
         pass

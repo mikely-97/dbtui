@@ -3,7 +3,6 @@ from pathlib import Path
 import yaml
 from typing import Generator
 from networkx import DiGraph
-import logging
 import fnmatch
 from difflib import SequenceMatcher
 
@@ -12,12 +11,16 @@ from ..common import DbtProjectAbstract, \
 NonePathException, DbtModelNotFoundException, \
 IncorrectFileExtensionException, NotWithinSubdirectoryException, \
 InvalidProjectPathException
+from ..common.logging import get_logger
 
 
 from .model import DbtModel
 from .property_claim import PropertyClaimAggregate
 from .property_discovery import collect_model_claims_cached, PropertyDiscoveryCache
 from .metrics import LoadMetrics, Timer
+
+
+logger = get_logger('backend.project')
 
 
 class DbtProject(DbtProjectAbstract):
@@ -49,9 +52,9 @@ class DbtProject(DbtProjectAbstract):
                         try:
                             referenced_model = self.get_model_by_file_name(ref+'.sql')
                         except DbtModelNotFoundException:
-                            logging.warn(f"{model.name} references {ref} which is not found as a name or a filename")
+                            logger.warning(f"{model.name} references {ref} which is not found as a name or a filename")
                     else:
-                        logging.warn(f"{model.name} references {ref} which is not found as a name")
+                        logger.warning(f"{model.name} references {ref} which is not found as a name")
                 finally:
                     if referenced_model:
                         self.graph.add_node(referenced_model)
@@ -130,6 +133,15 @@ class DbtProject(DbtProjectAbstract):
 
             self.load_metrics.total_load_ms = total_timer.elapsed_ms
             self.load_metrics.model_count = len(self.models)
+
+            # Log load metrics at INFO level
+            logger.info(f"Project loaded: {self.root_folder.name}")
+            logger.info(f"  Models: {self.load_metrics.model_count}")
+            logger.info(f"  Total: {self.load_metrics.total_load_ms:.1f}ms")
+            logger.debug(f"  - parse_dbt_project.yml: {self.load_metrics.parse_dbt_project_yml_ms:.1f}ms")
+            logger.debug(f"  - load_models: {self.load_metrics.load_models_ms:.1f}ms")
+            logger.debug(f"  - populate_graph: {self.load_metrics.populate_graph_ms:.1f}ms")
+            logger.debug(f"  - collect_property_claims: {self.load_metrics.collect_property_claims_ms:.1f}ms")
 
         except FileNotFoundError:
             raise FileNotFoundError("dbt folder is present, but dbt_project.yml is not found: %s" % self.root_folder)
@@ -233,6 +245,7 @@ class DbtProject(DbtProjectAbstract):
         self.fall_back_to_filename = fall_back_to_filename
         self.root_folder = project_path
         self.load_metrics = None
+        logger.debug(f"Initializing project: {project_path}")
         self.refresh()
 
         
@@ -282,10 +295,11 @@ class DbtProject(DbtProjectAbstract):
   
 
         filepath_prepared.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(filepath_prepared, mode='w', encoding='utf-8') as f:
             f.write(text)
-        
+
+        logger.info(f"Created new model: {filepath_prepared.stem}")
         self.refresh()
 
         return self.get_model_by_name(filepath_prepared.stem)

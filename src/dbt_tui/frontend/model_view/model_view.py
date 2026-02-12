@@ -7,7 +7,7 @@ This view displays:
 """
 from typing import TYPE_CHECKING
 
-from textual.widgets import Footer, TextArea
+from textual.widgets import Footer, TextArea, ListView
 from textual.containers import Horizontal, Vertical, ScrollableContainer
 from textual.binding import Binding
 
@@ -29,39 +29,7 @@ class ModelView(DbtTuiScreen):
 
     app: 'DbtTuiFrontend'
 
-    DEFAULT_CSS = """
-    ModelView {
-        layout: horizontal;
-    }
-
-    ModelView > Horizontal {
-        width: 100%;
-        height: 100%;
-    }
-
-    ModelView #editor-container {
-        width: 2fr;
-        height: 100%;
-        border: solid $primary;
-    }
-
-    ModelView #model-content {
-        width: 100%;
-        height: 100%;
-    }
-
-    ModelView #model-header {
-        height: 3;
-        text-style: bold;
-        content-align: center middle;
-        background: $surface;
-        padding: 0 1;
-    }
-
-    ModelView PropertiesPanel {
-        width: 1fr;
-    }
-    """
+    CSS_PATH = "model_view.tcss"
 
     BINDINGS = [
         Binding("E", "external_edit()", "edit externally"),
@@ -70,6 +38,8 @@ class ModelView(DbtTuiScreen):
         Binding("enter", "toggle_edit_mode()", "edit", show=False),
         Binding("escape", "exit_edit_mode()", "stop editing", show=False),
         Binding("r", "refresh_properties()", "refresh properties"),
+        Binding("right, l", "focus_properties()", "properties", show=False),
+        Binding("left, h", "focus_editor()", "editor", show=False),
     ]
 
     def compose(self):
@@ -94,6 +64,24 @@ class ModelView(DbtTuiScreen):
 
     def on_mount(self) -> None:
         self.on_model_change(self.app.model)
+        # Set initial focus to the properties list
+        self.action_focus_properties()
+
+    def action_focus_properties(self) -> None:
+        """Focus the properties panel."""
+        try:
+            properties_list = self.query_one("#properties-list", ListView)
+            properties_list.focus()
+        except Exception:
+            pass
+
+    def action_focus_editor(self) -> None:
+        """Focus the editor."""
+        try:
+            textarea = self.query_one('#model-content', TextArea)
+            textarea.focus()
+        except Exception:
+            pass
 
     def action_toggle_edit_mode(self) -> None:
         """Enter edit mode when pressing Enter on the TextArea."""
@@ -102,13 +90,20 @@ class ModelView(DbtTuiScreen):
             textarea.read_only = False
             self.app.notify("Editing mode - press Escape to save and exit")
 
-    def action_exit_edit_mode(self) -> None:
+    async def action_exit_edit_mode(self) -> None:
         """Exit edit mode and save changes when pressing Escape."""
         textarea = self.query_one('#model-content', TextArea)
         if not textarea.read_only:
             textarea.read_only = True
             if self.app.model:
-                self.app.model.file_path_full.write_text(textarea.text)
+                # Use run_in_executor for file I/O to avoid blocking
+                import asyncio
+                loop = asyncio.get_event_loop()
+                await loop.run_in_executor(
+                    None,
+                    self.app.model.file_path_full.write_text,
+                    textarea.text
+                )
                 self.app.notify("Changes saved")
                 # Refresh properties after saving as config may have changed
                 self._refresh_model_properties()

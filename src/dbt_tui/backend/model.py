@@ -1,14 +1,17 @@
 from pathlib import Path
 from jinja2 import Environment, Template
 from jinja2.nodes import Call, Const
-import logging
 
 from ..common import DbtModelAbstract, NotWithinSubdirectoryException
+from ..common.logging import get_logger
 
 from typing import TYPE_CHECKING, Iterable, Self
 if TYPE_CHECKING:
     from .project import DbtProject
     from .property_claim import PropertyClaimAggregate
+
+
+logger = get_logger('backend.model')
 
 
 class DbtModel(DbtModelAbstract):
@@ -49,7 +52,7 @@ class DbtModel(DbtModelAbstract):
 
         # double config would be invalid
         if len(calls) > 1:
-            logging.warn("Duplicated invocation of config() in %s" % self.file_path_relative)
+            logger.warning("Duplicated invocation of config() in %s" % self.file_path_relative)
             return default_name
 
         if not calls:
@@ -79,7 +82,7 @@ class DbtModel(DbtModelAbstract):
         result = []
         for call in self._find_calls('ref'):
             if len(call.args) != 1:
-                logging.warn(f"Invalid number of args to ref() in model {self.name}: should be one, but it's {len(call.args)}: {[arg.value for arg in call.args]}")
+                logger.warning(f"Invalid number of args to ref() in model {self.name}: should be one, but it's {len(call.args)}: {[arg.value for arg in call.args]}")
                 continue
             result.append(call.args[0].value)
         return result
