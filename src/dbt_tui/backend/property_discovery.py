@@ -233,8 +233,126 @@ def find_schema_files(
     return schema_files
 
 
+def _extract_schema_claims(
+    schema_path: Path,
+    model_def: dict,
+    model: 'DbtModel',
+) -> list[PropertyClaim]:
+    """
+    Extract property claims from a model definition dict.
+
+    This is the shared implementation used by both cached and non-cached paths.
+
+    Args:
+        schema_path: Path to the schema file (for source tracking)
+        model_def: The model definition dict from YAML
+        model: The DbtModel instance
+
+    Returns:
+        List of PropertyClaim objects extracted from the model definition
+    """
+    claims: list[PropertyClaim] = []
+
+    for key, value in model_def.items():
+        if key == "name":
+            continue
+        elif key == "config":
+            # Config block contains config-type properties
+            if isinstance(value, dict):
+                for ck, cv in value.items():
+                    claims.append(
+                        PropertyClaim(
+                            source_type="schema.yml",
+                            source_path=schema_path,
+                            model=model,
+                            name=ck,
+                            value=cv,
+                            kind="config",
+                        )
+                    )
+        else:
+            # Other keys are regular properties (description, columns, tests, etc.)
+            claims.append(
+                PropertyClaim(
+                    source_type="schema.yml",
+                    source_path=schema_path,
+                    model=model,
+                    name=key,
+                    value=value,
+                    kind="property",
+                )
+            )
+
+    return claims
+
+
+def _walk_project_configs(
+    node: dict,
+    model: 'DbtModel',
+    model_parts: list[str],
+    project_file: Path,
+    path_index: int,
+    yaml_path: str,
+    parts_matched: list[str],
+    claims: list[PropertyClaim],
+) -> None:
+    """
+    Recursively walk the dbt_project.yml hierarchy to collect configs.
+
+    This is the shared implementation used by both cached and non-cached paths.
+
+    Args:
+        node: Current YAML dict being examined
+        model: The DbtModel instance
+        model_parts: List of model path components
+        project_file: Path to dbt_project.yml
+        path_index: Current index in model_parts
+        yaml_path: Dot-separated path for tracking precedence
+        parts_matched: List of model path parts that have been matched
+        claims: List to append claims to (modified in place)
+    """
+    if not isinstance(node, dict):
+        return
+
+    # Collect configs at this level (keys starting with +)
+    for k, v in node.items():
+        if isinstance(k, str) and k.startswith("+"):
+            prop_name = k[1:]
+            # Check if this config is effective for this model
+            effective = parts_matched == model_parts[:len(parts_matched)]
+
+            claims.append(
+                PropertyClaim(
+                    source_type="dbt_project.yml",
+                    source_path=project_file,
+                    model=model,
+                    name=prop_name,
+                    value=v,
+                    yaml_path=yaml_path,
+                    effective=effective,
+                    kind="config",
+                )
+            )
+
+    # Try to descend further if we have more path parts to match
+    if path_index < len(model_parts):
+        next_key = model_parts[path_index]
+        if next_key in node:
+            _walk_project_configs(
+                node[next_key],
+                model,
+                model_parts,
+                project_file,
+                path_index + 1,
+                f"{yaml_path}.{next_key}",
+                parts_matched + [next_key],
+                claims,
+            )
+
+
 def collect_project_configs(
     model: 'DbtModel',
+    cache: PropertyDiscoveryCache | None = None,
 ) -> list[PropertyClaim]:
     """
     Collect property claims from dbt_project.yml for a specific model.
@@ -245,6 +363,7 @@ def collect_project_configs(
 
     Args:
         model: The DbtModel instance to collect configs for
+        cache: Optional cache with pre-parsed dbt_project.yml data
 
     Returns:
         List of PropertyClaim objects from dbt_project.yml
@@ -252,15 +371,21 @@ def collect_project_configs(
     claims: list[PropertyClaim] = []
     project_path = model.project.root_folder
     model_path = model.file_path_full
-
     project_file = project_path / "dbt_project.yml"
-    if not project_file.exists():
-        return claims
 
-    try:
-        data = yaml.safe_load(project_file.read_text()) or {}
-    except Exception as e:
-        logger.warning(f"Failed to parse {project_file}: {e}")
+    # Get data from cache or read from file
+    if cache is not None and cache._initialized:
+        data = cache.dbt_project_data
+    else:
+        if not project_file.exists():
+            return claims
+        try:
+            data = yaml.safe_load(project_file.read_text()) or {}
+        except Exception as e:
+            logger.warning(f"Failed to parse {project_file}: {e}")
+            return claims
+
+    if not data:
         return claims
 
     models = data.get("models", {})
@@ -270,54 +395,18 @@ def collect_project_configs(
     model_parts = get_model_path_parts(model_path, project_path)
     package_name = data.get("name", "")
 
-    def walk(node, path_index: int, yaml_path: str, parts_matched: list[str]):
-        """
-        Recursively walk the dbt_project.yml hierarchy.
-
-        Args:
-            node: Current YAML dict being examined
-            path_index: Current index in model_parts
-            yaml_path: Dot-separated path for tracking precedence
-            parts_matched: List of model path parts that have been matched
-        """
-        if not isinstance(node, dict):
-            return
-
-        # Collect configs at this level (keys starting with +)
-        for k, v in node.items():
-            if isinstance(k, str) and k.startswith("+"):
-                prop_name = k[1:]
-                # Check if this config is effective for this model
-                # It's effective if all parts have been matched
-                effective = parts_matched == model_parts[:len(parts_matched)]
-
-                claims.append(
-                    PropertyClaim(
-                        source_type="dbt_project.yml",
-                        source_path=project_file,
-                        model=model,
-                        name=prop_name,
-                        value=v,
-                        yaml_path=yaml_path,
-                        effective=effective,
-                        kind="config",
-                    )
-                )
-
-        # Try to descend further if we have more path parts to match
-        if path_index < len(model_parts):
-            next_key = model_parts[path_index]
-            if next_key in node:
-                walk(
-                    node[next_key],
-                    path_index + 1,
-                    f"{yaml_path}.{next_key}",
-                    parts_matched + [next_key]
-                )
-
     # Start walking from package level
     if package_name in models:
-        walk(models[package_name], 0, f"models.{package_name}", [])
+        _walk_project_configs(
+            models[package_name],
+            model,
+            model_parts,
+            project_file,
+            0,
+            f"models.{package_name}",
+            [],
+            claims,
+        )
 
     # Also check for wildcard configs at root models level
     for k, v in models.items():
@@ -340,71 +429,56 @@ def collect_project_configs(
 
 
 def collect_schema_properties(
-    schema_file: Path,
     model: 'DbtModel',
+    schema_file: Path | None = None,
+    cache: PropertyDiscoveryCache | None = None,
 ) -> list[PropertyClaim]:
     """
-    Collect property claims from a schema.yml file for a specific model.
+    Collect property claims from schema.yml files for a specific model.
 
-    Looks for the model by name in the schema file's models array and
-    extracts all properties and configs.
+    Looks for the model by name in schema files and extracts all properties
+    and configs.
 
     Args:
-        schema_file: Path to the schema YAML file
         model: The DbtModel instance to collect properties for
+        schema_file: Optional specific schema file to read (for backward compat)
+        cache: Optional cache with pre-parsed schema data
 
     Returns:
-        List of PropertyClaim objects from the schema file
+        List of PropertyClaim objects from schema files
     """
     claims: list[PropertyClaim] = []
 
-    try:
-        data = yaml.safe_load(schema_file.read_text()) or {}
-    except Exception as e:
-        logger.debug(f"Failed to parse {schema_file}: {e}")
+    # Use cached path if cache is available and initialized
+    if cache is not None and cache._initialized:
+        model_defs = cache.get_model_definitions(model.name)
+        for schema_path, model_def in model_defs:
+            claims.extend(_extract_schema_claims(schema_path, model_def, model))
         return claims
 
-    models_list = data.get("models", [])
-    if not isinstance(models_list, list):
-        return claims
+    # Non-cached path: read from specific file or find schema files
+    if schema_file is not None:
+        schema_files = [schema_file]
+    else:
+        schema_files = find_schema_files(model.file_path_full, model.project.root_folder)
 
-    for model_def in models_list:
-        if not isinstance(model_def, dict):
+    for sf in schema_files:
+        try:
+            data = yaml.safe_load(sf.read_text()) or {}
+        except Exception as e:
+            logger.debug(f"Failed to parse {sf}: {e}")
             continue
 
-        if model_def.get("name") != model.name:
+        models_list = data.get("models", [])
+        if not isinstance(models_list, list):
             continue
 
-        # Process all keys except 'name'
-        for key, value in model_def.items():
-            if key == "name":
+        for model_def in models_list:
+            if not isinstance(model_def, dict):
                 continue
-            elif key == "config":
-                # Config block contains config-type properties
-                if isinstance(value, dict):
-                    for ck, cv in value.items():
-                        claims.append(
-                            PropertyClaim(
-                                source_type="schema.yml",
-                                source_path=schema_file,
-                                model=model,
-                                name=ck,
-                                value=cv,
-                                kind="config",
-                            )
-                        )
-            else:
-                # Other keys are regular properties (description, columns, tests, etc.)
-                claims.append(
-                    PropertyClaim(
-                        source_type="schema.yml",
-                        source_path=schema_file,
-                        model=model,
-                        name=key,
-                        value=value,
-                        kind="property",
-                    )
-                )
+            if model_def.get("name") != model.name:
+                continue
+            claims.extend(_extract_schema_claims(sf, model_def, model))
 
     return claims
 
@@ -492,6 +566,7 @@ def collect_sql_configs(
 
 def collect_model_claims(
     model: 'DbtModel',
+    cache: PropertyDiscoveryCache | None = None,
 ) -> list[PropertyClaim]:
     """
     Collect all property claims for a model from all sources.
@@ -503,6 +578,7 @@ def collect_model_claims(
 
     Args:
         model: The DbtModel instance to collect all properties for
+        cache: Optional PropertyDiscoveryCache for better performance
 
     Returns:
         List of all PropertyClaim objects for the model
@@ -510,14 +586,12 @@ def collect_model_claims(
     claims: list[PropertyClaim] = []
 
     # 1. Collect from dbt_project.yml
-    claims.extend(collect_project_configs(model))
+    claims.extend(collect_project_configs(model, cache))
 
     # 2. Collect from schema.yml files
-    schema_files = find_schema_files(model.file_path_full, model.project.root_folder)
-    for schema_file in schema_files:
-        claims.extend(collect_schema_properties(schema_file, model))
+    claims.extend(collect_schema_properties(model, cache=cache))
 
-    # 3. Collect from model SQL file
+    # 3. Collect from model SQL file (no caching needed - already parsed in model)
     claims.extend(collect_sql_configs(model))
 
     return claims
@@ -580,7 +654,8 @@ def get_effective_properties(
 
 
 # ============================================================================
-# Cached versions for performance when processing multiple models
+# Cached versions for backward compatibility
+# These now simply call the unified functions with cache parameter
 # ============================================================================
 
 
@@ -591,6 +666,8 @@ def collect_project_configs_cached(
     """
     Collect property claims from dbt_project.yml using cached data.
 
+    This is a compatibility wrapper that calls collect_project_configs with cache.
+
     Args:
         model: The DbtModel instance to collect configs for
         cache: PropertyDiscoveryCache with pre-parsed dbt_project.yml
@@ -598,73 +675,7 @@ def collect_project_configs_cached(
     Returns:
         List of PropertyClaim objects from dbt_project.yml
     """
-    claims: list[PropertyClaim] = []
-    project_path = model.project.root_folder
-    model_path = model.file_path_full
-    project_file = project_path / "dbt_project.yml"
-
-    data = cache.dbt_project_data
-    if not data:
-        return claims
-
-    models = data.get("models", {})
-    if not models:
-        return claims
-
-    model_parts = get_model_path_parts(model_path, project_path)
-    package_name = data.get("name", "")
-
-    def walk(node, path_index: int, yaml_path: str, parts_matched: list[str]):
-        if not isinstance(node, dict):
-            return
-
-        for k, v in node.items():
-            if isinstance(k, str) and k.startswith("+"):
-                prop_name = k[1:]
-                effective = parts_matched == model_parts[:len(parts_matched)]
-                claims.append(
-                    PropertyClaim(
-                        source_type="dbt_project.yml",
-                        source_path=project_file,
-                        model=model,
-                        name=prop_name,
-                        value=v,
-                        yaml_path=yaml_path,
-                        effective=effective,
-                        kind="config",
-                    )
-                )
-
-        if path_index < len(model_parts):
-            next_key = model_parts[path_index]
-            if next_key in node:
-                walk(
-                    node[next_key],
-                    path_index + 1,
-                    f"{yaml_path}.{next_key}",
-                    parts_matched + [next_key]
-                )
-
-    if package_name in models:
-        walk(models[package_name], 0, f"models.{package_name}", [])
-
-    for k, v in models.items():
-        if isinstance(k, str) and k.startswith("+"):
-            prop_name = k[1:]
-            claims.append(
-                PropertyClaim(
-                    source_type="dbt_project.yml",
-                    source_path=project_file,
-                    model=model,
-                    name=prop_name,
-                    value=v,
-                    yaml_path="models",
-                    effective=True,
-                    kind="config",
-                )
-            )
-
-    return claims
+    return collect_project_configs(model, cache)
 
 
 def collect_schema_properties_cached(
@@ -674,8 +685,7 @@ def collect_schema_properties_cached(
     """
     Collect property claims from schema.yml files using cached data.
 
-    Uses the pre-built model name index for fast lookup instead of
-    walking filesystem and parsing YAML files.
+    This is a compatibility wrapper that calls collect_schema_properties with cache.
 
     Args:
         model: The DbtModel instance to collect properties for
@@ -684,41 +694,7 @@ def collect_schema_properties_cached(
     Returns:
         List of PropertyClaim objects from schema files
     """
-    claims: list[PropertyClaim] = []
-
-    # Use the model name index for fast lookup
-    model_defs = cache.get_model_definitions(model.name)
-
-    for schema_path, model_def in model_defs:
-        for key, value in model_def.items():
-            if key == "name":
-                continue
-            elif key == "config":
-                if isinstance(value, dict):
-                    for ck, cv in value.items():
-                        claims.append(
-                            PropertyClaim(
-                                source_type="schema.yml",
-                                source_path=schema_path,
-                                model=model,
-                                name=ck,
-                                value=cv,
-                                kind="config",
-                            )
-                        )
-            else:
-                claims.append(
-                    PropertyClaim(
-                        source_type="schema.yml",
-                        source_path=schema_path,
-                        model=model,
-                        name=key,
-                        value=value,
-                        kind="property",
-                    )
-                )
-
-    return claims
+    return collect_schema_properties(model, cache=cache)
 
 
 def collect_model_claims_cached(
@@ -728,8 +704,7 @@ def collect_model_claims_cached(
     """
     Collect all property claims for a model using cached YAML data.
 
-    This is the cached version of collect_model_claims that uses pre-parsed
-    YAML files from PropertyDiscoveryCache for dramatically better performance.
+    This is a compatibility wrapper that calls collect_model_claims with cache.
 
     Args:
         model: The DbtModel instance to collect all properties for
@@ -738,15 +713,4 @@ def collect_model_claims_cached(
     Returns:
         List of all PropertyClaim objects for the model
     """
-    claims: list[PropertyClaim] = []
-
-    # 1. Collect from dbt_project.yml (using cached data)
-    claims.extend(collect_project_configs_cached(model, cache))
-
-    # 2. Collect from schema.yml files (using cached data)
-    claims.extend(collect_schema_properties_cached(model, cache))
-
-    # 3. Collect from model SQL file (no caching needed - already parsed in model)
-    claims.extend(collect_sql_configs(model))
-
-    return claims
+    return collect_model_claims(model, cache)

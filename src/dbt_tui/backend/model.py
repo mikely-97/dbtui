@@ -3,6 +3,7 @@ from jinja2 import Environment, Template
 from jinja2.nodes import Call, Const
 
 from ..common import DbtModelAbstract, NotWithinSubdirectoryException
+from ..common.entity import EntityType
 from ..common.logging import get_logger
 
 from typing import TYPE_CHECKING, Iterable, Self
@@ -15,29 +16,41 @@ logger = get_logger('backend.model')
 
 
 class DbtModel(DbtModelAbstract):
-    file_name: str
-    file_path_full: Path
-    file_path_relative: Path
-    template: str
+    _file_path_full: Path
+    _template: str
+    _template_mtime: float  # Track file modification time for cache invalidation
     parsed_template: Template
     project: 'DbtProject'
     property_claims: 'PropertyClaimAggregate | None'
 
-    @property 
-    def file_path_relative(self):
-        return self.file_path_full.relative_to(self.project.root_folder)
-    
     @property
-    def file_name(self):
-        return self.file_path_full.name
+    def file_path_full(self) -> Path:
+        return self._file_path_full
+
+    @property
+    def file_path_relative(self) -> Path:
+        return self._file_path_full.relative_to(self.project.root_folder)
+
+    @property
+    def file_name(self) -> str:
+        return self._file_path_full.name
+
+    @property
+    def entity_type(self) -> EntityType:
+        return "model"
 
     def __init__(self, file_path_full: Path, project: 'DbtProject'):
-        self.file_path_full = file_path_full
+        self._file_path_full = file_path_full
         self.project = project
         self.property_claims = None  # Populated by DbtProject.collect_property_claims()
+        self._template_mtime = file_path_full.stat().st_mtime
         with open(file_path_full, 'r', encoding='utf-8') as f:
-            self.template = f.read()
-        self.parsed_template = Environment().parse(self.template)
+            self._template = f.read()
+        self.parsed_template = Environment().parse(self._template)
+
+    def invalidate_cache(self) -> None:
+        """Force re-read of file contents on next access."""
+        self._template_mtime = 0
 
     def _find_calls(self, macro_name: str):
         return [i for i in self.parsed_template.find_all(Call) if i.node.name == macro_name]
@@ -72,9 +85,23 @@ class DbtModel(DbtModelAbstract):
     
     @property
     def text(self) -> str:
-        with open(self.file_path_full, 'r', encoding='utf-8') as f:
-            self.template = f.read()
-        return self.template
+        """
+        Return the model's SQL text content.
+
+        Uses cached content unless file has been modified since last read.
+        """
+        try:
+            current_mtime = self._file_path_full.stat().st_mtime
+            if current_mtime > self._template_mtime:
+                # File has changed, reload
+                with open(self._file_path_full, 'r', encoding='utf-8') as f:
+                    self._template = f.read()
+                self._template_mtime = current_mtime
+                self.parsed_template = Environment().parse(self._template)
+        except OSError:
+            # File might be deleted or inaccessible, return cached content
+            pass
+        return self._template
     
     
     @property

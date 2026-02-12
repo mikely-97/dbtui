@@ -235,6 +235,6 @@ class TestModelViewScreenRegistration:
     def test_v_binding_exists(self):
         """'v' keybinding should exist to access model_properties."""
         from dbt_tui.frontend.main import DbtTuiFrontend
-        bindings = [b for b in DbtTuiFrontend.BINDINGS if b[0] == 'v']
+        bindings = [b for b in DbtTuiFrontend.BINDINGS if b.key == 'v']
         assert len(bindings) == 1
-        assert 'model_properties' in bindings[0][1]
+        assert 'model_properties' in bindings[0].action

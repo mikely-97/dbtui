@@ -7,10 +7,10 @@ import fnmatch
 from difflib import SequenceMatcher
 
 
-from ..common import DbtProjectAbstract, \
+from ..common import DbtProjectAbstract, DbtEntityAbstract, EntityType, \
 NonePathException, DbtModelNotFoundException, \
 IncorrectFileExtensionException, NotWithinSubdirectoryException, \
-InvalidProjectPathException
+InvalidProjectPathException, ErrorCollector, ErrorCategory
 from ..common.logging import get_logger
 
 
@@ -39,6 +39,9 @@ class DbtProject(DbtProjectAbstract):
     # performance metrics from last load
     load_metrics: LoadMetrics | None
 
+    # error tracking for load issues
+    load_errors: ErrorCollector
+
     def populate_graph(self):
         self.graph = DiGraph()
         for model in self.models:
@@ -52,9 +55,13 @@ class DbtProject(DbtProjectAbstract):
                         try:
                             referenced_model = self.get_model_by_file_name(ref+'.sql')
                         except DbtModelNotFoundException:
-                            logger.warning(f"{model.name} references {ref} which is not found as a name or a filename")
+                            msg = f"references '{ref}' which is not found as a name or filename"
+                            logger.warning(f"{model.name} {msg}")
+                            self.load_errors.add_ref_not_found(model.name, ref)
                     else:
-                        logger.warning(f"{model.name} references {ref} which is not found as a name")
+                        msg = f"references '{ref}' which is not found as a name"
+                        logger.warning(f"{model.name} {msg}")
+                        self.load_errors.add_ref_not_found(model.name, ref)
                 finally:
                     if referenced_model:
                         self.graph.add_node(referenced_model)
@@ -90,15 +97,32 @@ class DbtProject(DbtProjectAbstract):
     def load_models(self) -> None:
         self.reset_models()
         for models_path in self.full_models_paths:
+            if not models_path.exists():
+                self.load_errors.add_warning(
+                    f"Model path does not exist: {models_path}",
+                    ErrorCategory.FILE_NOT_FOUND,
+                    source_path=models_path,
+                )
+                continue
             for root, _, files in models_path.walk():
                 for file in files:
                     # Only load SQL files as models
                     if not file.endswith('.sql'):
                         continue
-                    model = DbtModel(root / file, self)
-                    self.models.append(model)
-                    self.models_by_name[model.name] = model
-                    self.models_by_file_name[model.file_name] = model
+                    file_path = root / file
+                    try:
+                        model = DbtModel(file_path, self)
+                        self.models.append(model)
+                        self.models_by_name[model.name] = model
+                        self.models_by_file_name[model.file_name] = model
+                    except Exception as e:
+                        self.load_errors.add_error(
+                            f"Failed to load model: {e}",
+                            ErrorCategory.PARSE_ERROR,
+                            source_path=file_path,
+                            exception=e,
+                        )
+                        logger.warning(f"Failed to load model {file_path}: {e}")
 
 
     def refresh(self):
@@ -107,6 +131,7 @@ class DbtProject(DbtProjectAbstract):
 
         total_timer = Timer()
         self.load_metrics = LoadMetrics()
+        self.load_errors = ErrorCollector()
 
         try:
             with total_timer:
@@ -138,6 +163,8 @@ class DbtProject(DbtProjectAbstract):
             logger.info(f"Project loaded: {self.root_folder.name}")
             logger.info(f"  Models: {self.load_metrics.model_count}")
             logger.info(f"  Total: {self.load_metrics.total_load_ms:.1f}ms")
+            if self.load_errors.has_any:
+                logger.info(f"  Issues: {self.load_errors.summary()}")
             logger.debug(f"  - parse_dbt_project.yml: {self.load_metrics.parse_dbt_project_yml_ms:.1f}ms")
             logger.debug(f"  - load_models: {self.load_metrics.load_models_ms:.1f}ms")
             logger.debug(f"  - populate_graph: {self.load_metrics.populate_graph_ms:.1f}ms")
@@ -157,12 +184,49 @@ class DbtProject(DbtProjectAbstract):
         if not model:
             raise DbtModelNotFoundException("dbt model not found: %s" % name)
         return model
-    
+
     def get_model_by_file_name(self, file_name: str) -> DbtModel:
         model = self.models_by_file_name.get(file_name)
         if not model:
             raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
         return model
+
+    # =========================================================================
+    # Entity-generic methods (for future extensibility)
+    # =========================================================================
+
+    def get_entity_by_name(
+        self,
+        name: str,
+        entity_type: EntityType | None = None
+    ) -> DbtEntityAbstract:
+        """
+        Get an entity by name, optionally filtering by type.
+
+        Currently only supports models, but designed for future extensibility
+        to seeds, macros, etc.
+        """
+        # For now, only models are supported
+        if entity_type is None or entity_type == "model":
+            return self.get_model_by_name(name)
+
+        raise DbtModelNotFoundException(f"Entity not found: {name} (type: {entity_type})")
+
+    def search_entities(
+        self,
+        query: str,
+        entity_type: EntityType | None = None
+    ) -> list[DbtEntityAbstract]:
+        """
+        Search for entities matching a query.
+
+        Currently only searches models, but designed for future extensibility.
+        """
+        # For now, only models are supported
+        if entity_type is None or entity_type == "model":
+            return self.search_model(query)
+
+        return []
     
     def search_model(self, query: str, fuzzy_threshold: float = 0.6) -> list[DbtModel]:
         """
@@ -245,6 +309,7 @@ class DbtProject(DbtProjectAbstract):
         self.fall_back_to_filename = fall_back_to_filename
         self.root_folder = project_path
         self.load_metrics = None
+        self.load_errors = ErrorCollector()
         logger.debug(f"Initializing project: {project_path}")
         self.refresh()
 

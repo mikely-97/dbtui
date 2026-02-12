@@ -225,7 +225,7 @@ class TestPropertyDiscovery:
         model = dbt_project.get_model_by_name('c_changed_name')
         schema_file = Path('tests/testing/complex_config/stg/schema.yml')
 
-        claims = collect_schema_properties(schema_file, model)
+        claims = collect_schema_properties(model, schema_file=schema_file)
 
         # Should find properties for c_changed_name
         assert len(claims) > 0

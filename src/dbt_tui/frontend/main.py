@@ -29,10 +29,11 @@ class AppContext:
 class DbtTuiFrontend(App):
 
     BINDINGS = [
-        ("o", "push_screen('options')", "open options"),
-        ("f", "push_screen('model_search')", "search models"),
-        ("p", "push_screen('project_search')", "select project"),
-        ("v", "push_screen('model_properties')", "model properties"),
+        Binding("q", "quit", "quit"),
+        Binding("o", "push_screen('options')", "options"),
+        Binding("f", "push_screen('model_search')", "find model"),
+        Binding("p", "push_screen('project_search')", "project"),
+        Binding("v", "push_screen('model_properties')", "properties"),
     ]
 
     SCREENS = {

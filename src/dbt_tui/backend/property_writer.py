@@ -5,14 +5,17 @@ Supports writing to:
 - schema.yml files (properties and configs)
 - Model SQL files (config() calls)
 
-Note: PyYAML's yaml.dump() does not preserve comments or formatting.
+Uses ruamel.yaml for round-trip YAML preservation (comments and formatting).
 """
 
 from dataclasses import dataclass
+from io import StringIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 import re
-import yaml
+
+from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from ..common.logging import get_logger
 
@@ -21,6 +24,16 @@ if TYPE_CHECKING:
 
 
 logger = get_logger('backend.property_writer')
+
+
+# Configure ruamel.yaml for round-trip preservation
+def _get_yaml() -> YAML:
+    """Get a configured YAML instance for round-trip preservation."""
+    yaml = YAML()
+    yaml.preserve_quotes = True
+    yaml.default_flow_style = False
+    yaml.width = 120
+    return yaml
 
 
 @dataclass
@@ -35,56 +48,57 @@ class SchemaYmlWriter:
     """
     Handles reading, modifying, and writing schema.yml files.
 
-    Preserves structure as much as possible by:
-    1. Reading the full file
-    2. Making targeted modifications to the parsed structure
-    3. Writing back with yaml.dump()
-
-    Note: Comments and custom formatting will be lost.
+    Uses ruamel.yaml for round-trip preservation:
+    - Comments are preserved
+    - Key ordering is preserved
+    - Formatting/indentation is preserved where possible
     """
 
     def __init__(self, schema_path: Path):
         self.schema_path = schema_path
-        self._data: dict | None = None
+        self._data: CommentedMap | None = None
+        self._yaml = _get_yaml()
 
-    def load(self) -> dict:
-        """Load and parse the schema file."""
+    def load(self) -> CommentedMap:
+        """Load and parse the schema file with round-trip preservation."""
         if self._data is None:
             if self.schema_path.exists():
-                self._data = yaml.safe_load(self.schema_path.read_text()) or {}
+                content = self.schema_path.read_text()
+                self._data = self._yaml.load(content)
+                if self._data is None:
+                    self._data = CommentedMap()
             else:
-                self._data = {"version": 2, "models": []}
+                self._data = CommentedMap()
+                self._data["version"] = 2
+                self._data["models"] = CommentedSeq()
         return self._data
 
     def save(self) -> None:
-        """Write the modified data back to the file."""
+        """Write the modified data back to the file, preserving formatting."""
         if self._data is None:
             raise RuntimeError("No data loaded")
 
         # Ensure parent directory exists
         self.schema_path.parent.mkdir(parents=True, exist_ok=True)
 
-        self.schema_path.write_text(
-            yaml.dump(
-                self._data,
-                default_flow_style=False,
-                sort_keys=False,
-                allow_unicode=True
-            )
-        )
+        # Write using ruamel.yaml for round-trip preservation
+        stream = StringIO()
+        self._yaml.dump(self._data, stream)
+        self.schema_path.write_text(stream.getvalue())
 
-    def get_or_create_model_entry(self, model_name: str) -> dict:
+    def get_or_create_model_entry(self, model_name: str) -> CommentedMap:
         """Get existing model entry or create a new one."""
         data = self.load()
         if "models" not in data:
-            data["models"] = []
+            data["models"] = CommentedSeq()
 
         for model_def in data["models"]:
             if isinstance(model_def, dict) and model_def.get("name") == model_name:
                 return model_def
 
-        # Create new entry
-        new_entry = {"name": model_name}
+        # Create new entry using CommentedMap to preserve insertion order
+        new_entry = CommentedMap()
+        new_entry["name"] = model_name
         data["models"].append(new_entry)
         return new_entry
 
@@ -100,7 +114,7 @@ class SchemaYmlWriter:
 
         if kind == "config":
             if "config" not in model_entry:
-                model_entry["config"] = {}
+                model_entry["config"] = CommentedMap()
             model_entry["config"][prop_name] = value
         else:
             model_entry[prop_name] = value

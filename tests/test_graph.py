@@ -15,7 +15,7 @@ def test_no_args_in_ref(caplog: LogCaptureFixture):
 def test_ref_to_nonexistent(caplog: LogCaptureFixture):
     with caplog.at_level(WARNING):
         DbtProject('tests/testing')
-        assert "i_c1 references i_b_not_exists which is not found as a name" in caplog.text
+        assert "i_c1 references 'i_b_not_exists' which is not found as a name" in caplog.text
     
 def test_graph_repr():
     target = """(c_b) --> (c_c1)

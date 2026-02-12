@@ -1,25 +1,32 @@
-from abc import ABC, abstractmethod
-from typing import Iterable, Self
+"""
+Model-specific abstract class for dbt models.
 
-class DbtModelAbstract(ABC):
+DbtModelAbstract extends DbtEntityAbstract with model-specific behavior
+like ref() parsing and configuration.
+"""
+
+from abc import abstractmethod
+from typing import Literal
+
+from .entity import DbtEntityAbstract, EntityType
+
+
+class DbtModelAbstract(DbtEntityAbstract):
+    """
+    Abstract base class for dbt models.
+
+    Models are SQL files that define transformations. They can reference
+    other models via ref() and have configurations via config().
+    """
+
+    @property
+    def entity_type(self) -> EntityType:
+        """Models always return 'model' as their entity type."""
+        return "model"
 
     @property
     @abstractmethod
-    def parents(self) -> Iterable[Self]:
-        NotImplemented
-
-    @property
-    @abstractmethod
-    def children(self) -> Iterable[Self]:
-        NotImplemented
-
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        NotImplemented
-    
-    @property
-    @abstractmethod
-    def text(self) -> str:
-        NotImplemented
+    def refs(self) -> list[str]:
+        """Return list of model names referenced via ref()."""
+        ...
 

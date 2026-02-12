@@ -4,15 +4,25 @@ dbt-tui - Terminal UI for dbt projects
 Usage:
     python -m dbt_tui [project_dir] [--log-level LEVEL]
     python -m dbt_tui --logs-dir
+    python -m dbt_tui --version
 
 If project_dir is not specified, launches with the last opened project.
 """
 import argparse
 import sys
+from importlib.metadata import version as get_version, PackageNotFoundError
 from pathlib import Path
 
 from .frontend import frontend as DbtTuiFrontend
 from .common import load_cache, save_cache, get_logs_dir, setup_logging, parse_log_level
+
+
+def get_app_version() -> str:
+    """Get the application version from package metadata."""
+    try:
+        return get_version("dbt-tui")
+    except PackageNotFoundError:
+        return "0.0.0-dev"
 
 
 def main():
@@ -25,6 +35,12 @@ def main():
         nargs='?',
         default=None,
         help='Path to dbt project directory (optional, uses last project if not specified)'
+    )
+    parser.add_argument(
+        '-V', '--version',
+        action='version',
+        version=f'%(prog)s {get_app_version()}',
+        help='Show version number and exit'
     )
     parser.add_argument(
         '--log-level',

@@ -182,29 +182,35 @@ class TestPropertiesPanelUnit:
 class TestBindingsExist:
     """Test that key bindings are properly defined."""
 
+    def test_q_binding_defined(self):
+        """'q' binding should be defined to quit."""
+        bindings = [b for b in DbtTuiFrontend.BINDINGS if b.key == 'q']
+        assert len(bindings) == 1
+        assert bindings[0].action == 'quit'
+
     def test_v_binding_defined(self):
         """'v' binding should be defined to open model properties."""
-        bindings = [b for b in DbtTuiFrontend.BINDINGS if b[0] == 'v']
+        bindings = [b for b in DbtTuiFrontend.BINDINGS if b.key == 'v']
         assert len(bindings) == 1
-        assert 'model_properties' in bindings[0][1]
+        assert 'model_properties' in bindings[0].action
 
     def test_o_binding_defined(self):
         """'o' binding should be defined to open options."""
-        bindings = [b for b in DbtTuiFrontend.BINDINGS if b[0] == 'o']
+        bindings = [b for b in DbtTuiFrontend.BINDINGS if b.key == 'o']
         assert len(bindings) == 1
-        assert 'options' in bindings[0][1]
+        assert 'options' in bindings[0].action
 
     def test_f_binding_defined(self):
         """'f' binding should be defined to open model search."""
-        bindings = [b for b in DbtTuiFrontend.BINDINGS if b[0] == 'f']
+        bindings = [b for b in DbtTuiFrontend.BINDINGS if b.key == 'f']
         assert len(bindings) == 1
-        assert 'model_search' in bindings[0][1]
+        assert 'model_search' in bindings[0].action
 
     def test_p_binding_defined(self):
         """'p' binding should be defined to open project search."""
-        bindings = [b for b in DbtTuiFrontend.BINDINGS if b[0] == 'p']
+        bindings = [b for b in DbtTuiFrontend.BINDINGS if b.key == 'p']
         assert len(bindings) == 1
-        assert 'project_search' in bindings[0][1]
+        assert 'project_search' in bindings[0].action
 
 
 class TestModelViewBindings:
