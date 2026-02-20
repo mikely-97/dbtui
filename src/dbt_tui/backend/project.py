@@ -15,6 +15,7 @@ from ..common.logging import get_logger
 
 
 from .model import DbtModel
+from .macro import DbtMacro
 from .property_claim import PropertyClaimAggregate
 from .property_discovery import collect_model_claims_cached, PropertyDiscoveryCache
 from .metrics import LoadMetrics, Timer
@@ -28,13 +29,18 @@ class DbtProject(DbtProjectAbstract):
     dbt_project_yml: Generator
     model_folder: str
     full_models_paths: list[Path]
+    full_macro_paths: list[Path]
     models: list[DbtModel]
+    macros: list[DbtMacro]
     fall_back_to_filename: bool
     graph: DiGraph
 
     # optimizations for fetching models
     models_by_name: dict[str, DbtModel]
     models_by_file_name: dict[str, DbtModel]
+
+    # optimizations for fetching macros
+    macros_by_name: dict[str, DbtMacro]
 
     # performance metrics from last load
     load_metrics: LoadMetrics | None
@@ -44,6 +50,9 @@ class DbtProject(DbtProjectAbstract):
 
     def populate_graph(self):
         self.graph = DiGraph()
+        # Add all macro nodes first
+        for macro in self.macros:
+            self.graph.add_node(macro)
         for model in self.models:
             self.graph.add_node(model)
             for ref in model.refs:
@@ -66,6 +75,11 @@ class DbtProject(DbtProjectAbstract):
                     if referenced_model:
                         self.graph.add_node(referenced_model)
                         self.graph.add_edge(referenced_model, model)
+            # Add macro dependency edges
+            for macro_name in model.macro_calls:
+                macro = self.macros_by_name.get(macro_name)
+                if macro:
+                    self.graph.add_edge(macro, model)
 
     def collect_property_claims(self) -> None:
         """
@@ -92,6 +106,8 @@ class DbtProject(DbtProjectAbstract):
         self.models = []
         self.models_by_name = dict()
         self.models_by_file_name = dict()
+        self.macros = []
+        self.macros_by_name = dict()
 
 
     def load_models(self) -> None:
@@ -125,6 +141,22 @@ class DbtProject(DbtProjectAbstract):
                         logger.warning(f"Failed to load model {file_path}: {e}")
 
 
+    def load_macros(self) -> None:
+        for macro_path in self.full_macro_paths:
+            if not macro_path.exists():
+                continue
+            for root, _, files in macro_path.walk():
+                for file in files:
+                    if not file.endswith('.sql'):
+                        continue
+                    file_path = root / file
+                    try:
+                        macro = DbtMacro(file_path, self)
+                        self.macros.append(macro)
+                        self.macros_by_name[macro.name] = macro
+                    except Exception as e:
+                        logger.warning(f"Failed to load macro {file_path}: {e}")
+
     def refresh(self):
         if not os.path.exists(self.root_folder):
             raise FileNotFoundError("Folder not found: %s" % self.root_folder)
@@ -145,6 +177,11 @@ class DbtProject(DbtProjectAbstract):
                 with Timer() as t:
                     self.load_models()
                 self.load_metrics.load_models_ms = t.elapsed_ms
+
+                # Load macros
+                with Timer() as t:
+                    self.load_macros()
+                self.load_metrics.load_models_ms += t.elapsed_ms  # piggyback on model timer
 
                 # Build graph
                 with Timer() as t:
@@ -177,7 +214,8 @@ class DbtProject(DbtProjectAbstract):
     def parse_dbt_project(self, dbt_project_raw: str) -> None:
         self.dbt_project_yml = yaml.load(dbt_project_raw, yaml.Loader)
         self.full_models_paths = [self.root_folder / folder for folder in self.dbt_project_yml['model-paths']]
-        pass
+        macro_paths = self.dbt_project_yml.get('macro-paths', ['macros'])
+        self.full_macro_paths = [self.root_folder / folder for folder in macro_paths]
 
     def get_model_by_name(self, name: str) -> DbtModel:
         model = self.models_by_name.get(name)

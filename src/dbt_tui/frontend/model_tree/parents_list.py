@@ -16,13 +16,17 @@ class ParentsList(ModelRelativesList):
         assert self.id == PARENTS_ID
 
     def on_model_change(self, model: DbtModel):
-        self.populate_with_models(model.parents)
-    
+        super().on_model_change(model)
+
     def action_quick_move(self) -> None:
         if self.highlighted_child:
             assert(isinstance(self.highlighted_child, ModelListItem))
-            self.change_model(self.highlighted_child.dbt_model)
-    
+            entity = self.highlighted_child.dbt_entity
+            if entity.entity_type == 'model':
+                self.change_model(entity)  # type: ignore[arg-type]
+            else:
+                self.app.notify(f"Cannot navigate to {entity.entity_type} '{entity.name}'")
+
     def action_refocus_on_children(self) -> None:
         chidlren = self.screen.get_widget_by_id(CHILDREN_ID)
         chidlren.focus()

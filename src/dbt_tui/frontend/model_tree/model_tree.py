@@ -1,18 +1,27 @@
 from typing import TYPE_CHECKING
 
-from textual.widgets import Footer, TextArea
+from textual.widgets import Footer, TextArea, Checkbox
 from textual.containers import HorizontalGroup, ScrollableContainer
 from textual.binding import Binding
-from textual.events import Key
 
 from ..common import DbtTuiScreen, DbtModel, DbtProject
 from ..common.timing import TimingContext
+from ...common.entity import EntityType
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
 
 from .parents_list import ParentsList
 from .children_list import ChildrenList
 from .constants import PARENTS_ID, CHILDREN_ID
+
+_ALL_ENTITY_TYPES: set[EntityType] = {'model', 'seed', 'macro', 'snapshot', 'analysis'}
+
+FILTER_IDS: dict[str, EntityType] = {
+    'filter_model': 'model',
+    'filter_macro': 'macro',
+    'filter_seed': 'seed',
+    'filter_snapshot': 'snapshot',
+}
 
 
 class ModelTree(DbtTuiScreen):
@@ -26,8 +35,18 @@ class ModelTree(DbtTuiScreen):
         Binding("escape", "exit_edit_mode()", "stop editing", show=False),
     ]
 
+    def on_mount(self):
+        self.allowed_entity_types: set[EntityType] = set(_ALL_ENTITY_TYPES)
+        self.on_model_change(self.app.model)
 
     def compose(self):
+        yield HorizontalGroup(
+            Checkbox("models", id="filter_model", value=True),
+            Checkbox("macros", id="filter_macro", value=True),
+            Checkbox("seeds", id="filter_seed", value=True),
+            Checkbox("snapshots", id="filter_snapshot", value=True),
+            id="entity_filter_bar",
+        )
         yield HorizontalGroup(
             ParentsList(
                 id=PARENTS_ID,
@@ -52,6 +71,25 @@ class ModelTree(DbtTuiScreen):
 
         yield Footer()
 
+    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+        entity_type = FILTER_IDS.get(event.checkbox.id or '')
+        if entity_type is None:
+            return
+        if event.value:
+            self.allowed_entity_types.add(entity_type)
+        else:
+            self.allowed_entity_types.discard(entity_type)
+        if self.app.model:
+            self._refresh_relatives()
+
+    def _refresh_relatives(self) -> None:
+        parents = self.get_widget_by_id(PARENTS_ID)
+        children = self.get_widget_by_id(CHILDREN_ID)
+        if isinstance(parents, ParentsList):
+            parents.on_model_change(self.app.model)
+        if isinstance(children, ChildrenList):
+            children.on_model_change(self.app.model)
+
     def action_toggle_edit_mode(self):
         """Enter edit mode when pressing Enter on the TextArea."""
         textarea = self.query_one('#model_content', TextArea)
@@ -75,7 +113,7 @@ class ModelTree(DbtTuiScreen):
                 )
                 self.app.notify("Changes saved")
             textarea.blur()
-    
+
     def on_model_change(self, model: DbtModel|None):
         if not model:
             self.app.push_screen('model_search')
@@ -113,17 +151,9 @@ class ModelTree(DbtTuiScreen):
         with timing.step("children.on_model_change"):
             children.on_model_change(model)
 
-        # Note: recompose() removed - unnecessary since:
-        # - TextArea is updated via load_text()
-        # - ListViews are updated via clear() and append()
-
         timing.log()
 
     def on_project_change(self, project: DbtProject | None):
         # When project changes, redirect to model search
         if project:
             self.app.push_screen('model_search')
-
-    def on_mount(self):
-        self.on_model_change(self.app.model)
-

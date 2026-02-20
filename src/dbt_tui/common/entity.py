@@ -7,7 +7,7 @@ Entity-specific behavior should be implemented in subclasses.
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Literal, Self
+from typing import TYPE_CHECKING, Iterable, Literal
 
 if TYPE_CHECKING:
     from .project import DbtProjectAbstract
@@ -63,13 +63,13 @@ class DbtEntityAbstract(ABC):
 
     @property
     @abstractmethod
-    def parents(self) -> Iterable[Self]:
+    def parents(self) -> Iterable['DbtEntityAbstract']:
         """Return entities that this entity depends on."""
         ...
 
     @property
     @abstractmethod
-    def children(self) -> Iterable[Self]:
+    def children(self) -> Iterable['DbtEntityAbstract']:
         """Return entities that depend on this entity."""
         ...
 

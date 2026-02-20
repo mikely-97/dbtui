@@ -3,10 +3,10 @@ from jinja2 import Environment, Template
 from jinja2.nodes import Call, Const
 
 from ..common import DbtModelAbstract, NotWithinSubdirectoryException
-from ..common.entity import EntityType
+from ..common.entity import DbtEntityAbstract, EntityType
 from ..common.logging import get_logger
 
-from typing import TYPE_CHECKING, Iterable, Self
+from typing import TYPE_CHECKING, Iterable
 if TYPE_CHECKING:
     from .project import DbtProject
     from .property_claim import PropertyClaimAggregate
@@ -75,13 +75,29 @@ class DbtModel(DbtModelAbstract):
             kwargs = {item.key: item.value for item in config.kwargs}
             return kwargs.get('name', Const(default_name)).value
     
-    @property 
-    def children(self) -> list[Self]:
+    @property
+    def children(self) -> list[DbtEntityAbstract]:
         return sorted(list(self.project.graph.successors(self)), key=lambda n: n.name)
-    
-    @property 
-    def parents(self) -> Iterable[Self]:
+
+    @property
+    def parents(self) -> Iterable[DbtEntityAbstract]:
         return sorted(list(self.project.graph.predecessors(self)), key=lambda n: n.name)
+
+    @property
+    def macro_calls(self) -> list[str]:
+        """Return macro names called in this model (excluding dbt/Jinja builtins)."""
+        BUILTIN_MACROS = {
+            'ref', 'source', 'config', 'log', 'var', 'env_var', 'run_query',
+            'execute', 'this', 'adapter', 'modules', 'flags', 'graph',
+            'model', 'return', 'exceptions', 'fromjson', 'tojson',
+            'fromyaml', 'toyaml', 'zip', 'zip_strict', 'print', 'set',
+            'load_result', 'store_result', 'submit_python_job',
+        }
+        result = []
+        for call in self.parsed_template.find_all(Call):
+            if hasattr(call.node, 'name') and call.node.name not in BUILTIN_MACROS:
+                result.append(call.node.name)
+        return result
     
     @property
     def text(self) -> str:

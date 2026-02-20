@@ -11,4 +11,4 @@ class ModelSearchList(ModelList):
         model_preview = self.screen.get_widget_by_id('model_preview')
         assert isinstance(model_preview, TextArea)
         model_preview.clear()
-        model_preview.text = list_item.dbt_model.text
+        model_preview.text = list_item.dbt_entity.text

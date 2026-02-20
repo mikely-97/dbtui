@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Iterable
 from textual.widgets import ListView
 from textual.binding import Binding
+from ...common.entity import DbtEntityAbstract
 from .isolated import DbtModel
 from .model_list_item import ModelListItem
 
@@ -16,12 +17,12 @@ class ModelList(ListView):
 
     app: 'DbtTuiFrontend'
 
-    def populate_with_models(self, models: Iterable[DbtModel]):
+    def populate_with_entities(self, entities: Iterable[DbtEntityAbstract]):
         self.clear()
-        for model in models:
+        for entity in entities:
             self.append(
                 ModelListItem(
-                    model=model
+                    model=entity
                 )
             )
         # we want to instantly focus on the first index
@@ -30,15 +31,19 @@ class ModelList(ListView):
         # ensure the highlighted item is visible in the viewport
         if self.highlighted_child is not None:
             self.scroll_to_widget(self.highlighted_child)
-        
-        
+
+    def populate_with_models(self, models: Iterable[DbtModel]):
+        """Backward-compatible alias for populate_with_entities."""
+        self.populate_with_entities(models)
+
     def change_model(self, model: DbtModel):
         # triggers the reactive component
         self.app.model = model
-        
 
-    def on_list_view_selected(self, event: ListView.Selected) -> None: 
-        list_item: ModelListItem = event.item 
-        dbt_model = list_item.dbt_model
-        assert isinstance(dbt_model, DbtModel)
-        self.change_model(dbt_model)
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        list_item: ModelListItem = event.item
+        entity = list_item.dbt_entity
+        if entity.entity_type == 'model':
+            self.change_model(entity)  # type: ignore[arg-type]
+        else:
+            self.app.notify(f"Navigation to {entity.entity_type} '{entity.name}' is not supported")
