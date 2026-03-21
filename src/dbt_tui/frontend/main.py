@@ -11,6 +11,7 @@ from .model_view import ModelView
 from .options.options import Options
 from .project_search.project_search import ProjectSearch
 from .new_model import NewModel
+from .dag_view.dag_view import DagView
 
 from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
 from ..common.logging import get_logger
@@ -34,6 +35,7 @@ class DbtTuiFrontend(App):
         Binding("f", "push_screen('model_search')", "find model"),
         Binding("p", "push_screen('project_search')", "project"),
         Binding("v", "push_screen('model_properties')", "properties"),
+        Binding("d", "push_screen('dag_view')", "DAG"),
     ]
 
     SCREENS = {
@@ -43,6 +45,7 @@ class DbtTuiFrontend(App):
         'options': Options,
         'project_search': ProjectSearch,
         'new_model': NewModel,
+        'dag_view': DagView,
         }
 
     screen_stack: list[DbtTuiScreen]
