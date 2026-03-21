@@ -7,12 +7,13 @@ This view displays:
 """
 from typing import TYPE_CHECKING
 
-from textual.widgets import Footer, TextArea, ListView
+from textual.widgets import Footer, TextArea, ListView, TabbedContent, TabPane
 from textual.containers import Horizontal, Vertical, ScrollableContainer
 from textual.binding import Binding
 
 from ..common import DbtTuiScreen, DbtModel, DbtProject
 from .properties_panel import PropertiesPanel
+from .doc_panel import DocPanel
 
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
@@ -58,7 +59,10 @@ class ModelView(DbtTuiScreen):
                 ),
                 id="editor-container",
             ),
-            PropertiesPanel(id="properties-panel"),
+            TabbedContent(
+                TabPane("Properties", PropertiesPanel(id="properties-panel")),
+                TabPane("Docs", DocPanel(id="doc-panel")),
+            ),
         )
         yield Footer()
 
@@ -151,6 +155,9 @@ class ModelView(DbtTuiScreen):
         # Update properties panel
         properties_panel = self.query_one('#properties-panel', PropertiesPanel)
         properties_panel.update_properties(model)
+
+        # Update docs panel
+        self.query_one('#doc-panel', DocPanel).refresh_model(model)
 
     def on_project_change(self, project: DbtProject | None) -> None:
         if project:
