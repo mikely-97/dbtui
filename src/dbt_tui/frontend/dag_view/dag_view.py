@@ -5,6 +5,7 @@ from textual.binding import Binding
 
 from dbt_tui.frontend.common.dbt_tui_screen import DbtTuiScreen
 from dbt_tui.backend.dag import render_dag_ascii, get_dag_node_list
+from dbt_tui.backend.model import DbtModel
 
 
 class DagView(DbtTuiScreen):
@@ -70,9 +71,10 @@ class DagView(DbtTuiScreen):
         idx = event.list_view.index
         if idx is not None and 0 <= idx < len(self._nav_nodes):
             target = self._nav_nodes[idx]
-            from dbt_tui.backend.model import DbtModel
             if isinstance(target, DbtModel):
                 self.app.model = target
+            else:
+                self.app.notify(f"Cannot navigate to {target.entity_type} '{target.name}'")
 
     def action_go_back(self) -> None:
         self.app.pop_screen()
