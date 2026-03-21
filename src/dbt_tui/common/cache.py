@@ -53,7 +53,7 @@ def load_cache(clear_cache:bool=False) -> DbtTuiCache:
     dbt_tui_cache = DbtTuiCache(**cache_raw)
     return dbt_tui_cache
 
-def save_cache(project_path: Path, model_name: str, external_editor_command: str):
+def save_cache(project_path: Path | None, model_name: str | None, external_editor_command: str):
     cache_path = ensure_cache_path() / 'cache.json'
     with open(cache_path, 'w', encoding='utf-8') as f:
         json.dump(
