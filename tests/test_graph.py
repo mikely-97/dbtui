@@ -23,6 +23,7 @@ def test_graph_repr():
 (c_c1) --> (c_d)
 (c_c2) --> (c_d)
 (c_changed_name) --> (c_b)
+(clean_string) --> (v_macro_user)
 (i_a) --> (i_b_changed)
 (i_c1) --> (i_d)
 (i_c2) --> (i_d)

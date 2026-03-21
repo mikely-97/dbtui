@@ -15,6 +15,7 @@ def test_all_models_are_visible():
             'v_c1.sql',
             'v_c2.sql',
             'v_d.sql',
+            'v_macro_user.sql',
             'i_d.sql',
             'i_a.sql',
             'i_c1.sql',
