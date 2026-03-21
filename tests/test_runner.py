@@ -81,6 +81,16 @@ def test_parse_warn_test():
     assert results[0].status == 'WARN'
 
 
+def test_parse_error_test():
+    lines = [
+        "  ERROR test_schema_matches ............ [ERROR in 0.3s]",
+    ]
+    results = parse_test_results(lines)
+    assert len(results) == 1
+    assert results[0].name == 'test_schema_matches'
+    assert results[0].status == 'ERROR'
+
+
 def test_parse_empty_output():
     results = parse_test_results([])
     assert results == []
