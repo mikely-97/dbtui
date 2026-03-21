@@ -74,11 +74,11 @@ class ModelSearch(DbtTuiScreen):
         """Re-run search when a filter checkbox is toggled."""
         try:
             search_input = self.get_widget_by_id('search_input')
-            from .model_search_input import ModelSearchInput
-            assert isinstance(search_input, ModelSearchInput)
+            if not isinstance(search_input, ModelSearchInput):
+                return
             search_input._do_search(search_input.value)
-        except Exception:
-            pass
+        except Exception as e:
+            self.log.error(str(e))
 
     def on_model_change(self, model: DbtModel|None):
         # reset the search and its results
