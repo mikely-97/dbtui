@@ -16,6 +16,7 @@ from .properties_panel import PropertiesPanel
 from .doc_panel import DocPanel
 from .git_panel import GitPanel
 from .run_panel import RunPanel
+from .test_panel import TestPanel
 
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
@@ -73,6 +74,8 @@ class ModelView(DbtTuiScreen):
                 yield GitPanel(id='git-panel')
             with TabPane("Run", id="tab-run"):
                 yield RunPanel(id='run-panel')
+            with TabPane("Tests", id="tab-tests"):
+                yield TestPanel(id='test-panel')
         yield Footer()
 
     def on_mount(self) -> None:
