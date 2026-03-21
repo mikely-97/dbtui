@@ -1,7 +1,7 @@
 """Documentation collection from dbt property claims."""
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from dbt_tui.backend.model import DbtModel
@@ -46,7 +46,7 @@ def collect_docs(model: 'DbtModel') -> ModelDocs:
     """Build ModelDocs from the model's property claims."""
     docs = ModelDocs()
 
-    for claim in model.property_claims:
+    for claim in (model.property_claims or []):
         if claim.source_type != 'schema.yml':
             continue
 
