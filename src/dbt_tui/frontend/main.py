@@ -16,9 +16,11 @@ from .property_viewer.property_viewer import PropertyViewerScreen
 from .lineage_view.lineage_view import ColumnLineageView
 
 from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
+from ..common.cache import WorkspaceEntry
 from ..common.logging import get_logger
 from .common import DbtTuiScreen, DbtProject, DbtModel
 from .common.timing import TimingContext
+from .common.project_tab_bar import ProjectTabBar
 
 logger = get_logger('frontend.main')
 
@@ -55,6 +57,9 @@ class DbtTuiFrontend(App):
 
     screen_stack: list[DbtTuiScreen]
     external_editor_command: reactive[str] = reactive('vi')
+
+    projects: list = []
+    active_project_index: int = 0
 
     # For debounced save
     _save_timer = None
@@ -120,6 +125,40 @@ class DbtTuiFrontend(App):
         return False
         
 
+    def add_project(self, project) -> None:
+        """Add a project to the workspace and switch to it."""
+        self.projects = [*self.projects, project]
+        self.active_project_index = len(self.projects) - 1
+        self.project = project
+        self.model = None
+        self._refresh_tab_bar()
+
+    def switch_project(self, index: int) -> None:
+        """Switch to a project by index."""
+        if 0 <= index < len(self.projects):
+            self.active_project_index = index
+            self.project = self.projects[index]
+            self.model = None
+            self._refresh_tab_bar()
+
+    def _refresh_tab_bar(self) -> None:
+        try:
+            tab_bar = self.query_one('#project-tab-bar', ProjectTabBar)
+            tab_bar.refresh_projects(self.projects, self.active_project_index)
+        except Exception:
+            pass
+
+    def on_project_tab_bar_project_selected(self, event) -> None:
+        idx = event.index
+        if 0 <= idx < len(self.projects):
+            self.active_project_index = idx
+            self.project = self.projects[idx]
+            self.model = None
+            self._refresh_tab_bar()
+
+    def on_project_tab_bar_add_project_requested(self, event) -> None:
+        self.push_screen('project_search')
+
     def load_context(self, clear_cache: bool=False):
         cache: DbtTuiCache = load_cache(clear_cache)
         project = None
@@ -145,6 +184,13 @@ class DbtTuiFrontend(App):
             last_open_project_raw=str(self.project.root_folder) if isinstance(self.project, DbtProject) else None,
             last_active_model=self.model.name if isinstance(self.model, DbtModel) else None,
             external_editor_command=self.external_editor_command,
+            workspaces=[
+                WorkspaceEntry(
+                    project_path=str(p.root_folder),
+                    last_model=self.model.name if self.model and p is self.project else None,
+                )
+                for p in self.projects
+            ],
         ))
 
     def save_context_debounced(self):
@@ -162,9 +208,32 @@ class DbtTuiFrontend(App):
         self.save_context()
     
 
-    def on_mount(self):
+    async def on_mount(self):
         logger.debug("App mounting, loading context")
+        cache: DbtTuiCache = load_cache()
         self.load_context()
+
+        # Mount tab bar
+        tab_bar = ProjectTabBar(id='project-tab-bar')
+        await self.mount(tab_bar)
+
+        # Restore workspaces from cache (additional projects beyond the primary)
+        primary_path = str(self.project.root_folder) if self.project else ''
+        for ws in cache.workspaces:
+            if ws.project_path != primary_path:
+                try:
+                    extra = DbtProject(ws.project_path)
+                    self.projects = [*self.projects, extra]
+                except Exception as e:
+                    logger.warning(f"Failed to restore workspace {ws.project_path}: {e}")
+
+        # Ensure primary project is in the list
+        if self.project and self.project not in self.projects:
+            self.projects = [self.project, *self.projects]
+            self.active_project_index = 0
+
+        self._refresh_tab_bar()
+
         if self.project is None:
             logger.debug("No project loaded, showing project search")
             self.push_screen('project_search')
