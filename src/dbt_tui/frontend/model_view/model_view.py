@@ -46,6 +46,7 @@ class ModelView(DbtTuiScreen):
         Binding("t", "test_model", "Test"),
         Binding("right, l", "focus_properties()", "properties", show=False),
         Binding("left, h", "focus_editor()", "editor", show=False),
+        Binding("e", "edit_schema()", "edit schema"),
     ]
 
     def compose(self):
@@ -130,6 +131,17 @@ class ModelView(DbtTuiScreen):
 
     def action_test_model(self) -> None:
         self.query_one('#run-panel', RunPanel).start_run('test')
+
+    def action_edit_schema(self) -> None:
+        """Open schema.yml editor for the current model."""
+        if not self.app.model:
+            return
+        from .schema_editor import SchemaEditorScreen
+        def on_dismiss(saved: bool) -> None:
+            if saved:
+                self._refresh_model_properties()
+                self.app.notify("schema.yml updated")
+        self.app.push_screen(SchemaEditorScreen(self.app.model), on_dismiss)
 
     def action_refresh_properties(self) -> None:
         """Refresh the properties panel with recollected claims."""

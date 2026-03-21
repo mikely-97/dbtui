@@ -296,6 +296,25 @@ class TestWritePropertyToSchema:
         assert result.success is True
 
 
+def test_write_description_and_tags_round_trip(tmp_path, dbt_project):
+    """Writing description + tags creates valid schema.yml with both fields."""
+    model = dbt_project.models[0]
+    schema_path = tmp_path / 'schema.yml'
+
+    from dbt_tui.backend.property_writer import write_property_to_schema
+    r1 = write_property_to_schema(model, 'description', 'Test description', 'property', schema_path)
+    assert r1.success
+
+    r2 = write_property_to_schema(model, 'tags', ['finance', 'core'], 'config', schema_path)
+    assert r2.success
+
+    import yaml
+    data = yaml.safe_load(schema_path.read_text())
+    model_entry = next(m for m in data['models'] if m['name'] == model.name)
+    assert model_entry['description'] == 'Test description'
+    assert model_entry['config']['tags'] == ['finance', 'core']
+
+
 class TestWritePropertyToModelSql:
     """Test high-level SQL writing function."""
 
