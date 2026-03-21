@@ -55,17 +55,20 @@ class DbtProjectAbstract(ABC):
     def search_entities(
         self,
         query: str,
-        entity_type: EntityType | None = None
-    ) -> Iterable[DbtEntityAbstract]:
+        entity_type: str | None = None,
+        path_prefix: str | None = None,
+    ) -> list:
         """
         Search for entities matching a query.
 
         Args:
             query: Search query (supports fuzzy matching, globs, etc.)
-            entity_type: If provided, only search entities of this type
+            entity_type: If provided, only search entities of this type ('model', 'macro')
+            path_prefix: If provided, only include entities whose file_path_relative
+                         contains this string
 
         Returns:
-            Iterable of matching entities
+            List of matching entities
         """
         ...
 

@@ -285,6 +285,42 @@ class TestModelRelationships:
         assert 'v_a' in refs
 
 
+class TestSearchEntities:
+    """Test search_entities with fuzzy scoring and filters."""
+
+    @pytest.fixture
+    def project(self):
+        return DbtProject('tests/testing')
+
+    def test_search_scores_exact_prefix_higher(self, project):
+        """'v_a' should rank exact-prefix matches above partial matches."""
+        results = project.search_entities('v_a', entity_type='model')
+        names = [r.name for r in results]
+        assert names[0] == 'v_a'
+
+    def test_search_filters_by_entity_type_model(self, project):
+        results = project.search_entities('clean', entity_type='macro')
+        assert all(r.entity_type == 'macro' for r in results)
+        assert any(r.name == 'clean_string' for r in results)
+
+    def test_search_filters_by_entity_type_excludes_others(self, project):
+        results = project.search_entities('v_a', entity_type='macro')
+        assert all(r.entity_type == 'macro' for r in results)
+
+    def test_search_path_prefix_filter(self, project):
+        results = project.search_entities('', path_prefix='vanilla/stg')
+        assert all('vanilla/stg' in str(r.file_path_relative) for r in results)
+
+    def test_search_empty_query_returns_all(self, project):
+        results = project.search_entities('')
+        assert len(results) >= len(project.models)
+
+    def test_search_returns_macros_when_no_filter(self, project):
+        results = project.search_entities('clean_string')
+        names = [r.name for r in results]
+        assert 'clean_string' in names
+
+
 class TestEdgeCases:
     """Test edge cases and error handling."""
 

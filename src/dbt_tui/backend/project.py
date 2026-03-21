@@ -253,19 +253,57 @@ class DbtProject(DbtProjectAbstract):
     def search_entities(
         self,
         query: str,
-        entity_type: EntityType | None = None
-    ) -> list[DbtEntityAbstract]:
+        entity_type: str | None = None,
+        path_prefix: str | None = None,
+    ) -> list:
         """
-        Search for entities matching a query.
+        Search for entities matching a query, with optional filters.
 
-        Currently only searches models, but designed for future extensibility.
+        Args:
+            query: Search query (fuzzy matching)
+            entity_type: If provided, restrict to 'model' or 'macro'
+            path_prefix: If provided, restrict to entities whose file_path_relative
+                         contains this prefix string
         """
-        # For now, only models are supported
-        if entity_type is None or entity_type == "model":
-            return self.search_model(query)
+        from difflib import SequenceMatcher
 
-        return []
-    
+        candidates = []
+        if entity_type is None or entity_type == 'model':
+            candidates.extend(self.models)
+        if entity_type is None or entity_type == 'macro':
+            candidates.extend(self.macros)
+
+        if path_prefix:
+            candidates = [
+                c for c in candidates
+                if path_prefix in str(c.file_path_relative)
+            ]
+
+        if not query:
+            return sorted(candidates, key=lambda c: c.name)
+
+        q = query.lower()
+
+        def score(entity) -> float:
+            name = entity.name.lower()
+            if name == q:
+                return 1.0
+            if name.startswith(q):
+                return 0.9 + len(q) / len(name) * 0.09
+            if q in name:
+                return 0.7 + len(q) / len(name) * 0.19
+            return SequenceMatcher(None, q, name).ratio() * 0.6
+
+        scored = [(score(c), c) for c in candidates]
+        scored = [(s, c) for s, c in scored if s > 0.3]
+        scored.sort(key=lambda x: (-x[0], x[1].name))
+        return [c for _, c in scored]
+
+    def search_models(self, query: str) -> list[DbtModel]:
+        """Search models only, delegating to search_entities."""
+        return [e for e in self.search_entities(query, entity_type='model')
+                if isinstance(e, DbtModel)]
+
     def search_model(self, query: str, fuzzy_threshold: float = 0.6) -> list[DbtModel]:
         """
         Search for models using multiple strategies:
