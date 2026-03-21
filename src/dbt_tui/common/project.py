@@ -57,7 +57,7 @@ class DbtProjectAbstract(ABC):
         query: str,
         entity_type: str | None = None,
         path_prefix: str | None = None,
-    ) -> list:
+    ) -> list[DbtEntityAbstract]:
         """
         Search for entities matching a query.
 

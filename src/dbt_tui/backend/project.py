@@ -255,18 +255,17 @@ class DbtProject(DbtProjectAbstract):
         query: str,
         entity_type: str | None = None,
         path_prefix: str | None = None,
-    ) -> list:
+    ) -> list[DbtEntityAbstract]:
         """
         Search for entities matching a query, with optional filters.
 
         Args:
             query: Search query (fuzzy matching)
-            entity_type: If provided, restrict to 'model' or 'macro'
+            entity_type: If provided, restrict to 'model' or 'macro' (valid values
+                         from EntityType: 'model', 'seed', 'macro', 'snapshot', 'analysis')
             path_prefix: If provided, restrict to entities whose file_path_relative
                          contains this prefix string
         """
-        from difflib import SequenceMatcher
-
         candidates = []
         if entity_type is None or entity_type == 'model':
             candidates.extend(self.models)
