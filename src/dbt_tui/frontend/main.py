@@ -13,6 +13,7 @@ from .project_search.project_search import ProjectSearch
 from .new_model import NewModel
 from .dag_view.dag_view import DagView
 from .property_viewer.property_viewer import PropertyViewerScreen
+from .lineage_view.lineage_view import ColumnLineageView
 
 from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
 from ..common.logging import get_logger
@@ -37,6 +38,7 @@ class DbtTuiFrontend(App):
         Binding("p", "push_screen('project_search')", "project"),
         Binding("v", "push_screen('property_viewer')", "properties"),
         Binding("d", "push_screen('dag_view')", "DAG"),
+        Binding("l", "push_screen('lineage_view')", "Lineage"),
     ]
 
     SCREENS = {
@@ -48,6 +50,7 @@ class DbtTuiFrontend(App):
         'new_model': NewModel,
         'dag_view': DagView,
         'property_viewer': PropertyViewerScreen,
+        'lineage_view': ColumnLineageView,
         }
 
     screen_stack: list[DbtTuiScreen]
