@@ -37,8 +37,29 @@ class ModelSearchInput(Input):
     def on_input_changed(self, message: Input.Changed):
         if self.app.project is None:
             return
-        models = self.app.project.search_model(message.value)
+        from textual.widgets import Checkbox
+        try:
+            cb_models = self.screen.get_widget_by_id('filter-models')
+            cb_macros = self.screen.get_widget_by_id('filter-macros')
+            assert isinstance(cb_models, Checkbox)
+            assert isinstance(cb_macros, Checkbox)
+            want_models = cb_models.value
+            want_macros = cb_macros.value
+        except Exception:
+            want_models = True
+            want_macros = True
+
+        if want_models and want_macros:
+            entity_type = None
+        elif want_models:
+            entity_type = 'model'
+        elif want_macros:
+            entity_type = 'macro'
+        else:
+            entity_type = None
+
+        entities = self.app.project.search_entities(message.value, entity_type=entity_type)
         model_list = self.screen.get_widget_by_id('model_list')
         assert isinstance(model_list, ModelSearchList)
-        model_list.populate_with_models(models=models)
+        model_list.populate_with_entities(entities=entities)
 

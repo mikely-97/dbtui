@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from textual import widgets, containers
 from textual.binding import Binding
+from textual.widgets import Checkbox
 
 from .model_search_input import ModelSearchInput
 from .model_search_list import ModelSearchList
@@ -21,6 +22,11 @@ class ModelSearch(DbtTuiScreen):
 
     def compose(self):
 
+        yield containers.Horizontal(
+            Checkbox("Models", value=True, id="filter-models"),
+            Checkbox("Macros", value=True, id="filter-macros"),
+            id='search-filters'
+        )
         yield containers.Horizontal(
             ModelSearchList(
                 id='model_list',
@@ -63,6 +69,19 @@ class ModelSearch(DbtTuiScreen):
             self.app.push_screen('model_view')
         else:
             self.app.pop_screen()
+
+    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+        """Re-run search when a filter checkbox is toggled."""
+        try:
+            search_input = self.get_widget_by_id('search_input')
+            # Trigger a re-search by simulating input change
+            from .model_search_input import ModelSearchInput
+            assert isinstance(search_input, ModelSearchInput)
+            search_input.on_input_changed(
+                type('FakeChanged', (), {'value': search_input.value})()
+            )
+        except Exception:
+            pass
 
     def on_model_change(self, model: DbtModel|None):
         # reset the search and its results

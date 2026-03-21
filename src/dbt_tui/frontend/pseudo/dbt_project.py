@@ -18,6 +18,12 @@ class DbtProject(DbtProjectAbstract):
         else:
             self.root_folder = Path(project_path)
 
+    def search_entities(self, query, entity_type=None, path_prefix=None) -> list[DbtModel]:
+        result = []
+        for _ in range(random.randint(2, 5)):
+            result.append(DbtModel.generate_random())
+        return result
+
     def search_model(self, query) -> list[DbtModel]:
         result = []
         for _ in range(random.randint(2,5)):
