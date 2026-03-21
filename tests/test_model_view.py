@@ -237,4 +237,4 @@ class TestModelViewScreenRegistration:
         from dbt_tui.frontend.main import DbtTuiFrontend
         bindings = [b for b in DbtTuiFrontend.BINDINGS if b.key == 'v']
         assert len(bindings) == 1
-        assert 'model_properties' in bindings[0].action
+        assert 'property_viewer' in bindings[0].action
