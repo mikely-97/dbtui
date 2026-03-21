@@ -14,6 +14,7 @@ from textual.binding import Binding
 from ..common import DbtTuiScreen, DbtModel, DbtProject
 from .properties_panel import PropertiesPanel
 from .doc_panel import DocPanel
+from .git_panel import GitPanel
 
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
@@ -65,6 +66,8 @@ class ModelView(DbtTuiScreen):
                 yield PropertiesPanel(id="properties-panel")
             with TabPane("Docs", id="tab-docs"):
                 yield DocPanel(id="doc-panel")
+            with TabPane("Git", id="tab-git"):
+                yield GitPanel(id='git-panel')
         yield Footer()
 
     def on_mount(self) -> None:
@@ -159,6 +162,9 @@ class ModelView(DbtTuiScreen):
 
         # Update docs panel
         self.query_one('#doc-panel', DocPanel).refresh_model(model)
+
+        # Update git panel
+        self.query_one('#git-panel', GitPanel).refresh_model(model)
 
     def on_project_change(self, project: DbtProject | None) -> None:
         if project:
