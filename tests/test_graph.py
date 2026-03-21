@@ -28,6 +28,7 @@ def test_graph_repr():
 (i_c1) --> (i_d)
 (i_c2) --> (i_d)
 (v_a) --> (v_b)
+(v_a) --> (v_lineage)
 (v_b) --> (v_c1)
 (v_b) --> (v_c2)
 (v_c1) --> (v_d)
