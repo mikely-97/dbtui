@@ -1,5 +1,4 @@
 import pytest
-import asyncio
 from pathlib import Path
 from dbt_tui.backend.runner import DbtRunner, RunResult
 
