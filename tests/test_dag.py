@@ -1,5 +1,4 @@
 import pytest
-from pathlib import Path
 from dbt_tui.backend import DbtProject
 from dbt_tui.backend.dag import render_dag_ascii
 
