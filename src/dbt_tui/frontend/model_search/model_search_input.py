@@ -34,7 +34,8 @@ class ModelSearchInput(Input):
                 event.prevent_default()
                 event.stop()
 
-    def on_input_changed(self, message: Input.Changed):
+    def _do_search(self, value: str) -> None:
+        """Run a search with the given query value, respecting current filter checkboxes."""
         if self.app.project is None:
             return
         from textual.widgets import Checkbox
@@ -58,8 +59,11 @@ class ModelSearchInput(Input):
         else:
             entity_type = None
 
-        entities = self.app.project.search_entities(message.value, entity_type=entity_type)
+        entities = self.app.project.search_entities(value, entity_type=entity_type)
         model_list = self.screen.get_widget_by_id('model_list')
         assert isinstance(model_list, ModelSearchList)
         model_list.populate_with_entities(entities=entities)
+
+    def on_input_changed(self, message: Input.Changed) -> None:
+        self._do_search(message.value)
 
