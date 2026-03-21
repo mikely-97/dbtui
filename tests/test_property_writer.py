@@ -109,6 +109,7 @@ class TestSchemaYmlWriter:
 
         # Reload and verify
         data = yaml.safe_load(temp_schema_file.read_text())
+        assert data is not None
         assert data['models'][0]['config']['materialized'] == 'table'
 
     def test_set_regular_property(self, temp_schema_file):
@@ -119,6 +120,7 @@ class TestSchemaYmlWriter:
 
         # Reload and verify
         data = yaml.safe_load(temp_schema_file.read_text())
+        assert data is not None
         assert data['models'][0]['docs'] == {'show': True}
 
     def test_save_preserves_other_content(self, temp_schema_file):
@@ -129,6 +131,7 @@ class TestSchemaYmlWriter:
 
         # Reload and verify original model still exists
         data = yaml.safe_load(temp_schema_file.read_text())
+        assert data is not None
         model_names = [m['name'] for m in data['models']]
         assert 'existing_model' in model_names
         assert 'new_model' in model_names
@@ -146,6 +149,7 @@ class TestSchemaYmlWriter:
 
         assert result is True
         data = yaml.safe_load(temp_schema_file.read_text())
+        assert data is not None
         assert 'config' not in data['models'][0]
 
     def test_remove_regular_property(self, temp_schema_file):
@@ -156,6 +160,7 @@ class TestSchemaYmlWriter:
 
         assert result is True
         data = yaml.safe_load(temp_schema_file.read_text())
+        assert data is not None
         assert 'description' not in data['models'][0]
 
 
@@ -278,6 +283,7 @@ class TestWritePropertyToSchema:
         assert 'materialized' in result.message
 
         data = yaml.safe_load(schema_path.read_text())
+        assert data is not None
         assert data['models'][0]['name'] == model.name
         assert data['models'][0]['config']['materialized'] == 'table'
 
@@ -310,6 +316,7 @@ def test_write_description_and_tags_round_trip(tmp_path, dbt_project):
 
     import yaml
     data = yaml.safe_load(schema_path.read_text())
+    assert data is not None
     model_entry = next(m for m in data['models'] if m['name'] == model.name)
     assert model_entry['description'] == 'Test description'
     assert model_entry['config']['tags'] == ['finance', 'core']

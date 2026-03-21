@@ -41,7 +41,7 @@ class SchemaEditorScreen(ModalScreen):
         if self._model.property_claims is None:
             return ''
         try:
-            desc = self._model.property_claims.get('description')
+            desc = self._model.property_claims.get_value('description')
             return str(desc) if desc else ''
         except Exception:
             return ''
@@ -50,7 +50,7 @@ class SchemaEditorScreen(ModalScreen):
         if self._model.property_claims is None:
             return ''
         try:
-            tags = self._model.property_claims.get('tags')
+            tags = self._model.property_claims.get_value('tags')
             if isinstance(tags, list):
                 return ', '.join(str(t) for t in tags)
             return str(tags) if tags else ''

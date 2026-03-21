@@ -137,8 +137,8 @@ class ModelView(DbtTuiScreen):
         if not self.app.model:
             return
         from .schema_editor import SchemaEditorScreen
-        def on_dismiss(saved: bool) -> None:
-            if saved:
+        def on_dismiss(result: object) -> None:
+            if result:
                 self._refresh_model_properties()
                 self.app.notify("schema.yml updated")
         self.app.push_screen(SchemaEditorScreen(self.app.model), on_dismiss)
