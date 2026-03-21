@@ -1,51 +1,35 @@
 """ASCII DAG renderer for dbt-tui."""
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from dbt_tui.backend.project import DbtProject
     from dbt_tui.common.entity import DbtEntityAbstract
 
 
-def _ancestors_by_depth(graph, focal, depth):
+def _walk_by_depth(graph, focal, depth, get_neighbors: Callable):
+    """Walk graph by depth using provided neighbor function (predecessors or successors)."""
     result = {}
     visited = {focal}
     frontier = [focal]
     for d in range(1, depth + 1):
         next_frontier = []
         for node in frontier:
-            for pred in graph.predecessors(node):
-                if pred not in visited:
-                    visited.add(pred)
-                    next_frontier.append(pred)
+            for neighbor in get_neighbors(node):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    next_frontier.append(neighbor)
         if not next_frontier:
             break
-        result[-d] = sorted(next_frontier, key=lambda n: n.name)
-        frontier = next_frontier
-    return result
-
-
-def _descendants_by_depth(graph, focal, depth):
-    result = {}
-    visited = {focal}
-    frontier = [focal]
-    for d in range(1, depth + 1):
-        next_frontier = []
-        for node in frontier:
-            for succ in graph.successors(node):
-                if succ not in visited:
-                    visited.add(succ)
-                    next_frontier.append(succ)
-        if not next_frontier:
-            break
-        result[d] = sorted(next_frontier, key=lambda n: n.name)
+        key = -d if get_neighbors == graph.predecessors else d
+        result[key] = sorted(next_frontier, key=lambda n: n.name)
         frontier = next_frontier
     return result
 
 
 def _format_node(entity, focal, width=20):
     label = entity.name
-    if entity.entity_type != 'model':
+    if entity.entity_type != "model":
         label = f'[{entity.entity_type[0]}] {label}'
     if entity is focal:
         return f'[ {label} ]'.center(width)
@@ -55,8 +39,8 @@ def _format_node(entity, focal, width=20):
 def render_dag_ascii(project: 'DbtProject', focal: 'DbtEntityAbstract', depth: int = 2) -> str:
     """Render an ASCII DAG centred on focal entity."""
     graph = project.graph
-    ancestors = _ancestors_by_depth(graph, focal, depth)
-    descendants = _descendants_by_depth(graph, focal, depth)
+    ancestors = _walk_by_depth(graph, focal, depth, graph.predecessors)
+    descendants = _walk_by_depth(graph, focal, depth, graph.successors)
 
     lines = []
 
