@@ -1,7 +1,6 @@
 """Run panel for executing dbt commands on the current model."""
 from __future__ import annotations
 import asyncio
-from typing import TYPE_CHECKING, cast
 from textual.app import ComposeResult
 from textual.widgets import Button, RichLog, Static
 from textual.containers import Horizontal
@@ -9,9 +8,6 @@ from textual.widget import Widget
 from textual import work
 
 from dbt_tui.backend.runner import DbtRunner
-
-if TYPE_CHECKING:
-    from dbt_tui.frontend.main import DbtTuiFrontend
 
 
 class RunPanel(Widget):
@@ -44,9 +40,8 @@ class RunPanel(Widget):
                 self.workers.cancel_all()
 
     def start_run(self, command: str) -> None:
-        app = cast('DbtTuiFrontend', self.app)
-        model = app.model
-        project = app.project
+        model = self.app.model  # type: ignore[attr-defined]
+        project = self.app.project  # type: ignore[attr-defined]
         if model is None or project is None:
             return
         self._set_running(True)
