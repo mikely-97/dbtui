@@ -82,11 +82,9 @@ def main():
         existing_cache = load_cache()
 
         # Save the project path to cache so the app loads it
-        save_cache(
-            project_path=project_path,
-            model_name=None,
-            external_editor_command=existing_cache.external_editor_command
-        )
+        existing_cache.last_open_project = project_path
+        existing_cache.last_active_model = None
+        save_cache(existing_cache)
 
     # Launch the app
     app = DbtTuiFrontend()

@@ -104,7 +104,11 @@ class TestCacheOperations:
         editor_command = 'code'
 
         # Save cache
-        save_cache(project_path, model_name, editor_command)
+        save_cache(DbtTuiCache(
+            last_open_project_raw=str(project_path),
+            last_active_model=model_name,
+            external_editor_command=editor_command,
+        ))
 
         # Load cache
         cache = load_cache()
@@ -119,7 +123,11 @@ class TestCacheOperations:
         monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
 
         # Save with None values
-        save_cache(None, None, 'vi')
+        save_cache(DbtTuiCache(
+            last_open_project_raw=None,
+            last_active_model=None,
+            external_editor_command='vi',
+        ))
 
         # Load cache
         cache = load_cache()

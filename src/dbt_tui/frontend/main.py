@@ -141,11 +141,11 @@ class DbtTuiFrontend(App):
         
     def save_context(self):
         """Save context immediately (blocking)."""
-        save_cache(
-            project_path=self.project.root_folder if isinstance(self.project, DbtProject) else None,
-            model_name=self.model.name if isinstance(self.model, DbtModel) else None,
+        save_cache(DbtTuiCache(
+            last_open_project_raw=str(self.project.root_folder) if isinstance(self.project, DbtProject) else None,
+            last_active_model=self.model.name if isinstance(self.model, DbtModel) else None,
             external_editor_command=self.external_editor_command,
-        )
+        ))
 
     def save_context_debounced(self):
         """Schedule a debounced save - coalesces rapid changes into one save."""
