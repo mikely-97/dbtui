@@ -15,6 +15,7 @@ from ..common import DbtTuiScreen, DbtModel, DbtProject
 from .properties_panel import PropertiesPanel
 from .doc_panel import DocPanel
 from .git_panel import GitPanel
+from .run_panel import RunPanel
 
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
@@ -39,7 +40,9 @@ class ModelView(DbtTuiScreen):
         Binding("shift+tab", "focus_previous", "prev pane", show=False),
         Binding("enter", "toggle_edit_mode()", "edit", show=False),
         Binding("escape", "exit_edit_mode()", "stop editing", show=False),
-        Binding("r", "refresh_properties()", "refresh properties"),
+        Binding("R", "refresh_properties()", "refresh properties"),
+        Binding("r", "run_model", "Run"),
+        Binding("t", "test_model", "Test"),
         Binding("right, l", "focus_properties()", "properties", show=False),
         Binding("left, h", "focus_editor()", "editor", show=False),
     ]
@@ -68,6 +71,8 @@ class ModelView(DbtTuiScreen):
                 yield DocPanel(id="doc-panel")
             with TabPane("Git", id="tab-git"):
                 yield GitPanel(id='git-panel')
+            with TabPane("Run", id="tab-run"):
+                yield RunPanel(id='run-panel')
         yield Footer()
 
     def on_mount(self) -> None:
@@ -116,6 +121,12 @@ class ModelView(DbtTuiScreen):
                 # Refresh properties after saving as config may have changed
                 self._refresh_model_properties()
             textarea.blur()
+
+    def action_run_model(self) -> None:
+        self.query_one('#run-panel', RunPanel).start_run('run')
+
+    def action_test_model(self) -> None:
+        self.query_one('#run-panel', RunPanel).start_run('test')
 
     def action_refresh_properties(self) -> None:
         """Refresh the properties panel with recollected claims."""
