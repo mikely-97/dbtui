@@ -212,14 +212,14 @@ The `tests/testing/` directory contains a sample dbt project used for testing:
 
 ## Roadmap
 
-- [ ] Enhanced model search (fuzzy matching, filters)
-- [ ] Property viewer showing all effective configs with sources
-- [ ] DAG visualization (ASCII graph)
-- [ ] Model execution (dbt run, dbt test)
-- [ ] Column-level lineage
-- [ ] Documentation viewer
-- [ ] Git integration
-- [ ] Multiple project workspace
+- [x] Enhanced model search (fuzzy matching, filters)
+- [x] Property viewer showing all effective configs with sources
+- [x] DAG visualization (ASCII graph)
+- [x] Model execution (dbt run, dbt test)
+- [x] Column-level lineage
+- [x] Documentation viewer
+- [x] Git integration
+- [x] Multiple project workspace
 
 ## Contributing
 

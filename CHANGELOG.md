@@ -1,34 +1,20 @@
 # Changelog
 
-All notable changes to dbt-tui will be documented in this file.
-
-## [0.2.1] - 2026-02-12
+## [0.3.0] - 2026-03-21
 
 ### Added
-- **Centralized logging system** with `--log-level` CLI parameter (DEBUG, INFO, WARNING, ERROR)
-- **`--logs-dir` option** to print logs directory path and exit
-- **Options screen improvements**: proper labels, descriptions, key bindings (escape/q to close), and session info display
-- **Async file writes** in edit mode to keep UI responsive
-- **pytest-asyncio** support for async tests
+- Fuzzy model search with tiered scoring (SequenceMatcher)
+- Entity type filters in model search (Models / Macros checkboxes)
+- Path prefix filter in model search
+- ASCII DAG visualisation screen (`d` key) with adjustable depth
+- Full-screen property viewer (`v` key) with live filter
+- Documentation tab in model view (Markdown rendering)
+- Git integration tab in model view (status bar, commit log, blame view)
+- Run/Test/Build panel in model view with streaming output (`r`/`t` keys)
+- Column-level lineage screen (`l` key) via sqlglot
+- Multi-project workspace support with tab bar
+- Macro test suite and fixtures
+- WorkspaceEntry persistence in cache
 
-### Changed
-- Removed `DBT_TUI_TIMING` environment variable in favor of `--log-level INFO`
-- Properties panel now shows compact single-line items instead of full-height rows
-- Property detail modal now supports "look up & edit if possible" workflow
-
-### Fixed
-- Options screen now has working key bindings and can be closed with escape
-- Async frontend tests now run properly (previously skipped)
-
-## [0.2.0] - 2026-02-11
-
-### Added
-- Property claims system for viewing model configurations from all sources
-- Model view screen with properties panel
-- Property editing and adding via modal dialogs
-- PropertyDiscoveryCache for 22x faster project loading
-- External editor support (E key)
-
-### Changed
-- Improved performance with cached YAML parsing
-- Debounced context saving
+## [0.2.1] - earlier
+- Initial release
