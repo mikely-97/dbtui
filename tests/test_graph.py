@@ -1,5 +1,5 @@
-from dbt_tui.backend import DbtProject, DbtModelNotFoundException
-from pytest import LogCaptureFixture, raises
+from dbt_tui.backend import DbtProject
+from pytest import LogCaptureFixture
 from logging import WARNING
 
 def test_multiple_args_in_ref(caplog: LogCaptureFixture):
