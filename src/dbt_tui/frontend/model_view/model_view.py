@@ -59,11 +59,12 @@ class ModelView(DbtTuiScreen):
                 ),
                 id="editor-container",
             ),
-            TabbedContent(
-                TabPane("Properties", PropertiesPanel(id="properties-panel")),
-                TabPane("Docs", DocPanel(id="doc-panel")),
-            ),
         )
+        with TabbedContent():
+            with TabPane("Properties", id="tab-props"):
+                yield PropertiesPanel(id="properties-panel")
+            with TabPane("Docs", id="tab-docs"):
+                yield DocPanel(id="doc-panel")
         yield Footer()
 
     def on_mount(self) -> None:
