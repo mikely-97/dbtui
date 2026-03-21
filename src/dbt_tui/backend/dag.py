@@ -27,6 +27,21 @@ def _walk_by_depth(graph, focal, depth, get_neighbors: Callable):
     return result
 
 
+def get_dag_node_list(project: 'DbtProject', focal: 'DbtEntityAbstract', depth: int = 2) -> list['DbtEntityAbstract']:
+    """Return nodes visible in DAG ordered: ancestors (deep→shallow), focal, descendants (shallow→deep)."""
+    graph = project.graph
+    ancestors = _walk_by_depth(graph, focal, depth, graph.predecessors)
+    descendants = _walk_by_depth(graph, focal, depth, graph.successors)
+
+    result: list['DbtEntityAbstract'] = []
+    for d in sorted(ancestors.keys()):        # -depth … -1
+        result.extend(ancestors[d])
+    result.append(focal)
+    for d in sorted(descendants.keys()):      # 1 … depth
+        result.extend(descendants[d])
+    return result
+
+
 def _format_node(entity, focal, width=20):
     label = entity.name
     if entity.entity_type != "model":
