@@ -202,6 +202,13 @@ class ModelView(DbtTuiScreen):
         header = self.query_one('#model-header', Static)
         header.update(f"{model.name} ({model.file_path_relative})")
 
+        # Check staleness
+        from dbt_tui.backend.staleness import check_staleness
+        if self.app.project:
+            staleness = check_staleness(self.app.project, model)
+            if staleness.is_stale:
+                header.update(f"⚠ STALE {model.name} ({model.file_path_relative}) — modified parents: {', '.join(staleness.stale_parents)}")
+
         # Update model content
         model_content = self.query_one('#model-content', TextArea)
         model_content.clear()
