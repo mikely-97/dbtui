@@ -52,3 +52,13 @@ def test_not_found_by_file_name():
     with raises(DbtModelNotFoundException):
         dbt_project.get_model_by_file_name('this_model_does_not_exist.sql')
 
+
+def test_model_history_tracking():
+    """Model history is maintained in the app."""
+    from dbt_tui.frontend.main import DbtTuiFrontend
+    app = DbtTuiFrontend()
+    assert hasattr(app, '_model_history')
+    assert isinstance(app._model_history, list)
+    assert hasattr(app, '_MAX_HISTORY')
+    assert app._MAX_HISTORY == 20
+

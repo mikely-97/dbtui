@@ -11,6 +11,7 @@ ALL_BINDINGS: list[tuple[str, str, str]] = [
     ('Global', 'o', 'Options'),
     ('Global', 'f', 'Find model'),
     ('Global', 'p', 'Change project'),
+    ('Global', 'g', 'Recent models'),
     ('Global', 'v', 'Property viewer'),
     ('Global', 'd', 'DAG view'),
     ('Global', 'l', 'Column lineage'),

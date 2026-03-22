@@ -15,6 +15,7 @@ from .dag_view import DagView
 from .property_viewer import PropertyViewerScreen
 from .lineage_view import ColumnLineageView
 from .help_screen import HelpScreen
+from .recent_models.recent_models import RecentModelsScreen
 
 from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
 from ..common.cache import WorkspaceEntry
@@ -39,6 +40,7 @@ class DbtTuiFrontend(App):
         Binding("o", "push_screen('options')", "options"),
         Binding("f", "push_screen('model_search')", "find model"),
         Binding("p", "push_screen('project_search')", "project"),
+        Binding("g", "push_screen('recent_models')", "recent"),
         Binding("v", "push_screen('property_viewer')", "properties"),
         Binding("d", "push_screen('dag_view')", "DAG"),
         Binding("l", "push_screen('lineage_view')", "Lineage"),
@@ -55,6 +57,7 @@ class DbtTuiFrontend(App):
         'dag_view': DagView,
         'property_viewer': PropertyViewerScreen,
         'lineage_view': ColumnLineageView,
+        'recent_models': RecentModelsScreen,
         'help': HelpScreen,
         }
 
@@ -63,6 +66,10 @@ class DbtTuiFrontend(App):
 
     projects: list = []
     active_project_index: int = 0
+
+    # Model history tracking
+    _model_history: list = []
+    _MAX_HISTORY = 20
 
     # For debounced save
     _save_timer = None
@@ -112,7 +119,14 @@ class DbtTuiFrontend(App):
         timing.log()
     
     def watch_model(self, old_model: DbtModel|None, new_model: DbtModel|None):
-        
+        if new_model is not None:
+            # Remove if already in history (move to end)
+            self._model_history = [m for m in self._model_history if m is not new_model]
+            self._model_history.append(new_model)
+            # Cap at MAX_HISTORY
+            if len(self._model_history) > self._MAX_HISTORY:
+                self._model_history = self._model_history[-self._MAX_HISTORY:]
+
         self.on_model_change(new_model)
 
     @property
