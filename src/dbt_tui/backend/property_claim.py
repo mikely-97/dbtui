@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, Self, TYPE_CHECKING
-import logging
+from ..common.logging import get_logger
+
+logger = get_logger('backend.property_claim')
 
 if TYPE_CHECKING:
     from .model import DbtModel
@@ -120,7 +122,7 @@ class PropertyClaimAggregate:
                             losers.append(claim)
                     except Exception as e:
                         # Log conflict but keep current winner
-                        logging.warning(f"Property conflict for '{prop_name}' in {self.model.name}: {e}")
+                        logger.warning(f"Property conflict for '{prop_name}' in {self.model.name}: {e}")
                         losers.append(claim)
 
                 self._resolved[prop_name] = winner

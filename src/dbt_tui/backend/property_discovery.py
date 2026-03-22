@@ -161,7 +161,7 @@ def get_model_path_parts(
         from .project import DbtProject
         if hasattr(model_path, 'project'):
             project = model_path.project
-    except:
+    except Exception:
         pass
 
     # Try configured model paths if available

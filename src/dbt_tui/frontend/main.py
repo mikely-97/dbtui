@@ -11,10 +11,10 @@ from .model_view import ModelView
 from .options.options import Options
 from .project_search.project_search import ProjectSearch
 from .new_model import NewModel
-from .dag_view.dag_view import DagView
-from .property_viewer.property_viewer import PropertyViewerScreen
-from .lineage_view.lineage_view import ColumnLineageView
-from .help_screen.help_screen import HelpScreen
+from .dag_view import DagView
+from .property_viewer import PropertyViewerScreen
+from .lineage_view import ColumnLineageView
+from .help_screen import HelpScreen
 
 from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
 from ..common.cache import WorkspaceEntry
