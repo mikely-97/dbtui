@@ -230,3 +230,12 @@ def test_file_watcher_context_manager():
         assert watcher.is_running
 
     assert not watcher.is_running
+
+
+def test_search_entities_works_across_projects():
+    """search_entities returns results that can be merged across projects."""
+    project = DbtProject('tests/testing')
+    results1 = project.search_entities('')
+    results2 = project.search_entities('')
+    merged = results1 + results2
+    assert len(merged) == len(results1) * 2

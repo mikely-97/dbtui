@@ -97,8 +97,23 @@ class ModelSearchInput(Input):
         except Exception:
             mat = None
 
-        entities = self.app.project.search_entities(value, entity_type=entity_type, tag=tag, materialized=mat)
-        model_list.populate_with_entities(entities=entities)
+        # Check if "All Projects" is enabled
+        try:
+            cb_all = self.screen.get_widget_by_id('filter-all-projects')
+            search_all = cb_all.value if isinstance(cb_all, Checkbox) else False
+        except Exception:
+            search_all = False
+
+        if search_all and hasattr(self.app, 'projects'):
+            # Search all projects and merge results
+            all_entities = []
+            for proj in self.app.projects:
+                results = proj.search_entities(value, entity_type=entity_type, tag=tag, materialized=mat)
+                all_entities.extend(results)
+            model_list.populate_with_entities(entities=all_entities)
+        else:
+            entities = self.app.project.search_entities(value, entity_type=entity_type, tag=tag, materialized=mat)
+            model_list.populate_with_entities(entities=entities)
 
     def on_input_changed(self, message: Input.Changed) -> None:
         self._do_search(message.value)

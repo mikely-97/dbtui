@@ -28,6 +28,7 @@ class ModelSearch(DbtTuiScreen):
             Checkbox("Macros", value=True, id="filter-macros"),
             Checkbox("Seeds", value=True, id="filter-seeds"),
             Checkbox("Snapshots", value=True, id="filter-snapshots"),
+            Checkbox("All Projects", value=False, id="filter-all-projects"),
             id='search-filters'
         )
         yield containers.Horizontal(
