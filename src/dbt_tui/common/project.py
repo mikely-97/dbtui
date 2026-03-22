@@ -57,6 +57,8 @@ class DbtProjectAbstract(ABC):
         query: str,
         entity_type: str | None = None,
         path_prefix: str | None = None,
+        tag: str | None = None,
+        materialized: str | None = None,
     ) -> list[DbtEntityAbstract]:
         """
         Search for entities matching a query.
@@ -66,6 +68,8 @@ class DbtProjectAbstract(ABC):
             entity_type: If provided, only search entities of this type ('model', 'macro')
             path_prefix: If provided, only include entities whose file_path_relative
                          contains this string
+            tag: If provided, only include models with this tag
+            materialized: If provided, only include models with this materialization type
 
         Returns:
             List of matching entities

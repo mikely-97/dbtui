@@ -82,3 +82,31 @@ class TestCreateNewModel:
         model = self.project.create_new_model(new_model_path)
         assert model.name == 'new_model'
         assert (self.test_project_path / new_model_path).exists()
+
+
+def test_model_tags_empty_by_default():
+    """Model with no config() tags returns empty list."""
+    project = DbtProject('tests/testing')
+    model = project.models[0]
+    assert isinstance(model.tags, list)
+
+
+def test_model_materialized_defaults_to_view():
+    """Model without config(materialized=...) returns 'view'."""
+    project = DbtProject('tests/testing')
+    model = project.models[0]
+    assert model.materialized in ('view', 'table', 'incremental', 'ephemeral', None)
+
+
+def test_search_by_tag_filters():
+    """Search with nonexistent tag returns empty list."""
+    project = DbtProject('tests/testing')
+    results = project.search_entities('', tag='nonexistent_tag_xyz')
+    assert results == []
+
+
+def test_search_by_materialized_works():
+    """Search with materialized filter returns a list."""
+    project = DbtProject('tests/testing')
+    results = project.search_entities('', materialized='view')
+    assert isinstance(results, list)

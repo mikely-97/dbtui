@@ -56,7 +56,7 @@ class DbtModel(DbtModelAbstract):
         return [i for i in self.parsed_template.find_all(Call) if i.node.name == macro_name]
 
     
-    @property 
+    @property
     def name(self) -> str:
         # by default dbt sets model name as its filename without extension
         default_name = self.file_name.rpartition('.')[0]
@@ -74,7 +74,38 @@ class DbtModel(DbtModelAbstract):
             config: Call = calls[0]
             kwargs = {item.key: item.value for item in config.kwargs}
             return kwargs.get('name', Const(default_name)).value
-    
+
+    @property
+    def tags(self) -> list[str]:
+        """Return tags from config(tags=[...]) or config(tags='single')."""
+        calls = self._find_calls('config')
+        if not calls:
+            return []
+        config: Call = calls[0]
+        kwargs = {item.key: item.value for item in config.kwargs}
+        tag_node = kwargs.get('tags')
+        if tag_node is None:
+            return []
+        from jinja2.nodes import List as JinjaList, Const as JinjaConst
+        if isinstance(tag_node, JinjaList):
+            return [item.value for item in tag_node.items if isinstance(item, JinjaConst)]
+        if isinstance(tag_node, JinjaConst):
+            return [tag_node.value]
+        return []
+
+    @property
+    def materialized(self) -> str:
+        """Return materialization from config(materialized=...), default 'view'."""
+        calls = self._find_calls('config')
+        if not calls:
+            return 'view'
+        config: Call = calls[0]
+        kwargs = {item.key: item.value for item in config.kwargs}
+        mat_node = kwargs.get('materialized')
+        if mat_node is None:
+            return 'view'
+        return str(mat_node.value)
+
     @property
     def children(self) -> list[DbtEntityAbstract]:
         return sorted(list(self.project.graph.successors(self)), key=lambda n: n.name)

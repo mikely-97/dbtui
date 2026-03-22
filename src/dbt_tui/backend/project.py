@@ -255,6 +255,8 @@ class DbtProject(DbtProjectAbstract):
         query: str,
         entity_type: str | None = None,
         path_prefix: str | None = None,
+        tag: str | None = None,
+        materialized: str | None = None,
     ) -> list[DbtEntityAbstract]:
         """
         Search for entities matching a query, with optional filters.
@@ -265,6 +267,8 @@ class DbtProject(DbtProjectAbstract):
                          from EntityType: 'model', 'seed', 'macro', 'snapshot', 'analysis')
             path_prefix: If provided, restrict to entities whose file_path_relative
                          contains this prefix string
+            tag: If provided, only include models with this tag
+            materialized: If provided, only include models with this materialization type
         """
         candidates = []
         if entity_type is None or entity_type == 'model':
@@ -279,24 +283,33 @@ class DbtProject(DbtProjectAbstract):
             ]
 
         if not query:
-            return sorted(candidates, key=lambda c: c.name)
+            results = sorted(candidates, key=lambda c: c.name)
+        else:
+            q = query.lower()
 
-        q = query.lower()
+            def score(entity) -> float:
+                name = entity.name.lower()
+                if name == q:
+                    return 1.0
+                if name.startswith(q):
+                    return 0.9 + len(q) / len(name) * 0.09
+                if q in name:
+                    return 0.7 + len(q) / len(name) * 0.19
+                return SequenceMatcher(None, q, name).ratio() * 0.6
 
-        def score(entity) -> float:
-            name = entity.name.lower()
-            if name == q:
-                return 1.0
-            if name.startswith(q):
-                return 0.9 + len(q) / len(name) * 0.09
-            if q in name:
-                return 0.7 + len(q) / len(name) * 0.19
-            return SequenceMatcher(None, q, name).ratio() * 0.6
+            scored = [(score(c), c) for c in candidates]
+            scored = [(s, c) for s, c in scored if s > 0.3]
+            scored.sort(key=lambda x: (-x[0], x[1].name))
+            results = [c for _, c in scored]
 
-        scored = [(score(c), c) for c in candidates]
-        scored = [(s, c) for s, c in scored if s > 0.3]
-        scored.sort(key=lambda x: (-x[0], x[1].name))
-        return [c for _, c in scored]
+        if tag:
+            from .model import DbtModel as _DM
+            results = [e for e in results if isinstance(e, _DM) and tag in e.tags]
+        if materialized:
+            from .model import DbtModel as _DM
+            results = [e for e in results if isinstance(e, _DM) and e.materialized == materialized]
+
+        return results
 
     def search_models(self, query: str) -> list[DbtModel]:
         """Search models only, delegating to search_entities."""

@@ -66,7 +66,21 @@ class ModelSearchInput(Input):
         else:
             entity_type = 'macro'
 
-        entities = self.app.project.search_entities(value, entity_type=entity_type)
+        try:
+            tag_input = self.screen.get_widget_by_id('filter-tag')
+            tag = tag_input.value.strip() if hasattr(tag_input, 'value') else None
+            tag = tag or None
+        except Exception:
+            tag = None
+
+        try:
+            mat_input = self.screen.get_widget_by_id('filter-mat')
+            mat = mat_input.value.strip() if hasattr(mat_input, 'value') else None
+            mat = mat or None
+        except Exception:
+            mat = None
+
+        entities = self.app.project.search_entities(value, entity_type=entity_type, tag=tag, materialized=mat)
         model_list.populate_with_entities(entities=entities)
 
     def on_input_changed(self, message: Input.Changed) -> None:

@@ -28,6 +28,13 @@ class ModelSearch(DbtTuiScreen):
             id='search-filters'
         )
         yield containers.Horizontal(
+            widgets.Static('Tag: '),
+            widgets.Input(id='filter-tag', placeholder='tag name'),
+            widgets.Static(' Mat.: '),
+            widgets.Input(id='filter-mat', placeholder='view/table/incremental'),
+            id='search-filters-2'
+        )
+        yield containers.Horizontal(
             ModelSearchList(
                 id='model_list',
                 name='model list'
@@ -79,6 +86,16 @@ class ModelSearch(DbtTuiScreen):
             search_input._do_search(search_input.value)
         except Exception as e:
             self.log.error(str(e))
+
+    def on_input_changed(self, event) -> None:
+        """Re-run search when tag or mat filter changes."""
+        if hasattr(event, 'input') and event.input.id in ('filter-tag', 'filter-mat'):
+            try:
+                search_input = self.get_widget_by_id('search_input')
+                if isinstance(search_input, ModelSearchInput):
+                    search_input._do_search(search_input.value)
+            except Exception:
+                pass
 
     def on_model_change(self, model: DbtModel|None):
         # reset the search and its results
