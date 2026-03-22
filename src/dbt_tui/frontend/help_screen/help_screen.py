@@ -23,6 +23,7 @@ ALL_BINDINGS: list[tuple[str, str, str]] = [
     ('Model View', 'E', 'Open in external editor'),
     ('Model View', 'e', 'Edit schema.yml'),
     ('Model View', 'b', 'Toggle bookmark'),
+    ('Model View', 'F', 'Format SQL (prettify)'),
     ('Model View', '→ / l', 'Focus properties panel'),
     ('Model View', '← / h', 'Focus SQL editor'),
     ('Model View', 'enter', 'Enter edit mode (in SQL editor)'),

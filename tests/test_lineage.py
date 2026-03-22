@@ -75,3 +75,24 @@ def test_cte_names_not_in_source_models(project):
     for col in cols:
         assert col.source_model not in ('source', 'renamed'), \
             f"CTE name leaked as source_model for column '{col.name}'"
+
+
+# Formatter tests
+from dbt_tui.backend.formatter import format_sql
+
+def test_format_sql_prettifies():
+    raw = "select id,name,amount from users where active=true"
+    result = format_sql(raw)
+    assert 'SELECT' in result or 'select' in result
+    # Should have newlines (pretty printed)
+    assert '\n' in result
+
+def test_format_sql_handles_jinja_gracefully():
+    raw = "select * from {{ ref('stg_users') }} where {{ var('filter') }}"
+    result = format_sql(raw)
+    # Should return something (may be original or partially formatted)
+    assert isinstance(result, str)
+    assert len(result) > 0
+
+def test_format_sql_empty():
+    assert format_sql('') == ''

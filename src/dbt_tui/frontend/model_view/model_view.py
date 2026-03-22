@@ -49,6 +49,7 @@ class ModelView(DbtTuiScreen):
         Binding("left, h", "focus_editor()", "editor", show=False),
         Binding("e", "edit_schema()", "edit schema"),
         Binding("b", "toggle_bookmark()", "bookmark"),
+        Binding("F", "format_sql()", "format SQL"),
     ]
 
     def compose(self):
@@ -154,6 +155,18 @@ class ModelView(DbtTuiScreen):
         is_bookmarked = self.app.toggle_bookmark(self.app.model.name)
         icon = '★' if is_bookmarked else '☆'
         self.app.notify(f"{icon} {self.app.model.name}")
+
+    def action_format_sql(self) -> None:
+        """Format the model's SQL in the editor."""
+        textarea = self.query_one('#model-content', TextArea)
+        from dbt_tui.backend.formatter import format_sql
+        formatted = format_sql(textarea.text)
+        if formatted != textarea.text:
+            textarea.clear()
+            textarea.load_text(formatted)
+            self.app.notify("SQL formatted")
+        else:
+            self.app.notify("No formatting changes")
 
     def action_refresh_properties(self) -> None:
         """Refresh the properties panel with recollected claims."""
