@@ -76,6 +76,16 @@ class CompilePanel(Widget):
         if running:
             self.query_one('#compile-status', Static).update('[yellow]Compiling...[/yellow]')
 
+    def update_compiled_code(self, code: str) -> None:
+        """Update compile output with cached compiled code from manifest."""
+        try:
+            output = self.query_one('#compile-output', TextArea)
+            if not output.text:  # Only update if empty
+                output.load_text(code)
+                self.query_one('#compile-status', Static).update('[blue]Cached[/blue]')
+        except Exception:
+            pass
+
 
 def _extract_compiled_sql(lines: list[str]) -> list[str]:
     """Extract compiled SQL from dbt compile output, skipping status/log lines."""

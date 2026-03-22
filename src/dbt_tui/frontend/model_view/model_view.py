@@ -218,6 +218,20 @@ class ModelView(DbtTuiScreen):
                 current_header = str(header.renderable)
                 header.update(f"{current_header}  [{status_icon} {run_result.status} {run_result.execution_time:.1f}s]")
 
+        # Show manifest column types if available
+        from dbt_tui.backend.manifest import get_manifest_node
+        if self.app.project:
+            manifest = get_manifest_node(self.app.project.root_folder, model.name)
+            if manifest and manifest.compiled_code:
+                # Update compile panel with cached compiled code
+                try:
+                    compile_panel = self.query_one('#compile-panel')
+                    from .compile_panel import CompilePanel
+                    if isinstance(compile_panel, CompilePanel):
+                        compile_panel.update_compiled_code(manifest.compiled_code)
+                except Exception:
+                    pass
+
         # Update model content
         model_content = self.query_one('#model-content', TextArea)
         model_content.clear()
