@@ -11,6 +11,7 @@ from ..common import DbtTuiCache, NonePathException, load_cache, save_cache
 from ..common.cache import WorkspaceEntry
 from ..common.logging import get_logger
 from .bookmarks import BookmarksScreen
+from .commands import DbtTuiCommands
 from .common import DbtModel, DbtProject, DbtTuiScreen
 from .common.project_tab_bar import ProjectTabBar
 from .common.timing import TimingContext
@@ -36,6 +37,8 @@ class AppContext:
 
 
 class DbtTuiFrontend(App):
+
+    COMMANDS = {DbtTuiCommands}
 
     BINDINGS = [
         Binding("q", "quit", "quit"),
