@@ -42,30 +42,46 @@ class ModelSearchInput(Input):
         try:
             cb_models = self.screen.get_widget_by_id('filter-models')
             cb_macros = self.screen.get_widget_by_id('filter-macros')
+            cb_seeds = self.screen.get_widget_by_id('filter-seeds')
+            cb_snapshots = self.screen.get_widget_by_id('filter-snapshots')
             if not isinstance(cb_models, Checkbox):
                 return
             if not isinstance(cb_macros, Checkbox):
                 return
+            if not isinstance(cb_seeds, Checkbox):
+                return
+            if not isinstance(cb_snapshots, Checkbox):
+                return
             want_models = cb_models.value
             want_macros = cb_macros.value
+            want_seeds = cb_seeds.value
+            want_snapshots = cb_snapshots.value
         except Exception:
             want_models = True
             want_macros = True
+            want_seeds = True
+            want_snapshots = True
 
         model_list = self.screen.get_widget_by_id('model_list')
         if not isinstance(model_list, ModelSearchList):
             return
 
-        if not want_models and not want_macros:
+        if not want_models and not want_macros and not want_seeds and not want_snapshots:
             model_list.populate_with_entities(entities=[])
             return
 
-        if want_models and want_macros:
-            entity_type = None
-        elif want_models:
-            entity_type = 'model'
-        else:
-            entity_type = 'macro'
+        # Determine entity_type based on which checkboxes are checked
+        entity_types = []
+        if want_models:
+            entity_types.append('model')
+        if want_macros:
+            entity_types.append('macro')
+        if want_seeds:
+            entity_types.append('seed')
+        if want_snapshots:
+            entity_types.append('snapshot')
+
+        entity_type = None if len(entity_types) == 4 else entity_types[0] if len(entity_types) == 1 else 'model'
 
         try:
             tag_input = self.screen.get_widget_by_id('filter-tag')

@@ -25,6 +25,8 @@ from .metrics import LoadMetrics, Timer
 from .model import DbtModel
 from .property_claim import PropertyClaimAggregate
 from .property_discovery import PropertyDiscoveryCache, collect_model_claims
+from .seed import DbtSeed
+from .snapshot import DbtSnapshot
 
 logger = get_logger('backend.project')
 
@@ -35,8 +37,12 @@ class DbtProject(DbtProjectAbstract):
     model_folder: str
     full_models_paths: list[Path]
     full_macro_paths: list[Path]
+    full_seed_paths: list[Path]
+    full_snapshot_paths: list[Path]
     models: list[DbtModel]
     macros: list[DbtMacro]
+    seeds: list[DbtSeed]
+    snapshots: list[DbtSnapshot]
     fall_back_to_filename: bool
     graph: DiGraph
 
@@ -46,6 +52,12 @@ class DbtProject(DbtProjectAbstract):
 
     # optimizations for fetching macros
     macros_by_name: dict[str, DbtMacro]
+
+    # optimizations for fetching seeds
+    seeds_by_name: dict[str, DbtSeed]
+
+    # optimizations for fetching snapshots
+    snapshots_by_name: dict[str, DbtSnapshot]
 
     # performance metrics from last load
     load_metrics: LoadMetrics | None
@@ -58,6 +70,12 @@ class DbtProject(DbtProjectAbstract):
         # Add all macro nodes first
         for macro in self.macros:
             self.graph.add_node(macro)
+        # Add seed nodes
+        for seed in self.seeds:
+            self.graph.add_node(seed)
+        # Add snapshot nodes
+        for snapshot in self.snapshots:
+            self.graph.add_node(snapshot)
         for model in self.models:
             self.graph.add_node(model)
             for ref in model.refs:
@@ -122,6 +140,10 @@ class DbtProject(DbtProjectAbstract):
         self.models_by_file_name = dict()
         self.macros = []
         self.macros_by_name = dict()
+        self.seeds = []
+        self.seeds_by_name = dict()
+        self.snapshots = []
+        self.snapshots_by_name = dict()
         self._sources = dict()
 
 
@@ -172,6 +194,40 @@ class DbtProject(DbtProjectAbstract):
                     except Exception as e:
                         logger.warning(f"Failed to load macro {file_path}: {e}")
 
+    def load_seeds(self) -> None:
+        for seed_path in self.full_seed_paths:
+            if not seed_path.exists():
+                continue
+            for root, _, files in seed_path.walk():
+                for file in files:
+                    # Only load CSV files as seeds
+                    if not file.endswith('.csv'):
+                        continue
+                    file_path = root / file
+                    try:
+                        seed = DbtSeed(file_path, self)
+                        self.seeds.append(seed)
+                        self.seeds_by_name[seed.name] = seed
+                    except Exception as e:
+                        logger.warning(f"Failed to load seed {file_path}: {e}")
+
+    def load_snapshots(self) -> None:
+        for snapshot_path in self.full_snapshot_paths:
+            if not snapshot_path.exists():
+                continue
+            for root, _, files in snapshot_path.walk():
+                for file in files:
+                    # Only load SQL files as snapshots
+                    if not file.endswith('.sql'):
+                        continue
+                    file_path = root / file
+                    try:
+                        snapshot = DbtSnapshot(file_path, self)
+                        self.snapshots.append(snapshot)
+                        self.snapshots_by_name[snapshot.name] = snapshot
+                    except Exception as e:
+                        logger.warning(f"Failed to load snapshot {file_path}: {e}")
+
     def refresh(self):
         if not os.path.exists(self.root_folder):
             raise FileNotFoundError(f"Folder not found: {self.root_folder}")
@@ -195,6 +251,16 @@ class DbtProject(DbtProjectAbstract):
                 # Load macros
                 with Timer() as t:
                     self.load_macros()
+                self.load_metrics.load_models_ms += t.elapsed_ms  # piggyback on model timer
+
+                # Load seeds
+                with Timer() as t:
+                    self.load_seeds()
+                self.load_metrics.load_models_ms += t.elapsed_ms  # piggyback on model timer
+
+                # Load snapshots
+                with Timer() as t:
+                    self.load_snapshots()
                 self.load_metrics.load_models_ms += t.elapsed_ms  # piggyback on model timer
 
                 # Build graph
@@ -230,6 +296,10 @@ class DbtProject(DbtProjectAbstract):
         self.full_models_paths = [self.root_folder / folder for folder in self.dbt_project_yml['model-paths']]
         macro_paths = self.dbt_project_yml.get('macro-paths', ['macros'])
         self.full_macro_paths = [self.root_folder / folder for folder in macro_paths]
+        seed_paths = self.dbt_project_yml.get('seed-paths', ['seeds'])
+        self.full_seed_paths = [self.root_folder / folder for folder in seed_paths]
+        snapshot_paths = self.dbt_project_yml.get('snapshot-paths', ['snapshots'])
+        self.full_snapshot_paths = [self.root_folder / folder for folder in snapshot_paths]
 
     def get_model_by_name(self, name: str) -> DbtModel:
         model = self.models_by_name.get(name)
@@ -289,6 +359,10 @@ class DbtProject(DbtProjectAbstract):
             candidates.extend(self.models)
         if entity_type is None or entity_type == 'macro':
             candidates.extend(self.macros)
+        if entity_type is None or entity_type == 'seed':
+            candidates.extend(self.seeds)
+        if entity_type is None or entity_type == 'snapshot':
+            candidates.extend(self.snapshots)
 
         if path_prefix:
             candidates = [

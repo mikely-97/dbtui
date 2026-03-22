@@ -128,3 +128,71 @@ def test_source_parsing():
     sources = model.sources
     assert len(sources) == 1
     assert sources[0] == ('raw_data', 'users')
+
+
+def test_project_has_seeds_list():
+    """Project should have a seeds list attribute."""
+    project = DbtProject('tests/testing')
+    assert hasattr(project, 'seeds')
+    assert isinstance(project.seeds, list)
+
+
+def test_project_has_snapshots_list():
+    """Project should have a snapshots list attribute."""
+    project = DbtProject('tests/testing')
+    assert hasattr(project, 'snapshots')
+    assert isinstance(project.snapshots, list)
+
+
+def test_seeds_are_loaded():
+    """Seeds CSV files should be loaded from seed-paths."""
+    project = DbtProject('tests/testing')
+    assert len(project.seeds) > 0
+
+
+def test_snapshots_are_loaded():
+    """Snapshot SQL files should be loaded from snapshot-paths."""
+    project = DbtProject('tests/testing')
+    assert len(project.snapshots) > 0
+
+
+def test_seeds_by_name_populated():
+    """seeds_by_name dict should be populated."""
+    project = DbtProject('tests/testing')
+    assert 'raw_users' in project.seeds_by_name
+
+
+def test_snapshots_by_name_populated():
+    """snapshots_by_name dict should be populated."""
+    project = DbtProject('tests/testing')
+    assert 'snap_orders' in project.snapshots_by_name
+
+
+def test_seed_entity_type():
+    """Seed entity_type should be 'seed'."""
+    project = DbtProject('tests/testing')
+    seed = project.seeds_by_name['raw_users']
+    assert seed.entity_type == 'seed'
+
+
+def test_snapshot_entity_type():
+    """Snapshot entity_type should be 'snapshot'."""
+    project = DbtProject('tests/testing')
+    snapshot = project.snapshots_by_name['snap_orders']
+    assert snapshot.entity_type == 'snapshot'
+
+
+def test_seeds_in_search_entities():
+    """search_entities should include seeds."""
+    project = DbtProject('tests/testing')
+    results = project.search_entities('', entity_type='seed')
+    assert len(results) > 0
+    assert any(e.entity_type == 'seed' for e in results)
+
+
+def test_snapshots_in_search_entities():
+    """search_entities should include snapshots."""
+    project = DbtProject('tests/testing')
+    results = project.search_entities('', entity_type='snapshot')
+    assert len(results) > 0
+    assert any(e.entity_type == 'snapshot' for e in results)
