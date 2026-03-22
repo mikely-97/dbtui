@@ -157,20 +157,3 @@ def collect_project_configs(
     return claims
 
 
-def collect_project_configs_cached(
-    model: 'DbtModel',
-    cache: 'PropertyDiscoveryCache',
-) -> list[PropertyClaim]:
-    """
-    Collect property claims from dbt_project.yml using cached data.
-
-    This is a compatibility wrapper that calls collect_project_configs with cache.
-
-    Args:
-        model: The DbtModel instance to collect configs for
-        cache: PropertyDiscoveryCache with pre-parsed dbt_project.yml
-
-    Returns:
-        List of PropertyClaim objects from dbt_project.yml
-    """
-    return collect_project_configs(model, cache)

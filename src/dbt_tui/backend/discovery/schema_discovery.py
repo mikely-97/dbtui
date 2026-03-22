@@ -123,20 +123,3 @@ def collect_schema_properties(
     return claims
 
 
-def collect_schema_properties_cached(
-    model: 'DbtModel',
-    cache: 'PropertyDiscoveryCache',
-) -> list[PropertyClaim]:
-    """
-    Collect property claims from schema.yml files using cached data.
-
-    This is a compatibility wrapper that calls collect_schema_properties with cache.
-
-    Args:
-        model: The DbtModel instance to collect properties for
-        cache: PropertyDiscoveryCache with pre-parsed schema files
-
-    Returns:
-        List of PropertyClaim objects from schema files
-    """
-    return collect_schema_properties(model, cache=cache)

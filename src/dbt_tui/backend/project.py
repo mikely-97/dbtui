@@ -17,7 +17,7 @@ from ..common.logging import get_logger
 from .model import DbtModel
 from .macro import DbtMacro
 from .property_claim import PropertyClaimAggregate
-from .property_discovery import collect_model_claims_cached, PropertyDiscoveryCache
+from .property_discovery import collect_model_claims, PropertyDiscoveryCache
 from .metrics import LoadMetrics, Timer
 
 
@@ -98,7 +98,7 @@ class DbtProject(DbtProjectAbstract):
 
         for model in self.models:
             aggregate = PropertyClaimAggregate(model)
-            claims = collect_model_claims_cached(model, cache)
+            claims = collect_model_claims(model, cache)
             aggregate.add_all(claims)
             model.property_claims = aggregate
     

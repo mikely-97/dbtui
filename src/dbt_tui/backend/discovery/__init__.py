@@ -7,8 +7,8 @@ import yaml
 
 from ..property_claim import PropertyClaim
 from ...common.logging import get_logger
-from .config_discovery import collect_project_configs, collect_project_configs_cached
-from .schema_discovery import collect_schema_properties, collect_schema_properties_cached
+from .config_discovery import collect_project_configs
+from .schema_discovery import collect_schema_properties
 from .utils import get_model_path_parts, find_schema_files
 
 logger = get_logger('backend.discovery')
@@ -20,9 +20,7 @@ if TYPE_CHECKING:
 __all__ = [
     'PropertyDiscoveryCache',
     'collect_project_configs',
-    'collect_project_configs_cached',
     'collect_schema_properties',
-    'collect_schema_properties_cached',
     'get_model_path_parts',
     'find_schema_files',
 ]

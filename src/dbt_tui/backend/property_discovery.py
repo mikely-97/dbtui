@@ -19,9 +19,7 @@ from ..common.logging import get_logger
 from .discovery import (
     PropertyDiscoveryCache,
     collect_project_configs,
-    collect_project_configs_cached,
     collect_schema_properties,
-    collect_schema_properties_cached,
     get_model_path_parts,
     find_schema_files,
 )
@@ -34,11 +32,8 @@ if TYPE_CHECKING:
 __all__ = [
     'PropertyDiscoveryCache',
     'collect_project_configs',
-    'collect_project_configs_cached',
     'collect_schema_properties',
-    'collect_schema_properties_cached',
     'collect_model_claims',
-    'collect_model_claims_cached',
     'collect_sql_configs',
     'resolve_property_precedence',
     'get_effective_properties',
@@ -217,20 +212,3 @@ def get_effective_properties(
     return {name: claim.value for name, claim in resolved.items()}
 
 
-def collect_model_claims_cached(
-    model: 'DbtModel',
-    cache: PropertyDiscoveryCache,
-) -> list[PropertyClaim]:
-    """
-    Collect all property claims for a model using cached YAML data.
-
-    This is a compatibility wrapper that calls collect_model_claims with cache.
-
-    Args:
-        model: The DbtModel instance to collect all properties for
-        cache: PropertyDiscoveryCache with pre-parsed YAML files
-
-    Returns:
-        List of all PropertyClaim objects for the model
-    """
-    return collect_model_claims(model, cache)
