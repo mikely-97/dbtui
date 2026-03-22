@@ -1,14 +1,8 @@
-class NonePathException(Exception):
-    pass
-
-class DbtModelNotFoundException(Exception):
-    pass
-
-class IncorrectFileExtensionException(Exception):
-    pass
-
-class NotWithinSubdirectoryException(Exception):
-    pass
-
-class InvalidProjectPathException(Exception):
-    pass
+"""Backward compatibility — exceptions moved to errors.py."""
+from .errors import (
+    NonePathException,
+    DbtModelNotFoundException,
+    IncorrectFileExtensionException,
+    NotWithinSubdirectoryException,
+    InvalidProjectPathException,
+)

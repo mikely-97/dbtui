@@ -16,6 +16,27 @@ if TYPE_CHECKING:
     from .entity import DbtEntityAbstract
 
 
+# Exception classes (moved from exceptions.py for consolidation)
+class NonePathException(Exception):
+    pass
+
+
+class DbtModelNotFoundException(Exception):
+    pass
+
+
+class IncorrectFileExtensionException(Exception):
+    pass
+
+
+class NotWithinSubdirectoryException(Exception):
+    pass
+
+
+class InvalidProjectPathException(Exception):
+    pass
+
+
 class ErrorSeverity(Enum):
     """Severity level for load errors."""
     WARNING = "warning"
