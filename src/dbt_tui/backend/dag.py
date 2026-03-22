@@ -44,6 +44,23 @@ def get_dag_node_list(project: DbtProject, focal: DbtEntityAbstract, depth: int 
     return result
 
 
+def get_execution_order(project: DbtProject, focal: DbtEntityAbstract, depth: int = 2) -> list[DbtEntityAbstract]:
+    """Return nodes in topological execution order (dependencies first)."""
+    import networkx as nx
+
+    # Get all visible nodes
+    node_list = get_dag_node_list(project, focal, depth)
+
+    # Build subgraph of visible nodes
+    subgraph = project.graph.subgraph(node_list)
+
+    try:
+        return list(nx.topological_sort(subgraph))
+    except nx.NetworkXUnfeasible:
+        # Cycle detected — return unsorted
+        return node_list
+
+
 def _format_node(entity, focal, width=20):
     label = entity.name
     if entity.entity_type != "model":

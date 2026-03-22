@@ -32,6 +32,7 @@ ALL_BINDINGS: list[tuple[str, str, str]] = [
     ('DAG View', '+', 'Increase depth'),
     ('DAG View', '-', 'Decrease depth'),
     ('DAG View', 'm', 'Export Mermaid diagram'),
+    ('DAG View', 'x', 'Toggle execution order'),
     ('DAG View', 'enter', 'Navigate to selected node'),
     ('DAG View', 'escape', 'Back'),
     ('Model Search', 'down / j', 'Next result'),

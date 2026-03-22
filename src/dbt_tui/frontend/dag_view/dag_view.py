@@ -3,7 +3,7 @@ from textual.binding import Binding
 from textual.containers import ScrollableContainer
 from textual.widgets import Footer, Label, ListItem, ListView, Static
 
-from dbt_tui.backend.dag import get_dag_node_list, render_dag_ascii, render_dag_mermaid
+from dbt_tui.backend.dag import get_dag_node_list, get_execution_order, render_dag_ascii, render_dag_mermaid
 from dbt_tui.backend.model import DbtModel
 from dbt_tui.frontend.common.dbt_tui_screen import DbtTuiScreen
 
@@ -19,12 +19,14 @@ class DagView(DbtTuiScreen):
         Binding('+', 'increase_depth', 'More depth'),
         Binding('-', 'decrease_depth', 'Less depth'),
         Binding('m', 'export_mermaid', 'Mermaid'),
+        Binding('x', 'toggle_exec_order', 'exec order'),
     ]
 
     def __init__(self):
         super().__init__()
         self._depth = 2
         self._nav_nodes: list = []
+        self._show_exec_order = False
 
     def compose(self) -> ComposeResult:
         yield Static('', id='dag-title')
@@ -60,12 +62,23 @@ class DagView(DbtTuiScreen):
         content.update(text)
 
         # Populate navigation list
-        self._nav_nodes = get_dag_node_list(project, model, depth=self._depth)
+        if self._show_exec_order:
+            self._nav_nodes = get_execution_order(project, model, depth=self._depth)
+        else:
+            self._nav_nodes = get_dag_node_list(project, model, depth=self._depth)
+
         node_list.clear()
-        for node in self._nav_nodes:
+        label_widget = self.query_one('#dag-nav-label', Static)
+        mode = 'Execution order' if self._show_exec_order else 'Navigate'
+        label_widget.update(f'{mode} (↑↓ Enter to jump):')
+
+        for i, node in enumerate(self._nav_nodes):
             marker = '► ' if node is model else '  '
-            label = f"{marker}{node.name} [{node.entity_type}]"
-            node_list.append(ListItem(Label(label)))
+            if self._show_exec_order:
+                label_text = f"{i+1}. {marker}{node.name} [{node.entity_type}]"
+            else:
+                label_text = f"{marker}{node.name} [{node.entity_type}]"
+            node_list.append(ListItem(Label(label_text)))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Navigate to the selected node when Enter is pressed."""
@@ -86,6 +99,10 @@ class DagView(DbtTuiScreen):
 
     def action_decrease_depth(self) -> None:
         self._depth = max(self._depth - 1, 0)
+        self._refresh_dag()
+
+    def action_toggle_exec_order(self) -> None:
+        self._show_exec_order = not self._show_exec_order
         self._refresh_dag()
 
     def action_export_mermaid(self) -> None:

@@ -1,7 +1,7 @@
 import pytest
 
 from dbt_tui.backend import DbtProject
-from dbt_tui.backend.dag import get_dag_node_list, render_dag_ascii, render_dag_mermaid
+from dbt_tui.backend.dag import get_dag_node_list, get_execution_order, render_dag_ascii, render_dag_mermaid
 
 
 @pytest.fixture(scope='module')
@@ -83,3 +83,23 @@ def test_mermaid_id_sanitizes():
     class FakeEntity:
         name = 'my-source.table'
     assert _mermaid_id(FakeEntity()) == 'my_source_table'
+
+
+def test_execution_order_returns_list(project):
+    model = project.models[0]
+    result = get_execution_order(project, model, depth=2)
+    assert isinstance(result, list)
+    assert model in result
+
+
+def test_execution_order_deps_before_dependents(project):
+    """In execution order, parents should come before children."""
+    # Find a model with parents
+    for m in project.models:
+        parents = list(project.graph.predecessors(m))
+        if parents:
+            order = get_execution_order(project, m, depth=1)
+            names = [n.name for n in order]
+            if parents[0].name in names and m.name in names:
+                assert names.index(parents[0].name) < names.index(m.name)
+            break
