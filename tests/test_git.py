@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from dbt_tui.backend.git import GitFileStatus, get_git_blame, get_git_log, get_git_status
+from dbt_tui.backend.git import GitFileStatus, get_git_blame, get_git_log, get_git_status, get_file_diff
 
 
 @pytest.fixture
@@ -35,3 +35,8 @@ async def test_not_in_repo_returns_gracefully(tmp_path):
     f.write_text('select 1')
     status = await get_git_status(f)
     assert status.state in ('unknown', 'untracked', 'clean')
+
+@pytest.mark.asyncio
+async def test_get_file_diff_returns_string(model_path):
+    result = await get_file_diff(model_path)
+    assert isinstance(result, str)

@@ -110,3 +110,12 @@ async def get_git_blame(file_path: Path) -> list[GitBlameLine]:
             current_hash = parts[0]
             line_no = int(parts[2]) if len(parts) >= 3 else 0
     return lines
+
+
+async def get_file_diff(file_path: Path) -> str:
+    """Get git diff for a specific file (both staged and unstaged)."""
+    rc, out = await _run(
+        ['git', 'diff', 'HEAD', '--', str(file_path)],
+        cwd=file_path.parent,
+    )
+    return out.strip()
