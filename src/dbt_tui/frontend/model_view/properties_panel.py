@@ -16,6 +16,13 @@ from ...backend.property_writer import (
     write_property_to_schema,
     write_property_to_model_sql,
 )
+from .properties_formatter import (
+    format_full_value,
+    format_short_value,
+    format_item_value,
+    format_current_value,
+    parse_value,
+)
 
 if TYPE_CHECKING:
     from ..common import DbtModel
@@ -70,13 +77,13 @@ class PropertyDetailModal(ModalScreen[str | None]):
                 yield Label("Path:", classes="detail-label")
                 yield Label(f"{self.claim.source_path.name}", classes="detail-value")
             yield Static("Value:", classes="detail-label")
-            yield Static(self._format_full_value(self.claim.value), classes="value-full")
+            yield Static(format_full_value(self.claim.value), classes="value-full")
 
             if self.overridden:
                 yield Static(f"Overrides ({len(self.overridden)}):", classes="overrides-header")
                 for override in self.overridden:
                     yield Static(
-                        f"  {override.source_type}: {self._format_short_value(override.value)}",
+                        f"  {override.source_type}: {format_short_value(override.value)}",
                         classes="override-item"
                     )
 
@@ -85,28 +92,7 @@ class PropertyDetailModal(ModalScreen[str | None]):
                     yield Button("Edit", variant="primary", id="edit-btn")
                 yield Button("Close", id="close-btn")
 
-    def _format_full_value(self, value) -> str:
-        """Format property value for full display."""
-        if isinstance(value, str):
-            return f'"{value}"'
-        elif isinstance(value, (list, dict)):
-            import json
-            return json.dumps(value, indent=2)
-        else:
-            return str(value)
 
-    def _format_short_value(self, value) -> str:
-        """Format property value for short display."""
-        if isinstance(value, str):
-            if len(value) > 30:
-                return f'"{value[:27]}..."'
-            return f'"{value}"'
-        elif isinstance(value, list):
-            return f"[{len(value)} items]"
-        elif isinstance(value, dict):
-            return f"{{{len(value)} keys}}"
-        else:
-            return str(value)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "edit-btn":
@@ -147,24 +133,13 @@ class PropertyEditModal(ModalScreen[WriteResult | None]):
                 classes="info-row"
             )
             yield Input(
-                value=self._format_current_value(),
+                value=format_current_value(self.claim.value),
                 placeholder="Enter new value",
                 id="value-input"
             )
             with Horizontal(classes="button-row"):
                 yield Button("Save", variant="primary", id="save-btn")
                 yield Button("Cancel", id="cancel-btn")
-
-    def _format_current_value(self) -> str:
-        """Format the current value for editing."""
-        value = self.claim.value
-        if isinstance(value, str):
-            return value
-        elif isinstance(value, (list, dict)):
-            import json
-            return json.dumps(value)
-        else:
-            return str(value)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "save-btn":
@@ -179,7 +154,7 @@ class PropertyEditModal(ModalScreen[WriteResult | None]):
     def _save_property(self) -> None:
         """Save the edited property."""
         new_value = self.query_one("#value-input", Input).value
-        parsed_value = self._parse_value(new_value)
+        parsed_value = parse_value(new_value)
 
         if self.claim.source_type == "schema.yml":
             result = write_property_to_schema(
@@ -199,34 +174,6 @@ class PropertyEditModal(ModalScreen[WriteResult | None]):
             result = WriteResult(False, "Cannot edit dbt_project.yml properties")
 
         self.dismiss(result)
-
-    def _parse_value(self, value_str: str) -> any:
-        """Parse string input to appropriate Python type."""
-        # Try bool
-        if value_str.lower() == 'true':
-            return True
-        if value_str.lower() == 'false':
-            return False
-        # Try int
-        try:
-            return int(value_str)
-        except ValueError:
-            pass
-        # Try float
-        try:
-            return float(value_str)
-        except ValueError:
-            pass
-        # Try JSON (for lists/dicts)
-        try:
-            import json
-            parsed = json.loads(value_str)
-            if isinstance(parsed, (list, dict)):
-                return parsed
-        except (json.JSONDecodeError, ValueError):
-            pass
-        # Default to string
-        return value_str
 
     def action_cancel(self) -> None:
         self.dismiss(None)
@@ -342,7 +289,7 @@ class AddPropertyModal(ModalScreen[WriteResult | None]):
             self.app.notify("Property name is required", severity="error")
             return
 
-        parsed_value = self._parse_value(value)
+        parsed_value = parse_value(value)
 
         if location == "model_config":
             result = write_property_to_model_sql(self.model, name, parsed_value)
@@ -364,34 +311,6 @@ class AddPropertyModal(ModalScreen[WriteResult | None]):
             result = write_property_to_schema(self.model, name, parsed_value, kind)
 
         self.dismiss(result)
-
-    def _parse_value(self, value_str: str) -> any:
-        """Parse string input to appropriate Python type."""
-        # Try bool
-        if value_str.lower() == 'true':
-            return True
-        if value_str.lower() == 'false':
-            return False
-        # Try int
-        try:
-            return int(value_str)
-        except ValueError:
-            pass
-        # Try float
-        try:
-            return float(value_str)
-        except ValueError:
-            pass
-        # Try JSON (for lists/dicts)
-        try:
-            import json
-            parsed = json.loads(value_str)
-            if isinstance(parsed, (list, dict)):
-                return parsed
-        except (json.JSONDecodeError, ValueError):
-            pass
-        # Default to string
-        return value_str
 
     def action_cancel(self) -> None:
         self.dismiss(None)
@@ -421,18 +340,7 @@ class PropertyItem(ListItem):
 
     def _format_value(self, value) -> str:
         """Format property value for display."""
-        if isinstance(value, str):
-            if len(value) > 40:
-                return f'"{value[:37]}..."'
-            return f'"{value}"'
-        elif isinstance(value, list):
-            if len(value) > 3:
-                return f"[{len(value)} items]"
-            return str(value)
-        elif isinstance(value, dict):
-            return f"{{...}} ({len(value)} keys)"
-        else:
-            return str(value)
+        return format_item_value(value)
 
 
 class PropertiesPanel(Vertical):
