@@ -18,7 +18,7 @@ class DbtProject(DbtProjectAbstract):
         else:
             self.root_folder = Path(project_path)
 
-    def search_entities(self, query, entity_type=None, path_prefix=None) -> list:
+    def search_entities(self, query, entity_type=None, path_prefix=None, tag=None, materialized=None) -> list:
         result = []
         for _ in range(random.randint(2, 5)):
             result.append(DbtModel.generate_random())
