@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .project import DbtProjectAbstract
 
 
-EntityType = Literal["model", "seed", "macro", "snapshot", "analysis"]
+EntityType = Literal["model", "seed", "macro", "snapshot", "analysis", "source"]
 
 
 class DbtEntityAbstract(ABC):

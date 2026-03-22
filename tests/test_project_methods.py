@@ -110,3 +110,19 @@ def test_search_by_materialized_works():
     project = DbtProject('tests/testing')
     results = project.search_entities('', materialized='view')
     assert isinstance(results, list)
+
+
+def test_model_sources_empty_by_default():
+    """Models without source() return empty list."""
+    project = DbtProject('tests/testing')
+    model = project.models[0]
+    assert isinstance(model.sources, list)
+
+
+def test_source_parsing():
+    """source() calls extract (source_name, table_name) tuples."""
+    project = DbtProject('tests/testing')
+    model = project.get_model_by_name('v_source_model')
+    sources = model.sources
+    assert len(sources) == 1
+    assert sources[0] == ('raw_data', 'users')

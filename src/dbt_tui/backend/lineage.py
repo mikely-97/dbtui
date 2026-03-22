@@ -19,6 +19,7 @@ class ColumnLineage:
 def _strip_jinja(sql: str) -> str:
     """Replace Jinja blocks with plain SQL so sqlglot can parse."""
     sql = re.sub(r"\{\{\s*ref\(['\"](\w+)['\"]\)\s*\}\}", r'\1', sql)
+    sql = re.sub(r"\{\{\s*source\(['\"](\w+)['\"],\s*['\"](\w+)['\"]\)\s*\}\}", r'\2', sql)
     sql = re.sub(r'\{\{[^}]+\}\}', 'placeholder', sql)
     sql = re.sub(r'\{%-?\s*.*?-?%\}', '', sql, flags=re.DOTALL)
     return sql

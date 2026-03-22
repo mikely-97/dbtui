@@ -19,6 +19,7 @@ def test_all_models_are_visible():
             'v_lineage.sql',
             'v_cte_model.sql',
             'v_join_model.sql',
+            'v_source_model.sql',
             'stg_users.sql',
             'i_d.sql',
             'i_a.sql',

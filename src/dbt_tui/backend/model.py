@@ -161,3 +161,14 @@ class DbtModel(DbtModelAbstract):
             result.append(call.args[0].value)
         return result
 
+    @property
+    def sources(self) -> list[tuple[str, str]]:
+        """Return list of (source_name, table_name) tuples from source() calls."""
+        result = []
+        for call in self._find_calls('source'):
+            if len(call.args) != 2:
+                logger.warning(f"Invalid source() call in {self.name}: expected 2 args, got {len(call.args)}")
+                continue
+            result.append((call.args[0].value, call.args[1].value))
+        return result
+

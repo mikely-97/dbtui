@@ -80,6 +80,15 @@ class DbtProject(DbtProjectAbstract):
                 macro = self.macros_by_name.get(macro_name)
                 if macro:
                     self.graph.add_edge(macro, model)
+            # Add source dependency edges
+            for source_name, table_name in model.sources:
+                source_key = f"{source_name}.{table_name}"
+                if source_key not in self._sources:
+                    from .source import DbtSource
+                    self._sources[source_key] = DbtSource(source_name, table_name)
+                source_entity = self._sources[source_key]
+                self.graph.add_node(source_entity)
+                self.graph.add_edge(source_entity, model)
 
     def collect_property_claims(self) -> None:
         """
@@ -108,6 +117,7 @@ class DbtProject(DbtProjectAbstract):
         self.models_by_file_name = dict()
         self.macros = []
         self.macros_by_name = dict()
+        self._sources = dict()
 
 
     def load_models(self) -> None:

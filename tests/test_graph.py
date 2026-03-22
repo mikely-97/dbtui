@@ -27,6 +27,7 @@ def test_graph_repr():
 (i_a) --> (i_b_changed)
 (i_c1) --> (i_d)
 (i_c2) --> (i_d)
+(raw_data.users) --> (v_source_model)
 (stg_users) --> (v_join_model)
 (v_a) --> (v_b)
 (v_a) --> (v_lineage)
