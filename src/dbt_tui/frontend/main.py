@@ -16,6 +16,7 @@ from .property_viewer import PropertyViewerScreen
 from .lineage_view import ColumnLineageView
 from .help_screen import HelpScreen
 from .recent_models.recent_models import RecentModelsScreen
+from .bookmarks import BookmarksScreen
 
 from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
 from ..common.cache import WorkspaceEntry
@@ -44,6 +45,7 @@ class DbtTuiFrontend(App):
         Binding("v", "push_screen('property_viewer')", "properties"),
         Binding("d", "push_screen('dag_view')", "DAG"),
         Binding("l", "push_screen('lineage_view')", "Lineage"),
+        Binding("B", "push_screen('bookmarks')", "bookmarks"),
         Binding("?", "push_screen('help')", "help"),
     ]
 
@@ -58,6 +60,7 @@ class DbtTuiFrontend(App):
         'property_viewer': PropertyViewerScreen,
         'lineage_view': ColumnLineageView,
         'recent_models': RecentModelsScreen,
+        'bookmarks': BookmarksScreen,
         'help': HelpScreen,
         }
 
@@ -223,7 +226,22 @@ class DbtTuiFrontend(App):
         """Callback for debounced save timer."""
         self._save_timer = None
         self.save_context()
-    
+
+    def toggle_bookmark(self, model_name: str) -> bool:
+        """Toggle bookmark. Returns True if now bookmarked."""
+        cache = load_cache()
+        if model_name in cache.bookmarks:
+            cache.bookmarks.remove(model_name)
+            save_cache(cache)
+            return False
+        else:
+            cache.bookmarks.append(model_name)
+            save_cache(cache)
+            return True
+
+    def get_bookmarks(self) -> list[str]:
+        """Get current bookmarks."""
+        return load_cache().bookmarks
 
     async def on_mount(self):
         logger.debug("App mounting, loading context")

@@ -19,6 +19,7 @@ class DbtTuiCache:
     last_active_model: str | None = None
     external_editor_command: str = 'vi'
     workspaces: list[WorkspaceEntry] = field(default_factory=list)
+    bookmarks: list[str] = field(default_factory=list)
 
     @property
     def last_open_project(self) -> Path | None:
@@ -58,7 +59,8 @@ def load_cache(clear_cache:bool=False) -> DbtTuiCache:
         with open(cache_path, 'r', encoding='utf-8') as f:
             cache_raw = json.load(f)
     workspaces = [WorkspaceEntry(**w) for w in cache_raw.pop('workspaces', [])]
-    dbt_tui_cache = DbtTuiCache(**cache_raw, workspaces=workspaces)
+    bookmarks = cache_raw.pop('bookmarks', [])
+    dbt_tui_cache = DbtTuiCache(**cache_raw, workspaces=workspaces, bookmarks=bookmarks)
     return dbt_tui_cache
 
 def save_cache(cache: DbtTuiCache):
@@ -71,6 +73,7 @@ def save_cache(cache: DbtTuiCache):
             {'project_path': w.project_path, 'last_model': w.last_model}
             for w in cache.workspaces
         ],
+        'bookmarks': cache.bookmarks,
     }
     with open(cache_path, 'w', encoding='utf-8') as f:
         json.dump(data, f)

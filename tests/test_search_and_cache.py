@@ -162,6 +162,51 @@ class TestCacheOperations:
         assert cache.last_open_project == Path(test_str)
         assert cache.last_open_project_raw == test_str
 
+    def test_cache_bookmarks_round_trip(self, tmp_path, monkeypatch):
+        """Bookmarks persist through save/load cycle."""
+        monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
+
+        # Create and save cache with bookmarks
+        cache = load_cache(clear_cache=True)
+        cache.bookmarks = ['model_a', 'model_b']
+        save_cache(cache)
+
+        # Load and verify
+        loaded = load_cache()
+        assert loaded.bookmarks == ['model_a', 'model_b']
+
+    def test_cache_bookmarks_empty_by_default(self, tmp_path, monkeypatch):
+        """Bookmarks should be empty list by default."""
+        monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
+
+        cache = load_cache(clear_cache=True)
+        assert cache.bookmarks == []
+
+    def test_cache_bookmarks_add_and_remove(self, tmp_path, monkeypatch):
+        """Should handle adding and removing bookmarks."""
+        monkeypatch.setattr('dbt_tui.common.cache.user_cache_dir', lambda x: str(tmp_path))
+
+        cache = load_cache(clear_cache=True)
+
+        # Add bookmarks
+        cache.bookmarks.append('model_x')
+        cache.bookmarks.append('model_y')
+        save_cache(cache)
+
+        # Verify
+        loaded = load_cache()
+        assert 'model_x' in loaded.bookmarks
+        assert 'model_y' in loaded.bookmarks
+
+        # Remove one
+        loaded.bookmarks.remove('model_x')
+        save_cache(loaded)
+
+        # Verify removal
+        loaded_again = load_cache()
+        assert 'model_x' not in loaded_again.bookmarks
+        assert 'model_y' in loaded_again.bookmarks
+
 
 class TestModelFolderOperations:
     """Test operations related to model folders."""

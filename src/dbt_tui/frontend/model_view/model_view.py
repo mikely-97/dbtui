@@ -48,6 +48,7 @@ class ModelView(DbtTuiScreen):
         Binding("right, l", "focus_properties()", "properties", show=False),
         Binding("left, h", "focus_editor()", "editor", show=False),
         Binding("e", "edit_schema()", "edit schema"),
+        Binding("b", "toggle_bookmark()", "bookmark"),
     ]
 
     def compose(self):
@@ -145,6 +146,14 @@ class ModelView(DbtTuiScreen):
                 self._refresh_model_properties()
                 self.app.notify("schema.yml updated")
         self.app.push_screen(SchemaEditorScreen(self.app.model), on_dismiss)
+
+    def action_toggle_bookmark(self) -> None:
+        """Toggle bookmark for the current model."""
+        if not self.app.model:
+            return
+        is_bookmarked = self.app.toggle_bookmark(self.app.model.name)
+        icon = '★' if is_bookmarked else '☆'
+        self.app.notify(f"{icon} {self.app.model.name}")
 
     def action_refresh_properties(self) -> None:
         """Refresh the properties panel with recollected claims."""
