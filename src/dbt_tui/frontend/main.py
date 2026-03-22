@@ -4,6 +4,7 @@ from typing import Any
 from textual.app import App
 from textual.binding import Binding
 from textual.reactive import reactive
+from textual.widgets import Static
 
 from ..common import DbtTuiCache, NonePathException, load_cache, save_cache
 from ..common.cache import WorkspaceEntry
@@ -94,6 +95,7 @@ class DbtTuiFrontend(App):
 
     def on_project_change(self, project: DbtProject|None):
         self.save_context_debounced()
+        self._refresh_stats()
         for screen in self.screen_stack:
             if screen.id != '_default':
                 screen.on_project_change(project)
@@ -165,6 +167,25 @@ class DbtTuiFrontend(App):
         try:
             tab_bar = self.query_one('#project-tab-bar', ProjectTabBar)
             tab_bar.refresh_projects(self.projects, self.active_project_index)
+        except Exception:
+            pass
+
+    def _refresh_stats(self) -> None:
+        try:
+            stats_bar = self.query_one('#project-stats', Static)
+            if self.project:
+                parts = [f'{len(self.project.models)} models']
+                if self.project.macros:
+                    parts.append(f'{len(self.project.macros)} macros')
+                if hasattr(self.project, 'seeds') and self.project.seeds:
+                    parts.append(f'{len(self.project.seeds)} seeds')
+                if hasattr(self.project, 'snapshots') and self.project.snapshots:
+                    parts.append(f'{len(self.project.snapshots)} snapshots')
+                if hasattr(self.project, '_sources') and self.project._sources:
+                    parts.append(f'{len(self.project._sources)} sources')
+                stats_bar.update(' | '.join(parts))
+            else:
+                stats_bar.update('')
         except Exception:
             pass
 
@@ -254,6 +275,10 @@ class DbtTuiFrontend(App):
         tab_bar = ProjectTabBar(id='project-tab-bar')
         await self.mount(tab_bar)
 
+        # Mount stats bar
+        stats_bar = Static('', id='project-stats')
+        await self.mount(stats_bar)
+
         # Restore workspaces from cache (additional projects beyond the primary)
         primary_path = str(self.project.root_folder) if self.project else ''
         for ws in cache.workspaces:
@@ -270,6 +295,7 @@ class DbtTuiFrontend(App):
             self.active_project_index = 0
 
         self._refresh_tab_bar()
+        self._refresh_stats()
 
         if self.project is None:
             logger.debug("No project loaded, showing project search")

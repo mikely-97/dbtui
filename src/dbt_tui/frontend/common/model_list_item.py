@@ -12,6 +12,18 @@ class ModelListItem(ListItem):
         entity_type = model.entity_type
         name_label = model.name if entity_type == "model" else f"[{entity_type}] {model.name}"
 
+        # Add dependency count badges for entities that have graph access
+        try:
+            if hasattr(model, 'project') and model.project and hasattr(model.project, 'graph'):
+                parents = list(model.project.graph.predecessors(model))
+                children = list(model.project.graph.successors(model))
+                if parents or children:
+                    badge = f"  ↑{len(parents)} ↓{len(children)}"
+                    name_label += badge
+        except Exception:
+            # If graph access fails, just show the name without badges
+            pass
+
         super().__init__(
             VerticalGroup(
                 Label(name_label),
