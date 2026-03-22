@@ -209,6 +209,15 @@ class ModelView(DbtTuiScreen):
             if staleness.is_stale:
                 header.update(f"⚠ STALE {model.name} ({model.file_path_relative}) — modified parents: {', '.join(staleness.stale_parents)}")
 
+        # Show last run result
+        from dbt_tui.backend.run_results import get_model_run_result
+        if self.app.project:
+            run_result = get_model_run_result(self.app.project.root_folder, model.name)
+            if run_result:
+                status_icon = {'pass': '✓', 'success': '✓', 'fail': '✗', 'error': '✗'}.get(run_result.status, '?')
+                current_header = str(header.renderable)
+                header.update(f"{current_header}  [{status_icon} {run_result.status} {run_result.execution_time:.1f}s]")
+
         # Update model content
         model_content = self.query_one('#model-content', TextArea)
         model_content.clear()
