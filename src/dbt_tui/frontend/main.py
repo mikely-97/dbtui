@@ -17,6 +17,7 @@ from .common.project_tab_bar import ProjectTabBar
 from .common.timing import TimingContext
 from .dag_view import DagView
 from .help_screen import HelpScreen
+from .impact import ImpactScreen
 from .lineage_view import ColumnLineageView
 from .model_search.model_search import ModelSearch
 from .model_tree.model_tree import ModelTree
@@ -48,6 +49,7 @@ class DbtTuiFrontend(App):
         Binding("g", "push_screen('recent_models')", "recent"),
         Binding("v", "push_screen('property_viewer')", "properties"),
         Binding("d", "push_screen('dag_view')", "DAG"),
+        Binding("i", "push_screen('impact')", "impact"),
         Binding("l", "push_screen('lineage_view')", "Lineage"),
         Binding("B", "push_screen('bookmarks')", "bookmarks"),
         Binding("T", "toggle_dark", "theme"),
@@ -62,6 +64,7 @@ class DbtTuiFrontend(App):
         'project_search': ProjectSearch,
         'new_model': NewModel,
         'dag_view': DagView,
+        'impact': ImpactScreen,
         'property_viewer': PropertyViewerScreen,
         'lineage_view': ColumnLineageView,
         'recent_models': RecentModelsScreen,
