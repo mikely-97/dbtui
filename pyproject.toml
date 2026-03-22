@@ -1,6 +1,6 @@
 [project]
 name = "dbt-tui"
-version = "0.3.0"
+version = "0.4.0"
 description = "Terminal UI for exploring and managing dbt projects"
 authors = [
     {name = "Mike", email = "sortia@protonmail.com"}
@@ -47,6 +47,7 @@ dbt-tui = "dbt_tui.__main__:main"
 
 [tool.poetry]
 packages = [{include = "dbt_tui", from = "src"}]
+exclude = ["src/dbt_tui/frontend/pseudo/", "src/dbt_tui/frontend/lorem.txt"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.0"
