@@ -15,6 +15,7 @@ from ..common import DbtModel, DbtProject, DbtTuiScreen
 from .compile_panel import CompilePanel
 from .doc_panel import DocPanel
 from .git_panel import GitPanel
+from .lint_panel import LintPanel
 from .properties_panel import PropertiesPanel
 from .run_panel import RunPanel
 from .test_panel import TestPanel
@@ -83,6 +84,8 @@ class ModelView(DbtTuiScreen):
                 yield TestPanel(id='test-panel')
             with TabPane("Compile", id="tab-compile"):
                 yield CompilePanel(id='compile-panel')
+            with TabPane("Lint", id="tab-lint"):
+                yield LintPanel(id='lint-panel')
         yield Footer()
 
     def on_mount(self) -> None:
