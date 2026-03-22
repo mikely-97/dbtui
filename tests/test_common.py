@@ -19,12 +19,6 @@ from dbt_tui.common.entity import DbtEntityAbstract, EntityType
 from dbt_tui.backend import DbtProject
 
 
-@pytest.fixture
-def dbt_project():
-    """Fixture that provides a DbtProject instance for testing."""
-    return DbtProject('tests/testing')
-
-
 class TestErrorCollector:
     """Tests for the ErrorCollector class."""
 

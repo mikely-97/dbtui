@@ -18,24 +18,6 @@ from dbt_tui.frontend.model_view import ModelView
 from dbt_tui.frontend.model_view.properties_panel import PropertiesPanel, PropertyItem
 
 
-@pytest.fixture
-def dbt_project():
-    """Fixture that provides a DbtProject instance for testing."""
-    return DbtProject('tests/testing')
-
-
-@pytest.fixture
-def empty_cache():
-    """Fixture that mocks load_cache to return empty cache."""
-    empty = DbtTuiCache(
-        last_open_project_raw=None,
-        last_active_model=None,
-        external_editor_command='vi'
-    )
-    with patch('dbt_tui.frontend.main.load_cache', return_value=empty):
-        yield empty
-
-
 class TestAppStartup:
     """Test that the app starts correctly."""
 

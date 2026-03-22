@@ -21,12 +21,6 @@ from dbt_tui.backend.property_discovery import (
 )
 
 
-@pytest.fixture
-def dbt_project():
-    """Fixture that provides a DbtProject instance for testing."""
-    return DbtProject('tests/testing')
-
-
 class TestPropertyClaimPrecedence:
     """Test PropertyClaim.__gt__ comparison logic for precedence."""
 

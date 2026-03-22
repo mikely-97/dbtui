@@ -10,12 +10,6 @@ from dbt_tui.backend import DbtProject
 from dbt_tui.common import DbtTuiCache, load_cache, save_cache
 
 
-@pytest.fixture
-def dbt_project():
-    """Fixture that provides a DbtProject instance for testing."""
-    return DbtProject('tests/testing')
-
-
 class TestModelSearch:
     """Test model search functionality."""
 

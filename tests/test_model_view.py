@@ -20,12 +20,6 @@ from dbt_tui.frontend.model_view.properties_panel import (
 )
 
 
-@pytest.fixture
-def dbt_project():
-    """Fixture that provides a DbtProject instance for testing."""
-    return DbtProject('tests/testing')
-
-
 class TestPropertyItemFormatting:
     """Test PropertyItem value formatting."""
 
