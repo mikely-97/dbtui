@@ -8,6 +8,7 @@ from dbt_tui.frontend.help_screen.help_screen import HelpScreen
 from dbt_tui.frontend.lineage_view.lineage_view import ColumnLineageView
 from dbt_tui.frontend.main import DbtTuiFrontend
 from dbt_tui.frontend.property_viewer.property_viewer import PropertyViewerScreen
+from dbt_tui.frontend.split_view import SplitViewScreen
 
 # ── DagView ───────────────────────────────────────
 
@@ -152,6 +153,51 @@ class TestPropertyViewerScreen:
         binding_keys = [b.key for b in PropertyViewerScreen.BINDINGS]
         assert 'escape' in binding_keys
         assert '/' in binding_keys
+
+
+# ── SplitViewScreen ──────────────────────────────
+
+
+class TestSplitViewScreen:
+    """Tests for SplitViewScreen."""
+
+    @pytest.mark.asyncio
+    async def test_split_view_can_push_screen(self, dbt_project, empty_cache):
+        """SplitViewScreen can be pushed to screen stack without errors."""
+        app = DbtTuiFrontend()
+        async with app.run_test(size=(120, 40)) as pilot:
+            app.project = dbt_project
+            app.model = dbt_project.models[0]
+            await pilot.pause()
+            # Push the split view screen
+            split_view = SplitViewScreen()
+            app.push_screen(split_view)
+            await pilot.pause()
+            # Verify it's on the screen stack
+            assert len(app.screen_stack) > 1
+            assert isinstance(app.screen_stack[-1], SplitViewScreen)
+
+    @pytest.mark.asyncio
+    async def test_split_view_has_required_methods(self, dbt_project, empty_cache):
+        """SplitViewScreen has required methods."""
+        app = DbtTuiFrontend()
+        async with app.run_test(size=(120, 40)) as _pilot:
+            split_view = SplitViewScreen()
+            # Verify methods exist
+            assert hasattr(split_view, 'on_model_change')
+            assert hasattr(split_view, 'action_go_back')
+            assert callable(split_view.on_model_change)
+            assert callable(split_view.action_go_back)
+
+    def test_split_view_instantiation(self):
+        """SplitViewScreen should be instantiable without errors."""
+        screen = SplitViewScreen()
+        assert screen is not None
+
+    def test_split_view_has_bindings(self):
+        """SplitViewScreen should have expected bindings."""
+        binding_keys = [b.key for b in SplitViewScreen.BINDINGS]
+        assert 'escape' in binding_keys
 
 
 # ── HelpScreen ───────────────────────────────────

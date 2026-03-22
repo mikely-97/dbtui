@@ -27,6 +27,7 @@ from .options.options import Options
 from .project_search.project_search import ProjectSearch
 from .property_viewer import PropertyViewerScreen
 from .recent_models.recent_models import RecentModelsScreen
+from .split_view import SplitViewScreen
 
 logger = get_logger('frontend.main')
 
@@ -52,6 +53,7 @@ class DbtTuiFrontend(App):
         Binding("i", "push_screen('impact')", "impact"),
         Binding("l", "push_screen('lineage_view')", "Lineage"),
         Binding("B", "push_screen('bookmarks')", "bookmarks"),
+        Binding("S", "push_screen('split_view')", "split view"),
         Binding("T", "toggle_dark", "theme"),
         Binding("?", "push_screen('help')", "help"),
     ]
@@ -69,6 +71,7 @@ class DbtTuiFrontend(App):
         'lineage_view': ColumnLineageView,
         'recent_models': RecentModelsScreen,
         'bookmarks': BookmarksScreen,
+        'split_view': SplitViewScreen,
         'help': HelpScreen,
         }
 

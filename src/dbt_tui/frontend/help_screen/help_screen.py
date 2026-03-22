@@ -16,6 +16,7 @@ ALL_BINDINGS: list[tuple[str, str, str]] = [
     ('Global', 'i', 'Impact analysis'),
     ('Global', 'l', 'Column lineage'),
     ('Global', 'B', 'Show bookmarks'),
+    ('Global', 'S', 'Split view (compare models)'),
     ('Global', 'T', 'Toggle dark/light theme'),
     ('Global', '?', 'This help screen'),
     ('Model View', 'r', 'Run model'),
