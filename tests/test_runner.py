@@ -2,6 +2,7 @@ import pytest
 from pathlib import Path
 from dbt_tui.backend.runner import DbtRunner, RunResult
 from dbt_tui.frontend.model_view.test_panel import parse_test_results, TestResult
+from dbt_tui.frontend.model_view.compile_panel import _extract_compiled_sql
 
 @pytest.fixture
 def project_path():
@@ -108,3 +109,23 @@ def test_parse_mixed_output():
     assert statuses['test_a'] == 'PASS'
     assert statuses['test_b'] == 'FAIL'
     assert statuses['test_c'] == 'PASS'
+
+
+def test_extract_compiled_sql_strips_status():
+    lines = [
+        "Running with dbt=1.8.0",
+        "Found 5 models, 2 tests",
+        "Concurrency: 1 threads",
+        "select id, name from raw.users",
+        "where active = true",
+        "Done.",
+    ]
+    result = _extract_compiled_sql(lines)
+    assert 'select id, name from raw.users' in result
+    assert 'where active = true' in result
+    assert not any('Running with' in l for l in result)
+    assert not any('Done.' in l for l in result)
+
+
+def test_extract_compiled_sql_empty():
+    assert _extract_compiled_sql([]) == []
