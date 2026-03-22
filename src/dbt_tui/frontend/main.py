@@ -45,6 +45,7 @@ class DbtTuiFrontend(App):
         Binding("d", "push_screen('dag_view')", "DAG"),
         Binding("l", "push_screen('lineage_view')", "Lineage"),
         Binding("B", "push_screen('bookmarks')", "bookmarks"),
+        Binding("T", "toggle_dark", "theme"),
         Binding("?", "push_screen('help')", "help"),
     ]
 
@@ -78,6 +79,10 @@ class DbtTuiFrontend(App):
     _SAVE_DEBOUNCE_SECONDS = 0.5  # Save at most every 500ms
 
     def watch_external_editor_command(self, old_value: str, new_value: str):
+        self.save_context_debounced()
+
+    def watch_dark(self, dark: bool) -> None:
+        """Persist theme preference."""
         self.save_context_debounced()
 
     project: reactive[DbtProject|None] = reactive(None, always_update=True, init=True)
@@ -189,9 +194,10 @@ class DbtTuiFrontend(App):
                 model = project.get_model_by_name(cache.last_active_model)
             except Exception as e:
                 logger.warning(f"Failed to load model: {e.args}")
-        self.project = project 
+        self.project = project
         self.model = model
         self.external_editor_command = cache.external_editor_command
+        self.dark = cache.dark_mode
         
     def save_context(self):
         """Save context immediately (blocking)."""
@@ -199,6 +205,7 @@ class DbtTuiFrontend(App):
             last_open_project_raw=str(self.project.root_folder) if isinstance(self.project, DbtProject) else None,
             last_active_model=self.model.name if isinstance(self.model, DbtModel) else None,
             external_editor_command=self.external_editor_command,
+            dark_mode=self.dark,
             workspaces=[
                 WorkspaceEntry(
                     project_path=str(p.root_folder),

@@ -18,6 +18,7 @@ class DbtTuiCache:
     last_open_project_raw: str | None = None
     last_active_model: str | None = None
     external_editor_command: str = 'vi'
+    dark_mode: bool = True
     workspaces: list[WorkspaceEntry] = field(default_factory=list)
     bookmarks: list[str] = field(default_factory=list)
 
@@ -69,6 +70,7 @@ def save_cache(cache: DbtTuiCache):
         'last_open_project_raw': cache.last_open_project_raw,
         'last_active_model': cache.last_active_model,
         'external_editor_command': cache.external_editor_command,
+        'dark_mode': cache.dark_mode,
         'workspaces': [
             {'project_path': w.project_path, 'last_model': w.last_model}
             for w in cache.workspaces
