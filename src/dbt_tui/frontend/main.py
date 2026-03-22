@@ -14,6 +14,7 @@ from .new_model import NewModel
 from .dag_view.dag_view import DagView
 from .property_viewer.property_viewer import PropertyViewerScreen
 from .lineage_view.lineage_view import ColumnLineageView
+from .help_screen.help_screen import HelpScreen
 
 from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
 from ..common.cache import WorkspaceEntry
@@ -41,6 +42,7 @@ class DbtTuiFrontend(App):
         Binding("v", "push_screen('property_viewer')", "properties"),
         Binding("d", "push_screen('dag_view')", "DAG"),
         Binding("l", "push_screen('lineage_view')", "Lineage"),
+        Binding("?", "push_screen('help')", "help"),
     ]
 
     SCREENS = {
@@ -53,6 +55,7 @@ class DbtTuiFrontend(App):
         'dag_view': DagView,
         'property_viewer': PropertyViewerScreen,
         'lineage_view': ColumnLineageView,
+        'help': HelpScreen,
         }
 
     screen_stack: list[DbtTuiScreen]
