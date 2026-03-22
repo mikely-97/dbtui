@@ -4,7 +4,7 @@ from textual.containers import ScrollableContainer
 from textual.binding import Binding
 
 from dbt_tui.frontend.common.dbt_tui_screen import DbtTuiScreen
-from dbt_tui.backend.dag import render_dag_ascii, get_dag_node_list
+from dbt_tui.backend.dag import render_dag_ascii, get_dag_node_list, render_dag_mermaid
 from dbt_tui.backend.model import DbtModel
 
 
@@ -18,6 +18,7 @@ class DagView(DbtTuiScreen):
         Binding('escape', 'go_back', 'Back'),
         Binding('+', 'increase_depth', 'More depth'),
         Binding('-', 'decrease_depth', 'Less depth'),
+        Binding('m', 'export_mermaid', 'Mermaid'),
     ]
 
     def __init__(self):
@@ -86,3 +87,17 @@ class DagView(DbtTuiScreen):
     def action_decrease_depth(self) -> None:
         self._depth = max(self._depth - 1, 0)
         self._refresh_dag()
+
+    def action_export_mermaid(self) -> None:
+        """Copy Mermaid diagram to clipboard or save to file."""
+        model = self.app.model
+        project = self.app.project
+        if model is None or project is None:
+            return
+        mermaid = render_dag_mermaid(project, model, depth=self._depth)
+        # Save to a temp file and notify
+        from pathlib import Path
+        import tempfile
+        out = Path(tempfile.gettempdir()) / f'dag_{model.name}.mmd'
+        out.write_text(mermaid)
+        self.app.notify(f'Mermaid saved to {out}')

@@ -1,6 +1,6 @@
 import pytest
 from dbt_tui.backend import DbtProject
-from dbt_tui.backend.dag import render_dag_ascii, get_dag_node_list
+from dbt_tui.backend.dag import render_dag_ascii, get_dag_node_list, render_dag_mermaid
 
 @pytest.fixture(scope='module')
 def project():
@@ -55,3 +55,29 @@ def test_get_dag_node_list_focal_only_when_isolated(project):
     model = project.models[0]
     nodes = get_dag_node_list(project, model, depth=2)
     assert model in nodes
+
+
+def test_render_dag_mermaid_basic(project):
+    """Mermaid output starts with graph LR and contains focal node."""
+    model = project.models[0]
+    result = render_dag_mermaid(project, model, depth=2)
+    assert result.startswith('graph LR')
+    assert model.name in result
+
+
+def test_render_dag_mermaid_contains_edges(project):
+    """Mermaid output contains arrows for edges."""
+    # Find a model with connections
+    for m in project.models:
+        if list(project.graph.predecessors(m)) or list(project.graph.successors(m)):
+            result = render_dag_mermaid(project, m, depth=1)
+            assert '-->' in result
+            break
+
+
+def test_mermaid_id_sanitizes():
+    """Mermaid IDs replace dots and dashes."""
+    from dbt_tui.backend.dag import _mermaid_id
+    class FakeEntity:
+        name = 'my-source.table'
+    assert _mermaid_id(FakeEntity()) == 'my_source_table'

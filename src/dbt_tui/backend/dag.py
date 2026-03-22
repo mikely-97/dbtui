@@ -72,3 +72,46 @@ def render_dag_ascii(project: 'DbtProject', focal: 'DbtEntityAbstract', depth: i
         lines.append('  '.join(_format_node(n, focal) for n in nodes))
 
     return '\n'.join(lines)
+
+
+def _mermaid_id(entity: 'DbtEntityAbstract') -> str:
+    """Generate a valid Mermaid node ID from an entity name."""
+    return entity.name.replace('.', '_').replace('-', '_')
+
+
+def render_dag_mermaid(project: 'DbtProject', focal: 'DbtEntityAbstract', depth: int = 2) -> str:
+    """Render a Mermaid flowchart centred on focal entity."""
+    graph = project.graph
+    ancestors = _walk_by_depth(graph, focal, depth, graph.predecessors)
+    descendants = _walk_by_depth(graph, focal, depth, graph.successors)
+
+    lines = ['graph LR']
+
+    # Collect all visible nodes
+    all_nodes = []
+    for d in sorted(ancestors.keys()):
+        all_nodes.extend(ancestors[d])
+    all_nodes.append(focal)
+    for d in sorted(descendants.keys()):
+        all_nodes.extend(descendants[d])
+
+    # Node definitions with shapes
+    for node in all_nodes:
+        node_id = _mermaid_id(node)
+        if node is focal:
+            lines.append(f'    {node_id}[["**{node.name}**"]]')
+        elif node.entity_type == 'source':
+            lines.append(f'    {node_id}[("{node.name}")]')
+        elif node.entity_type == 'macro':
+            lines.append(f'    {node_id}{{{node.name}}}')
+        else:
+            lines.append(f'    {node_id}[{node.name}]')
+
+    # Edges
+    for node in all_nodes:
+        node_id = _mermaid_id(node)
+        for child in graph.successors(node):
+            if child in all_nodes:
+                lines.append(f'    {node_id} --> {_mermaid_id(child)}')
+
+    return '\n'.join(lines)
