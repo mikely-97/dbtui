@@ -50,6 +50,7 @@ class ModelView(DbtTuiScreen):
         Binding("e", "edit_schema()", "edit schema"),
         Binding("b", "toggle_bookmark()", "bookmark"),
         Binding("F", "format_sql()", "format SQL"),
+        Binding("X", "export_docs()", "export docs"),
     ]
 
     def compose(self):
@@ -167,6 +168,18 @@ class ModelView(DbtTuiScreen):
             self.app.notify("SQL formatted")
         else:
             self.app.notify("No formatting changes")
+
+    def action_export_docs(self) -> None:
+        """Export model documentation as markdown."""
+        if not self.app.model or not self.app.project:
+            return
+        from dbt_tui.backend.doc_export import export_model_markdown
+        import tempfile
+        from pathlib import Path
+        md = export_model_markdown(self.app.project, self.app.model)
+        out = Path(tempfile.gettempdir()) / f'{self.app.model.name}.md'
+        out.write_text(md)
+        self.app.notify(f'Docs exported to {out}')
 
     def action_refresh_properties(self) -> None:
         """Refresh the properties panel with recollected claims."""
