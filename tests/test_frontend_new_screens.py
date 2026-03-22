@@ -46,7 +46,7 @@ class TestDagView:
     async def test_dag_view_has_nav_nodes_attribute(self, dbt_project, empty_cache):
         """DagView has _nav_nodes attribute initialized."""
         app = DbtTuiFrontend()
-        async with app.run_test(size=(120, 40)) as pilot:
+        async with app.run_test(size=(120, 40)) as _pilot:
             dag = DagView()
             # Verify the attribute exists
             assert hasattr(dag, '_nav_nodes')
@@ -90,7 +90,7 @@ class TestColumnLineageView:
     async def test_lineage_view_has_required_methods(self, dbt_project, empty_cache):
         """ColumnLineageView has required methods."""
         app = DbtTuiFrontend()
-        async with app.run_test(size=(120, 40)) as pilot:
+        async with app.run_test(size=(120, 40)) as _pilot:
             lineage = ColumnLineageView()
             # Verify methods exist
             assert hasattr(lineage, '_refresh')
@@ -134,7 +134,7 @@ class TestPropertyViewerScreen:
     async def test_property_viewer_has_required_methods(self, dbt_project, empty_cache):
         """PropertyViewerScreen has required methods."""
         app = DbtTuiFrontend()
-        async with app.run_test(size=(120, 40)) as pilot:
+        async with app.run_test(size=(120, 40)) as _pilot:
             pv = PropertyViewerScreen()
             # Verify methods exist
             assert hasattr(pv, '_refresh')
@@ -244,7 +244,7 @@ class TestAppWorkspace:
     async def test_app_has_projects_list(self, dbt_project, empty_cache):
         """DbtTuiFrontend should have projects list."""
         app = DbtTuiFrontend()
-        async with app.run_test() as pilot:
+        async with app.run_test() as _pilot:
             assert hasattr(app, 'projects')
             assert isinstance(app.projects, list)
 
@@ -263,6 +263,6 @@ class TestAppWorkspace:
     async def test_app_has_active_project(self, dbt_project, empty_cache):
         """App should track active project."""
         app = DbtTuiFrontend()
-        async with app.run_test() as pilot:
+        async with app.run_test() as _pilot:
             app.project = dbt_project
             assert app.project is dbt_project

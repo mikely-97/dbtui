@@ -67,7 +67,7 @@ class DbtModel(DbtModelAbstract):
 
         # double config would be invalid
         if len(calls) > 1:
-            logger.warning("Duplicated invocation of config() in %s" % self.file_path_relative)
+            logger.warning(f"Duplicated invocation of config() in {self.file_path_relative}")
             return default_name
 
         if not calls:

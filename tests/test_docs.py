@@ -42,6 +42,6 @@ def test_to_markdown_returns_string(project):
 
 def test_no_doc_returns_placeholder(project):
     """Model with no schema.yml entries returns placeholder."""
-    model = project.get_model_by_name('v_a')
+    _ = project.get_model_by_name('v_a')
     docs = ModelDocs()  # empty
     assert docs.to_markdown() == '*No documentation available.*'

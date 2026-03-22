@@ -1,6 +1,9 @@
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
+
+import yaml
 
 
 def get_model_path_parts(
@@ -24,7 +27,7 @@ def find_schema_files(
     model_dir_path_abs = model_path.parent.resolve()
     project_dir_path_abs = project_path.resolve()
     
-    yml_targets = [i for i in model_dir_path_abs.relative_to(project_dir_path_abs).parents if not i == Path('.')]
+    yml_targets = [i for i in model_dir_path_abs.relative_to(project_dir_path_abs).parents if i != Path('.')]
 
     for target in yml_targets:
         for ext in ("*.yml", "*.yaml"):
@@ -42,10 +45,6 @@ class PropertyClaim:
     name: str
     value: Any
     kind: Literal["config", "property"]
-
-import re
-
-import yaml
 
 
 def collect_project_configs(

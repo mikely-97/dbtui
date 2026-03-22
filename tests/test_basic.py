@@ -14,13 +14,13 @@ def test_open_nonexistent_folder():
         raise Exception("Doesn't fail when opening a nonexistent folder")
     except FileNotFoundError as e:
         if e.args[0].startswith('Folder not found'):
-            return 
+            return
         elif e.args[0].startswith('File not found'):
-            raise Exception("Opens a nonexistent folder and can't find the dbt_project in it")
+            raise Exception("Opens a nonexistent folder and can't find the dbt_project in it") from e
         else:
-            raise e
-    except e:
-        raise e
+            raise
+    except Exception:
+        raise
 
 # test that a correct folder with incorrect dbt_project doesn't open
 def test_open_empty_folder():
@@ -29,13 +29,13 @@ def test_open_empty_folder():
         raise Exception("Doesn't fail when opening an empty folder")
     except FileNotFoundError as e:
         if e.args[0].startswith('Folder not found'):
-            raise Exception("Can't open an empty folder with no dbt_project") 
+            raise Exception("Can't open an empty folder with no dbt_project") from e
         elif e.args[0].startswith('dbt folder is present, but dbt_project.yml is not found'):
             pass
         else:
-            raise e
-    except e:
-        raise e
+            raise
+    except Exception:
+        raise
 
 
 # test that a null folder not opens and returns exactly the expected type of exception 
@@ -45,5 +45,5 @@ def test_open_null_folder():
         raise Exception("Doesn't fail when opening a null folder")
     except NonePathException:
         return
-    except e:
-        raise e
+    except Exception:
+        raise

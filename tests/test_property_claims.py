@@ -155,7 +155,7 @@ class TestPropertyClaimPrecedence:
         )
 
         with pytest.raises(Exception, match='Models are different'):
-            claim1 > claim2
+            assert claim1 > claim2
 
     def test_same_property_name_required(self, dbt_project):
         """Comparing different properties should raise exception."""
@@ -180,7 +180,7 @@ class TestPropertyClaimPrecedence:
         )
 
         with pytest.raises(Exception, match='Properties are different'):
-            claim1 > claim2
+            assert claim1 > claim2
 
 
 class TestPropertyDiscovery:
@@ -457,7 +457,7 @@ class TestPropertyClaimAggregate:
         assert len(values) > 0
 
         # Should be a dict of name -> value (not PropertyClaim)
-        for name, value in values.items():
+        for name, _value in values.items():
             assert isinstance(name, str)
             # value can be any type
 
@@ -500,7 +500,7 @@ class TestPropertyClaimAggregate:
         assert isinstance(overridden, dict)
 
         # Each entry should be a list of PropertyClaims
-        for prop_name, claims_list in overridden.items():
+        for _prop_name, claims_list in overridden.items():
             assert isinstance(claims_list, list)
             for claim in claims_list:
                 assert isinstance(claim, PropertyClaim)
@@ -511,13 +511,13 @@ class TestPropertyClaimAggregate:
         aggregate = model.property_claims
 
         # Before accessing effective, _is_resolved should be False
-        assert aggregate._is_resolved == False
+        assert not aggregate._is_resolved
 
         # Access effective to trigger resolution
         _ = aggregate.effective
 
         # Now should be resolved
-        assert aggregate._is_resolved == True
+        assert aggregate._is_resolved
 
     def test_aggregate_repr(self, dbt_project):
         """__repr__ should return a useful string."""

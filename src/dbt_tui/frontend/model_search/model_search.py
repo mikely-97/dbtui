@@ -1,3 +1,4 @@
+import contextlib
 from typing import TYPE_CHECKING
 
 from textual import containers, widgets
@@ -65,10 +66,8 @@ class ModelSearch(DbtTuiScreen):
 
     def _focus_search_input(self):
         """Set focus to the search input."""
-        try:
+        with contextlib.suppress(Exception):
             self.app.set_focus(self.get_widget_by_id('search_input'))
-        except Exception:
-            pass  # Widget may not exist yet
 
     def action_go_back(self):
         """Go back to model_view if there's an active model, otherwise pop screen."""

@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     'PropertyDiscoveryCache',
+    'PropertyClaim',
     'collect_project_configs',
     'collect_schema_properties',
     'get_model_path_parts',
@@ -78,7 +79,7 @@ class PropertyDiscoveryCache:
         for models_path in project.full_models_paths:
             if not models_path.exists():
                 continue
-            for root, _, files in models_path.walk():
+            for root, _, _files in models_path.walk():
                 root_path = Path(root)
                 for ext in ("yml", "yaml"):
                     for schema_file in root_path.glob(f"*.{ext}"):

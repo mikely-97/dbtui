@@ -20,13 +20,13 @@ class TestAppStartup:
     async def test_app_starts_without_error(self, empty_cache):
         """App should start without throwing errors."""
         app = DbtTuiFrontend()
-        async with app.run_test() as pilot:
+        async with app.run_test() as _pilot:
             assert app.is_running
 
     async def test_app_pushes_screen_on_mount(self, empty_cache):
         """With no cached project, should push a screen."""
         app = DbtTuiFrontend()
-        async with app.run_test() as pilot:
+        async with app.run_test() as _pilot:
             # Should have at least the default screen plus one pushed
             assert len(app.screen_stack) >= 1
 
@@ -236,7 +236,7 @@ class TestDefaultScreenHandling:
     async def test_app_starts_with_screen_stack(self, empty_cache):
         """App should have screens in stack after mount."""
         app = DbtTuiFrontend()
-        async with app.run_test() as pilot:
+        async with app.run_test() as _pilot:
             # The app should have started and pushed initial screen
             assert len(app.screen_stack) >= 1
 
@@ -247,7 +247,7 @@ class TestAppQuit:
     async def test_app_can_exit(self, empty_cache):
         """App should be able to exit cleanly."""
         app = DbtTuiFrontend()
-        async with app.run_test() as pilot:
+        async with app.run_test() as _pilot:
             assert app.is_running
             app.exit()
 

@@ -90,7 +90,7 @@ class DbtTuiFrontend(App):
     def on_project_change(self, project: DbtProject|None):
         self.save_context_debounced()
         for screen in self.screen_stack:
-            if not screen.id == '_default':
+            if screen.id != '_default':
                 screen.on_project_change(project)
     
     def watch_project(self, old_project: DbtProject|None, new_project: DbtProject|None):
@@ -111,7 +111,7 @@ class DbtTuiFrontend(App):
             self.save_context_debounced()
 
         for screen in self.screen_stack:
-            if not screen.id == '_default':
+            if screen.id != '_default':
                 with timing.step(f"screen.{screen.__class__.__name__}.on_model_change"):
                     screen.on_model_change(model)
 
@@ -133,15 +133,11 @@ class DbtTuiFrontend(App):
 
     @property
     def has_active_model(self) -> bool:
-        if isinstance(self.model, DbtModel):
-            return True
-        return False
+        return isinstance(self.model, DbtModel)
     
     @property
     def has_active_project(self) -> bool:
-        if isinstance(self.project, DbtProject):
-            return True
-        return False
+        return isinstance(self.project, DbtProject)
         
 
     def add_project(self, project) -> None:

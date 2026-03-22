@@ -61,7 +61,7 @@ class Timer:
         self.elapsed_ms = (time.perf_counter() - self.start_time) * 1000
 
 
-def timed(func: Callable[P, T]) -> Callable[P, tuple[T, float]]:
+def timed(func: Callable[P, T]) -> Callable[P, tuple[T, float]]:  # noqa: UP047
     """
     Decorator that returns both result and elapsed time in ms.
 

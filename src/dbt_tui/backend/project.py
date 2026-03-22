@@ -1,3 +1,4 @@
+import contextlib
 import fnmatch
 import os
 from collections.abc import Generator
@@ -173,7 +174,7 @@ class DbtProject(DbtProjectAbstract):
 
     def refresh(self):
         if not os.path.exists(self.root_folder):
-            raise FileNotFoundError("Folder not found: %s" % self.root_folder)
+            raise FileNotFoundError(f"Folder not found: {self.root_folder}")
 
         total_timer = Timer()
         self.load_metrics = LoadMetrics()
@@ -220,8 +221,8 @@ class DbtProject(DbtProjectAbstract):
             logger.debug(f"  - populate_graph: {self.load_metrics.populate_graph_ms:.1f}ms")
             logger.debug(f"  - collect_property_claims: {self.load_metrics.collect_property_claims_ms:.1f}ms")
 
-        except FileNotFoundError:
-            raise FileNotFoundError("dbt folder is present, but dbt_project.yml is not found: %s" % self.root_folder)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"dbt folder is present, but dbt_project.yml is not found: {self.root_folder}") from e
 
 
     def parse_dbt_project(self, dbt_project_raw: str) -> None:
@@ -233,13 +234,13 @@ class DbtProject(DbtProjectAbstract):
     def get_model_by_name(self, name: str) -> DbtModel:
         model = self.models_by_name.get(name)
         if not model:
-            raise DbtModelNotFoundException("dbt model not found: %s" % name)
+            raise DbtModelNotFoundException(f"dbt model not found: {name}")
         return model
 
     def get_model_by_file_name(self, file_name: str) -> DbtModel:
         model = self.models_by_file_name.get(file_name)
         if not model:
-            raise DbtModelNotFoundException("dbt model not found: %s" % file_name)
+            raise DbtModelNotFoundException(f"dbt model not found: {file_name}")
         return model
 
     # =========================================================================
@@ -406,7 +407,7 @@ class DbtProject(DbtProjectAbstract):
             except TypeError as e:
                 raise InvalidProjectPathException(
                     f"Cannot convert '{project_path}' to a valid path: {e}"
-                )
+                ) from e
         self.fall_back_to_filename = fall_back_to_filename
         self.root_folder = project_path
         self.load_metrics = None
@@ -446,16 +447,14 @@ class DbtProject(DbtProjectAbstract):
             raise IncorrectFileExtensionException(f"dbt models should be <.sql> files, but <{filepath.suffix}> given")
 
         if isinstance(from_, DbtModel):
-            text = "SELECT * FROM {{ ref('%s') }}" % from_.name
+            text = f"SELECT * FROM {{{{ ref('{from_.name}') }}}}"
         else:
             text = ''
 
         check_if_in_model_paths = 0
         for model_path in self.full_models_paths:
-            try:
+            with contextlib.suppress(ValueError):
                 check_if_in_model_paths += bool(filepath_prepared.relative_to(model_path))
-            except ValueError:
-                pass 
         if not check_if_in_model_paths:
             raise ValueError('The filepath is not in model folders as defined by dbt_project.yml')
   

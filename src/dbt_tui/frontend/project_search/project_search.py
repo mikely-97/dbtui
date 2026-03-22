@@ -74,7 +74,7 @@ class ProjectSearch(DbtTuiScreen):
             case 'home':
                 self.project_path = default 
             case _:
-                raise NotImplementedError("Unknown argument to reset_path: %s" % to)
+                raise NotImplementedError(f"Unknown argument to reset_path: {to}")
 
     def compose(self):
 

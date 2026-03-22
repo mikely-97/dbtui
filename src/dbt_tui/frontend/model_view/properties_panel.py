@@ -324,11 +324,9 @@ class PropertyItem(ListItem):
         self.claim = claim
 
     def compose(self):
-        source_color = SOURCE_TYPE_COLORS.get(self.claim.source_type, "white")
         source_icon = SOURCE_TYPE_ICONS.get(self.claim.source_type, "•")
 
         value_display = self._format_value(self.claim.value)
-        kind_indicator = "[config]" if self.claim.kind == "config" else "[prop]"
 
         yield Horizontal(
             Label(f"{source_icon} ", classes="property-icon"),
