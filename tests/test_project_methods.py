@@ -196,3 +196,37 @@ def test_snapshots_in_search_entities():
     results = project.search_entities('', entity_type='snapshot')
     assert len(results) > 0
     assert any(e.entity_type == 'snapshot' for e in results)
+
+
+def test_file_watcher_starts_and_stops():
+    """ProjectFileWatcher should start and stop cleanly."""
+    from dbt_tui.backend.file_watcher import ProjectFileWatcher
+    project = DbtProject('tests/testing')
+
+    events = []
+    def callback(event):
+        events.append(event)
+
+    watcher = ProjectFileWatcher(project, callback)
+    assert not watcher.is_running
+
+    watcher.start()
+    assert watcher.is_running
+
+    watcher.stop()
+    assert not watcher.is_running
+
+
+def test_file_watcher_context_manager():
+    """ProjectFileWatcher should work as a context manager."""
+    from dbt_tui.backend.file_watcher import ProjectFileWatcher
+    project = DbtProject('tests/testing')
+
+    events = []
+    def callback(event):
+        events.append(event)
+
+    with ProjectFileWatcher(project, callback) as watcher:
+        assert watcher.is_running
+
+    assert not watcher.is_running

@@ -6,6 +6,7 @@ from textual.binding import Binding
 from textual.reactive import reactive
 from textual.widgets import Static
 
+from ..backend.file_watcher import FileChangeEvent, ProjectFileWatcher
 from ..common import DbtTuiCache, NonePathException, load_cache, save_cache
 from ..common.cache import WorkspaceEntry
 from ..common.logging import get_logger
@@ -79,6 +80,9 @@ class DbtTuiFrontend(App):
     _save_timer = None
     _SAVE_DEBOUNCE_SECONDS = 0.5  # Save at most every 500ms
 
+    # File watcher for auto-refresh
+    _watcher: ProjectFileWatcher | None = None
+
     def watch_external_editor_command(self, old_value: str, new_value: str):
         self.save_context_debounced()
 
@@ -96,6 +100,16 @@ class DbtTuiFrontend(App):
     def on_project_change(self, project: DbtProject|None):
         self.save_context_debounced()
         self._refresh_stats()
+
+        # Start/stop file watcher based on project
+        if self._watcher is not None:
+            self._watcher.stop()
+
+        if project is not None:
+            self._watcher = ProjectFileWatcher(project, self._on_file_changed)
+            self._watcher.start()
+            logger.debug(f"Started file watcher for project: {project.root_folder}")
+
         for screen in self.screen_stack:
             if screen.id != '_default':
                 screen.on_project_change(project)
@@ -137,6 +151,17 @@ class DbtTuiFrontend(App):
                 self._model_history = self._model_history[-self._MAX_HISTORY:]
 
         self.on_model_change(new_model)
+
+    def _on_file_changed(self, event: FileChangeEvent) -> None:
+        """Called from file watcher when a model file changes on disk."""
+        # Check if the changed file is the currently displayed model
+        if self.model and str(self.model.file_path_full) == str(event.path):
+            logger.info(f"Model file changed on disk: {event.path}")
+            # Invalidate cache and force reload
+            self.model.invalidate_cache()
+            # Trigger UI refresh by re-firing model change
+            self.on_model_change(self.model)
+            self.notify("Model file updated — refreshed")
 
     @property
     def has_active_model(self) -> bool:
