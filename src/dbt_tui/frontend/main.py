@@ -11,6 +11,7 @@ from ..common import DbtTuiCache, NonePathException, load_cache, save_cache
 from ..common.cache import WorkspaceEntry
 from ..common.logging import get_logger
 from .bookmarks import BookmarksScreen
+from .cloud import CloudScreen
 from .commands import DbtTuiCommands
 from .common import DbtModel, DbtProject, DbtTuiScreen
 from .common.project_tab_bar import ProjectTabBar
@@ -54,6 +55,7 @@ class DbtTuiFrontend(App):
         Binding("l", "push_screen('lineage_view')", "Lineage"),
         Binding("B", "push_screen('bookmarks')", "bookmarks"),
         Binding("S", "push_screen('split_view')", "split view"),
+        Binding("C", "push_screen('cloud')", "cloud"),
         Binding("T", "toggle_dark", "theme"),
         Binding("?", "push_screen('help')", "help"),
     ]
@@ -72,6 +74,7 @@ class DbtTuiFrontend(App):
         'recent_models': RecentModelsScreen,
         'bookmarks': BookmarksScreen,
         'split_view': SplitViewScreen,
+        'cloud': CloudScreen,
         'help': HelpScreen,
         }
 

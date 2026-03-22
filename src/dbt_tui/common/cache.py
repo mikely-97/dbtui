@@ -21,6 +21,8 @@ class DbtTuiCache:
     dark_mode: bool = True
     workspaces: list[WorkspaceEntry] = field(default_factory=list)
     bookmarks: list[str] = field(default_factory=list)
+    cloud_api_token: str = ''
+    cloud_account_id: str = ''
 
     @property
     def last_open_project(self) -> Path | None:
@@ -61,7 +63,9 @@ def load_cache(clear_cache:bool=False) -> DbtTuiCache:
             cache_raw = json.load(f)
     workspaces = [WorkspaceEntry(**w) for w in cache_raw.pop('workspaces', [])]
     bookmarks = cache_raw.pop('bookmarks', [])
-    dbt_tui_cache = DbtTuiCache(**cache_raw, workspaces=workspaces, bookmarks=bookmarks)
+    cloud_api_token = cache_raw.pop('cloud_api_token', '')
+    cloud_account_id = cache_raw.pop('cloud_account_id', '')
+    dbt_tui_cache = DbtTuiCache(**cache_raw, workspaces=workspaces, bookmarks=bookmarks, cloud_api_token=cloud_api_token, cloud_account_id=cloud_account_id)
     return dbt_tui_cache
 
 def save_cache(cache: DbtTuiCache):
@@ -76,6 +80,8 @@ def save_cache(cache: DbtTuiCache):
             for w in cache.workspaces
         ],
         'bookmarks': cache.bookmarks,
+        'cloud_api_token': cache.cloud_api_token,
+        'cloud_account_id': cache.cloud_account_id,
     }
     with open(cache_path, 'w', encoding='utf-8') as f:
         json.dump(data, f)
