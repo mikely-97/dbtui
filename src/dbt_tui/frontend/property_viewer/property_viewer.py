@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 from textual.app import ComposeResult
-from textual.widgets import DataTable, Static, Footer, Input
 from textual.binding import Binding
+from textual.widgets import DataTable, Footer, Input, Static
 
 from dbt_tui.frontend.common.dbt_tui_screen import DbtTuiScreen
-
 
 _SOURCE_LABELS = {
     'dbt_project.yml': 'project',

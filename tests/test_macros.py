@@ -8,8 +8,9 @@ Covers:
 - macro→model edges in the dependency graph
 - macro appearing in model.parents / model.children
 """
-import pytest
 from pathlib import Path
+
+import pytest
 
 from dbt_tui.backend import DbtProject
 from dbt_tui.backend.macro import DbtMacro

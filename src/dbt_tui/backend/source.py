@@ -1,6 +1,6 @@
 """Source entity representing a dbt source table."""
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from dbt_tui.common.entity import DbtEntityAbstract, EntityType
 

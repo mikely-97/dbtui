@@ -5,8 +5,9 @@ These messages allow screens to react to state changes in a decoupled way
 using Textual's message system rather than direct method calls.
 """
 
-from textual.message import Message
 from typing import TYPE_CHECKING
+
+from textual.message import Message
 
 if TYPE_CHECKING:
     from .isolated import DbtModel, DbtProject

@@ -1,5 +1,7 @@
-from dbt_tui.backend import DbtProject, DbtModelNotFoundException
 from pytest import raises
+
+from dbt_tui.backend import DbtModelNotFoundException, DbtProject
+
 
 # test that all models from all folders are visible
 def test_all_models_are_visible():

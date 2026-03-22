@@ -1,6 +1,8 @@
-from typing import TYPE_CHECKING
-from textual.widgets import Input
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+from textual.widgets import Input
+
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
 

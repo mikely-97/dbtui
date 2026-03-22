@@ -1,9 +1,9 @@
 import random
-
 from typing import Self
 
 from ...common import DbtModelAbstract
-from .utils import rand_uuid, lorem
+from .utils import lorem, rand_uuid
+
 
 class DbtModel(DbtModelAbstract):
     """

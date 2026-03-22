@@ -7,12 +7,8 @@ These tests verify that:
 3. ModelView displays properties correctly
 4. The default screen is properly skipped in event handlers
 """
-import pytest
-from unittest.mock import patch
-from textual.widgets import TextArea, ListView, Static
 
 from dbt_tui.backend import DbtProject
-from dbt_tui.common import DbtTuiCache
 from dbt_tui.frontend.main import DbtTuiFrontend
 from dbt_tui.frontend.model_view import ModelView
 from dbt_tui.frontend.model_view.properties_panel import PropertiesPanel, PropertyItem

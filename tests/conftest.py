@@ -1,9 +1,10 @@
 """Shared pytest fixtures for dbt-tui tests."""
 
-import pytest
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
+
+import pytest
 import yaml
 
 from dbt_tui.backend import DbtProject

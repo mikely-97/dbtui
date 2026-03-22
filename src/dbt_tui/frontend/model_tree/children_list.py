@@ -1,7 +1,7 @@
 from textual.binding import Binding
 
 from ..common import DbtModel, ModelListItem
-from .constants import PARENTS_ID, CHILDREN_ID
+from .constants import CHILDREN_ID, PARENTS_ID
 from .model_relatives_list import ModelRelativesList
 
 

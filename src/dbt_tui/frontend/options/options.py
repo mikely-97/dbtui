@@ -5,11 +5,11 @@ Settings are persisted to the cache file automatically.
 """
 from typing import TYPE_CHECKING
 
-from textual.widgets import Footer, Static, Input, Label, Button
-from textual.containers import Vertical, Horizontal, Container
 from textual.binding import Binding
+from textual.containers import Container, Horizontal, Vertical
+from textual.widgets import Button, Footer, Input, Label, Static
 
-from ..common import DbtTuiScreen, DbtProject, DbtModel
+from ..common import DbtModel, DbtProject, DbtTuiScreen
 
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend

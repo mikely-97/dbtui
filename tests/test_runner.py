@@ -1,8 +1,11 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 from dbt_tui.backend.runner import DbtRunner, RunResult
-from dbt_tui.frontend.model_view.test_panel import parse_test_results, TestResult
 from dbt_tui.frontend.model_view.compile_panel import _extract_compiled_sql
+from dbt_tui.frontend.model_view.test_panel import parse_test_results
+
 
 @pytest.fixture
 def project_path():

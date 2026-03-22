@@ -6,7 +6,6 @@ like ref() parsing and configuration.
 """
 
 from abc import abstractmethod
-from typing import Literal
 
 from .entity import DbtEntityAbstract, EntityType
 

@@ -10,11 +10,12 @@ If project_dir is not specified, launches with the last opened project.
 """
 import argparse
 import sys
-from importlib.metadata import version as get_version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as get_version
 from pathlib import Path
 
+from .common import get_logs_dir, load_cache, parse_log_level, save_cache, setup_logging
 from .frontend import frontend as DbtTuiFrontend
-from .common import load_cache, save_cache, get_logs_dir, setup_logging, parse_log_level
 
 
 def get_app_version() -> str:

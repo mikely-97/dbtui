@@ -1,29 +1,28 @@
 from dataclasses import dataclass
+from typing import Any
 
-from textual.app import App 
+from textual.app import App
 from textual.binding import Binding
 from textual.reactive import reactive
-from typing import Any 
 
+from ..common import DbtTuiCache, NonePathException, load_cache, save_cache
+from ..common.cache import WorkspaceEntry
+from ..common.logging import get_logger
+from .bookmarks import BookmarksScreen
+from .common import DbtModel, DbtProject, DbtTuiScreen
+from .common.project_tab_bar import ProjectTabBar
+from .common.timing import TimingContext
+from .dag_view import DagView
+from .help_screen import HelpScreen
+from .lineage_view import ColumnLineageView
 from .model_search.model_search import ModelSearch
 from .model_tree.model_tree import ModelTree
 from .model_view import ModelView
+from .new_model import NewModel
 from .options.options import Options
 from .project_search.project_search import ProjectSearch
-from .new_model import NewModel
-from .dag_view import DagView
 from .property_viewer import PropertyViewerScreen
-from .lineage_view import ColumnLineageView
-from .help_screen import HelpScreen
 from .recent_models.recent_models import RecentModelsScreen
-from .bookmarks import BookmarksScreen
-
-from ..common import DbtTuiCache, load_cache, save_cache, NonePathException
-from ..common.cache import WorkspaceEntry
-from ..common.logging import get_logger
-from .common import DbtTuiScreen, DbtProject, DbtModel
-from .common.timing import TimingContext
-from .common.project_tab_bar import ProjectTabBar
 
 logger = get_logger('frontend.main')
 

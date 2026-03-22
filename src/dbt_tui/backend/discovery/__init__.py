@@ -1,15 +1,16 @@
 """Property discovery package for collecting PropertyClaims from dbt configuration sources."""
 
-from pathlib import Path
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING
+
 import yaml
 
-from ..property_claim import PropertyClaim
 from ...common.logging import get_logger
+from ..property_claim import PropertyClaim
 from .config_discovery import collect_project_configs
 from .schema_discovery import collect_schema_properties
-from .utils import get_model_path_parts, find_schema_files
+from .utils import find_schema_files, get_model_path_parts
 
 logger = get_logger('backend.discovery')
 

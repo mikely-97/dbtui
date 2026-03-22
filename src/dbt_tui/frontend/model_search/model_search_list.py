@@ -1,5 +1,6 @@
-from ..common import ModelList, ModelListItem
 from textual.widgets import ListView, TextArea
+
+from ..common import ModelList, ModelListItem
 
 
 class ModelSearchList(ModelList):

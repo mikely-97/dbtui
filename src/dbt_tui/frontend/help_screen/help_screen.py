@@ -1,10 +1,9 @@
 """Keyboard shortcut help modal."""
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Label
-from textual.containers import Vertical
-
 
 ALL_BINDINGS: list[tuple[str, str, str]] = [
     ('Global', 'q', 'Quit'),

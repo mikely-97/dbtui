@@ -8,16 +8,17 @@ These tests verify that:
 """
 
 from pathlib import Path
+
 import pytest
-from dbt_tui.backend import DbtProject
+
 from dbt_tui.backend.property_claim import PropertyClaim
 from dbt_tui.backend.property_discovery import (
     collect_model_claims,
     collect_project_configs,
     collect_schema_properties,
     collect_sql_configs,
-    resolve_property_precedence,
     find_schema_files,
+    resolve_property_precedence,
 )
 
 

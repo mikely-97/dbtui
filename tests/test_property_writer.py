@@ -7,19 +7,17 @@ These tests verify that:
 3. Helper functions correctly find or create schema paths
 """
 
-import pytest
-import tempfile
 from pathlib import Path
+
 import yaml
 
-from dbt_tui.backend import DbtProject
 from dbt_tui.backend.property_writer import (
     SchemaYmlWriter,
     SqlConfigWriter,
     WriteResult,
     find_or_create_schema_path,
-    write_property_to_schema,
     write_property_to_model_sql,
+    write_property_to_schema,
 )
 
 

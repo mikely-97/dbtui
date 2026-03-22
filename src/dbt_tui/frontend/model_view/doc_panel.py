@@ -1,9 +1,10 @@
 """Documentation panel widget."""
 from __future__ import annotations
+
 from textual.app import ComposeResult
-from textual.widgets import Markdown, Static
 from textual.containers import ScrollableContainer
 from textual.widget import Widget
+from textual.widgets import Markdown, Static
 
 from dbt_tui.backend.docs import collect_docs
 

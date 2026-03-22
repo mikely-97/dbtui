@@ -1,5 +1,5 @@
-import pytest
 from dbt_tui.common.cache import DbtTuiCache, WorkspaceEntry, load_cache, save_cache
+
 
 def test_workspace_entry_has_fields():
     w = WorkspaceEntry(project_path='/some/path', last_model='my_model')
@@ -20,7 +20,6 @@ def test_empty_cache_has_empty_workspaces():
     assert cache.workspaces == []
 
 def test_workspace_roundtrip(tmp_path, monkeypatch):
-    from pathlib import Path
     cache_file = tmp_path / 'cache.json'
     monkeypatch.setattr('dbt_tui.common.cache.ensure_cache_path', lambda: cache_file)
     cache = DbtTuiCache(

@@ -8,15 +8,14 @@ These tests verify that:
 4. The view is accessible from the main app
 """
 from pathlib import Path
+
 import pytest
 
-from dbt_tui.backend import DbtProject
-from dbt_tui.backend.property_claim import PropertyClaim, PropertyClaimAggregate
+from dbt_tui.backend.property_claim import PropertyClaim
 from dbt_tui.frontend.model_view.properties_panel import (
-    PropertiesPanel,
-    PropertyItem,
     SOURCE_TYPE_COLORS,
     SOURCE_TYPE_ICONS,
+    PropertyItem,
 )
 
 

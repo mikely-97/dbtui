@@ -1,10 +1,11 @@
 from __future__ import annotations
-from textual.app import ComposeResult
-from textual.widgets import DataTable, Static, Footer
-from textual.binding import Binding
 
-from dbt_tui.frontend.common.dbt_tui_screen import DbtTuiScreen
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.widgets import DataTable, Footer, Static
+
 from dbt_tui.backend.lineage import extract_columns
+from dbt_tui.frontend.common.dbt_tui_screen import DbtTuiScreen
 
 
 class ColumnLineageView(DbtTuiScreen):

@@ -1,11 +1,12 @@
 """Schema.yml editor modal — edit description and tags for a model."""
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, Static
-from textual.containers import Vertical, Horizontal
 
 from dbt_tui.backend.property_writer import write_property_to_schema
 
@@ -33,7 +34,7 @@ class SchemaEditorScreen(ModalScreen):
     SchemaEditorScreen #editor-status { height: 1; color: $text-muted; }
     """
 
-    def __init__(self, model: 'DbtModel'):
+    def __init__(self, model: DbtModel):
         super().__init__()
         self._model = model
 

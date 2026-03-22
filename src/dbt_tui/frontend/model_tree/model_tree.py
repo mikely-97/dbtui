@@ -1,18 +1,19 @@
 from typing import TYPE_CHECKING
 
-from textual.widgets import Footer, TextArea, Checkbox
-from textual.containers import HorizontalGroup, ScrollableContainer
 from textual.binding import Binding
+from textual.containers import HorizontalGroup, ScrollableContainer
+from textual.widgets import Checkbox, Footer, TextArea
 
-from ..common import DbtTuiScreen, DbtModel, DbtProject
-from ..common.timing import TimingContext
 from ...common.entity import EntityType
+from ..common import DbtModel, DbtProject, DbtTuiScreen
+from ..common.timing import TimingContext
+
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
 
-from .parents_list import ParentsList
 from .children_list import ChildrenList
-from .constants import PARENTS_ID, CHILDREN_ID
+from .constants import CHILDREN_ID, PARENTS_ID
+from .parents_list import ParentsList
 
 _ALL_ENTITY_TYPES: set[EntityType] = {'model', 'seed', 'macro', 'snapshot', 'analysis'}
 

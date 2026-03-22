@@ -1,5 +1,6 @@
-from textual.widgets import ListItem, Label, Rule
 from textual.containers import VerticalGroup
+from textual.widgets import Label, ListItem, Rule
+
 from ...common.entity import DbtEntityAbstract
 
 

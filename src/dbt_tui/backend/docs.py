@@ -1,5 +1,6 @@
 """Documentation collection from dbt property claims."""
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -42,7 +43,7 @@ class ModelDocs:
         return '\n'.join(lines) if lines else '*No documentation available.*'
 
 
-def collect_docs(model: 'DbtModel') -> ModelDocs:
+def collect_docs(model: DbtModel) -> ModelDocs:
     """Build ModelDocs from the model's property claims."""
     docs = ModelDocs()
 

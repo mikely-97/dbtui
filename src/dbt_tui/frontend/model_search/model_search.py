@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
-from textual import widgets, containers
+from textual import containers, widgets
 from textual.binding import Binding
 from textual.widgets import Checkbox
 
+from ..common import DbtModel, DbtProject, DbtTuiScreen
 from .model_search_input import ModelSearchInput
 from .model_search_list import ModelSearchList
 
-from ..common import DbtProject, DbtModel, DbtTuiScreen
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
 

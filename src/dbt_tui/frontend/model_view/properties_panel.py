@@ -6,27 +6,27 @@ and model config() calls, with visual indication of the property source.
 """
 from typing import TYPE_CHECKING
 
-from textual.widgets import Static, ListView, ListItem, Label, Button, Input, Select
-from textual.containers import Vertical, Horizontal, Container
 from textual.binding import Binding
+from textual.containers import Container, Horizontal, Vertical
 from textual.screen import ModalScreen
+from textual.widgets import Button, Input, Label, ListItem, ListView, Select, Static
 
 from ...backend.property_writer import (
     WriteResult,
-    write_property_to_schema,
     write_property_to_model_sql,
+    write_property_to_schema,
 )
 from .properties_formatter import (
-    format_full_value,
-    format_short_value,
-    format_item_value,
     format_current_value,
+    format_full_value,
+    format_item_value,
+    format_short_value,
     parse_value,
 )
 
 if TYPE_CHECKING:
-    from ..common import DbtModel
     from ...backend.property_claim import PropertyClaim
+    from ..common import DbtModel
 
 
 SOURCE_TYPE_COLORS = {
@@ -333,7 +333,7 @@ class PropertyItem(ListItem):
         yield Horizontal(
             Label(f"{source_icon} ", classes="property-icon"),
             Label(f"{self.claim.name}", classes="property-name"),
-            Label(f" = ", classes="property-equals"),
+            Label(" = ", classes="property-equals"),
             Label(f"{value_display}", classes="property-value"),
             Label(f" [{self.claim.source_type}]", classes="property-source"),
         )
@@ -476,8 +476,8 @@ class PropertiesPanel(Vertical):
         if not self._model:
             return
 
-        from ...backend.property_discovery import collect_model_claims
         from ...backend.property_claim import PropertyClaimAggregate
+        from ...backend.property_discovery import collect_model_claims
 
         claims = collect_model_claims(self._model)
         aggregate = PropertyClaimAggregate(self._model)

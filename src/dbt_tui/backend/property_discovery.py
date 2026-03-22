@@ -10,19 +10,18 @@ Performance note: Use PropertyDiscoveryCache when collecting claims for multiple
 to avoid re-reading and re-parsing YAML files.
 """
 
-from pathlib import Path
-from typing import TYPE_CHECKING
 import re
+from typing import TYPE_CHECKING
 
-from .property_claim import PropertyClaim
 from ..common.logging import get_logger
 from .discovery import (
     PropertyDiscoveryCache,
     collect_project_configs,
     collect_schema_properties,
-    get_model_path_parts,
     find_schema_files,
+    get_model_path_parts,
 )
+from .property_claim import PropertyClaim
 
 logger = get_logger('backend.property_discovery')
 

@@ -1,9 +1,10 @@
-from typing import TYPE_CHECKING, Literal
 from pathlib import Path
+from typing import TYPE_CHECKING, Literal
 
-from textual import widgets, containers, reactive, binding
+from textual import binding, containers, reactive, widgets
 
-from ..common import DbtTuiScreen, DbtProject, DbtModel
+from ..common import DbtModel, DbtProject, DbtTuiScreen
+
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
 
@@ -109,5 +110,5 @@ class ProjectSearch(DbtTuiScreen):
         if not dir_input.has_focus:
             dir_input.value = project.root_folder.as_posix()
 
-        if not self.active_project_binding in self.BINDINGS:
+        if self.active_project_binding not in self.BINDINGS:
             self.BINDINGS.append(self.active_project_binding)

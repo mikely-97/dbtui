@@ -1,13 +1,15 @@
 """Run panel for executing dbt commands on the current model."""
 from __future__ import annotations
+
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime
+
+from textual import work
 from textual.app import ComposeResult
-from textual.widgets import Button, RichLog, Static
 from textual.containers import Horizontal
 from textual.widget import Widget
-from textual import work
+from textual.widgets import Button, RichLog, Static
 
 from dbt_tui.backend.runner import DbtRunner
 

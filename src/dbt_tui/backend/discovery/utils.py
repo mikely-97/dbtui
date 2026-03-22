@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..model import DbtModel
+    pass
 
 
 def get_model_path_parts(
@@ -28,7 +28,6 @@ def get_model_path_parts(
     project = None
     try:
         # If we have a DbtModel instance, use its project's model paths
-        from ..project import DbtProject
         if hasattr(model_path, 'project'):
             project = model_path.project
     except Exception:

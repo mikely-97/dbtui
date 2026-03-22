@@ -1,6 +1,8 @@
 import pytest
+
 from dbt_tui.backend import DbtProject
-from dbt_tui.backend.docs import collect_docs, ModelDocs
+from dbt_tui.backend.docs import ModelDocs, collect_docs
+
 
 @pytest.fixture(scope='module')
 def project():

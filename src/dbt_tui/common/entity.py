@@ -6,11 +6,12 @@ Entity-specific behavior should be implemented in subclasses.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Literal
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
-    from .project import DbtProjectAbstract
+    pass
 
 
 EntityType = Literal["model", "seed", "macro", "snapshot", "analysis", "source"]

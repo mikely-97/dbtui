@@ -43,7 +43,7 @@ def test_open_null_folder():
     try:
         DbtProject(None)
         raise Exception("Doesn't fail when opening a null folder")
-    except NonePathException as e:
+    except NonePathException:
         return
     except e:
         raise e

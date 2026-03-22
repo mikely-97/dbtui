@@ -1,11 +1,13 @@
 """Compile panel — shows compiled SQL output from dbt compile."""
 from __future__ import annotations
+
 import asyncio
+
+from textual import work
 from textual.app import ComposeResult
-from textual.widgets import Button, Static, TextArea
 from textual.containers import Horizontal
 from textual.widget import Widget
-from textual import work
+from textual.widgets import Button, Static, TextArea
 
 from dbt_tui.backend.runner import DbtRunner
 

@@ -8,11 +8,11 @@ Supports writing to:
 Uses ruamel.yaml for round-trip YAML preservation (comments and formatting).
 """
 
+import re
 from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
-import re
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq

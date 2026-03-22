@@ -2,10 +2,11 @@
 
 from pathlib import Path
 from typing import TYPE_CHECKING
+
 import yaml
 
-from ..property_claim import PropertyClaim
 from ...common.logging import get_logger
+from ..property_claim import PropertyClaim
 from .utils import get_model_path_parts
 
 logger = get_logger('backend.discovery.config_discovery')

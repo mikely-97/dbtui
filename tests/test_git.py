@@ -1,6 +1,9 @@
-import pytest
 from pathlib import Path
-from dbt_tui.backend.git import get_git_status, get_git_log, get_git_blame, GitFileStatus
+
+import pytest
+
+from dbt_tui.backend.git import GitFileStatus, get_git_blame, get_git_log, get_git_status
+
 
 @pytest.fixture
 def model_path():

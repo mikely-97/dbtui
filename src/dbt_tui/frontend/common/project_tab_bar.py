@@ -1,10 +1,11 @@
 """Tab bar for switching between open projects."""
 from __future__ import annotations
+
 from textual.app import ComposeResult
-from textual.widgets import Button
 from textual.containers import Horizontal
-from textual.widget import Widget
 from textual.message import Message
+from textual.widget import Widget
+from textual.widgets import Button
 
 
 class ProjectTabBar(Widget):

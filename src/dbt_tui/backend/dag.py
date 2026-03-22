@@ -1,6 +1,8 @@
 """ASCII DAG renderer for dbt-tui."""
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable
+
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from dbt_tui.backend.project import DbtProject
@@ -27,13 +29,13 @@ def _walk_by_depth(graph, focal, depth, get_neighbors: Callable):
     return result
 
 
-def get_dag_node_list(project: 'DbtProject', focal: 'DbtEntityAbstract', depth: int = 2) -> list['DbtEntityAbstract']:
+def get_dag_node_list(project: DbtProject, focal: DbtEntityAbstract, depth: int = 2) -> list[DbtEntityAbstract]:
     """Return nodes visible in DAG ordered: ancestors (deep→shallow), focal, descendants (shallow→deep)."""
     graph = project.graph
     ancestors = _walk_by_depth(graph, focal, depth, graph.predecessors)
     descendants = _walk_by_depth(graph, focal, depth, graph.successors)
 
-    result: list['DbtEntityAbstract'] = []
+    result: list[DbtEntityAbstract] = []
     for d in sorted(ancestors.keys()):        # -depth … -1
         result.extend(ancestors[d])
     result.append(focal)
@@ -51,7 +53,7 @@ def _format_node(entity, focal, width=20):
     return label.center(width)
 
 
-def render_dag_ascii(project: 'DbtProject', focal: 'DbtEntityAbstract', depth: int = 2) -> str:
+def render_dag_ascii(project: DbtProject, focal: DbtEntityAbstract, depth: int = 2) -> str:
     """Render an ASCII DAG centred on focal entity."""
     graph = project.graph
     ancestors = _walk_by_depth(graph, focal, depth, graph.predecessors)
@@ -74,12 +76,12 @@ def render_dag_ascii(project: 'DbtProject', focal: 'DbtEntityAbstract', depth: i
     return '\n'.join(lines)
 
 
-def _mermaid_id(entity: 'DbtEntityAbstract') -> str:
+def _mermaid_id(entity: DbtEntityAbstract) -> str:
     """Generate a valid Mermaid node ID from an entity name."""
     return entity.name.replace('.', '_').replace('-', '_')
 
 
-def render_dag_mermaid(project: 'DbtProject', focal: 'DbtEntityAbstract', depth: int = 2) -> str:
+def render_dag_mermaid(project: DbtProject, focal: DbtEntityAbstract, depth: int = 2) -> str:
     """Render a Mermaid flowchart centred on focal entity."""
     graph = project.graph
     ancestors = _walk_by_depth(graph, focal, depth, graph.predecessors)

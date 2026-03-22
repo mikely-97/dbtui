@@ -1,17 +1,13 @@
 """Tests for new screens added in 0.3.0."""
+
 import pytest
-from unittest.mock import patch
-from textual.widgets import Static, DataTable, ListView
 
-from dbt_tui.backend import DbtProject
-from dbt_tui.common import DbtTuiCache
-from dbt_tui.frontend.main import DbtTuiFrontend
-from dbt_tui.frontend.dag_view.dag_view import DagView
-from dbt_tui.frontend.lineage_view.lineage_view import ColumnLineageView
-from dbt_tui.frontend.property_viewer.property_viewer import PropertyViewerScreen
-from dbt_tui.frontend.help_screen.help_screen import HelpScreen
 from dbt_tui.frontend.common.project_tab_bar import ProjectTabBar
-
+from dbt_tui.frontend.dag_view.dag_view import DagView
+from dbt_tui.frontend.help_screen.help_screen import HelpScreen
+from dbt_tui.frontend.lineage_view.lineage_view import ColumnLineageView
+from dbt_tui.frontend.main import DbtTuiFrontend
+from dbt_tui.frontend.property_viewer.property_viewer import PropertyViewerScreen
 
 # ── DagView ───────────────────────────────────────
 

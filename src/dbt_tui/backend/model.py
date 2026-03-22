@@ -1,12 +1,14 @@
+from collections.abc import Iterable
 from pathlib import Path
+from typing import TYPE_CHECKING
+
 from jinja2 import Environment, Template
 from jinja2.nodes import Call, Const
 
-from ..common import DbtModelAbstract, NotWithinSubdirectoryException
+from ..common import DbtModelAbstract
 from ..common.entity import DbtEntityAbstract, EntityType
 from ..common.logging import get_logger
 
-from typing import TYPE_CHECKING, Iterable
 if TYPE_CHECKING:
     from .project import DbtProject
     from .property_claim import PropertyClaimAggregate
@@ -44,7 +46,7 @@ class DbtModel(DbtModelAbstract):
         self.project = project
         self.property_claims = None  # Populated by DbtProject.collect_property_claims()
         self._template_mtime = file_path_full.stat().st_mtime
-        with open(file_path_full, 'r', encoding='utf-8') as f:
+        with open(file_path_full, encoding='utf-8') as f:
             self._template = f.read()
         self.parsed_template = Environment().parse(self._template)
 
@@ -86,7 +88,8 @@ class DbtModel(DbtModelAbstract):
         tag_node = kwargs.get('tags')
         if tag_node is None:
             return []
-        from jinja2.nodes import List as JinjaList, Const as JinjaConst
+        from jinja2.nodes import Const as JinjaConst
+        from jinja2.nodes import List as JinjaList
         if isinstance(tag_node, JinjaList):
             return [item.value for item in tag_node.items if isinstance(item, JinjaConst)]
         if isinstance(tag_node, JinjaConst):
@@ -141,7 +144,7 @@ class DbtModel(DbtModelAbstract):
             current_mtime = self._file_path_full.stat().st_mtime
             if current_mtime > self._template_mtime:
                 # File has changed, reload
-                with open(self._file_path_full, 'r', encoding='utf-8') as f:
+                with open(self._file_path_full, encoding='utf-8') as f:
                     self._template = f.read()
                 self._template_mtime = current_mtime
                 self.parsed_template = Environment().parse(self._template)

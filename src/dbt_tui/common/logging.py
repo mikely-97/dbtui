@@ -18,7 +18,6 @@ from pathlib import Path
 
 from platformdirs import user_cache_dir
 
-
 # Global state for logging configuration
 _logging_configured = False
 _log_level = logging.WARNING  # Default level

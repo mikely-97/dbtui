@@ -1,6 +1,6 @@
 import uuid
 
-lorem = open('src/frontend/lorem.txt', 'r').read()
+lorem = open('src/frontend/lorem.txt').read()
 
 def rand_uuid() -> str:
 

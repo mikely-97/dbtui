@@ -1,6 +1,8 @@
 import pytest
+
 from dbt_tui.backend import DbtProject
-from dbt_tui.backend.lineage import extract_columns, ColumnLineage
+from dbt_tui.backend.lineage import ColumnLineage, extract_columns
+
 
 @pytest.fixture(scope='module')
 def project():

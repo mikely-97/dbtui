@@ -1,25 +1,29 @@
-import os
-from pathlib import Path
-import yaml
-from typing import Generator
-from networkx import DiGraph
 import fnmatch
+import os
+from collections.abc import Generator
 from difflib import SequenceMatcher
+from pathlib import Path
 
+import yaml
+from networkx import DiGraph
 
-from ..common import DbtProjectAbstract, DbtEntityAbstract, EntityType, \
-NonePathException, DbtModelNotFoundException, \
-IncorrectFileExtensionException, NotWithinSubdirectoryException, \
-InvalidProjectPathException, ErrorCollector, ErrorCategory
+from ..common import (
+    DbtEntityAbstract,
+    DbtModelNotFoundException,
+    DbtProjectAbstract,
+    EntityType,
+    ErrorCategory,
+    ErrorCollector,
+    IncorrectFileExtensionException,
+    InvalidProjectPathException,
+    NonePathException,
+)
 from ..common.logging import get_logger
-
-
-from .model import DbtModel
 from .macro import DbtMacro
-from .property_claim import PropertyClaimAggregate
-from .property_discovery import collect_model_claims, PropertyDiscoveryCache
 from .metrics import LoadMetrics, Timer
-
+from .model import DbtModel
+from .property_claim import PropertyClaimAggregate
+from .property_discovery import PropertyDiscoveryCache, collect_model_claims
 
 logger = get_logger('backend.project')
 
@@ -178,9 +182,8 @@ class DbtProject(DbtProjectAbstract):
         try:
             with total_timer:
                 # Parse dbt_project.yml
-                with Timer() as t:
-                    with open(self.root_folder / 'dbt_project.yml', 'r', encoding='utf-8') as f:
-                        self.parse_dbt_project(f.read())
+                with Timer() as t, open(self.root_folder / 'dbt_project.yml', encoding='utf-8') as f:
+                    self.parse_dbt_project(f.read())
                 self.load_metrics.parse_dbt_project_yml_ms = t.elapsed_ms
 
                 # Load models

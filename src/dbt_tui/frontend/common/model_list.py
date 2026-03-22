@@ -1,6 +1,9 @@
-from typing import TYPE_CHECKING, Iterable
-from textual.widgets import ListView
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
 from textual.binding import Binding
+from textual.widgets import ListView
+
 from ...common.entity import DbtEntityAbstract
 from .isolated import DbtModel
 from .model_list_item import ModelListItem

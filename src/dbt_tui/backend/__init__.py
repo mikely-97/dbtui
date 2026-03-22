@@ -1,4 +1,4 @@
-from .project import DbtProject, DbtModelNotFoundException
-from .model import DbtModel
+from .file_watcher import FileChangeEvent, ProjectFileWatcher
 from .metrics import LoadMetrics
-from .file_watcher import ProjectFileWatcher, FileChangeEvent
+from .model import DbtModel
+from .project import DbtModelNotFoundException, DbtProject

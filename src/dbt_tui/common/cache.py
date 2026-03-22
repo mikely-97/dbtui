@@ -1,6 +1,6 @@
-from pathlib import Path
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 
 from platformdirs import user_cache_dir
 
@@ -52,11 +52,11 @@ def load_cache(clear_cache:bool=False) -> DbtTuiCache:
     if clear_cache or not cache_path.exists():
        create_empty_cache(cache_path)
     try:
-        with open(cache_path, 'r', encoding='utf-8') as f:
+        with open(cache_path, encoding='utf-8') as f:
             cache_raw = json.load(f)
     except json.JSONDecodeError:
         create_empty_cache(cache_path)
-        with open(cache_path, 'r', encoding='utf-8') as f:
+        with open(cache_path, encoding='utf-8') as f:
             cache_raw = json.load(f)
     workspaces = [WorkspaceEntry(**w) for w in cache_raw.pop('workspaces', [])]
     bookmarks = cache_raw.pop('bookmarks', [])

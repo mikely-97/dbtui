@@ -7,17 +7,17 @@ This view displays:
 """
 from typing import TYPE_CHECKING
 
-from textual.widgets import Footer, TextArea, ListView, TabbedContent, TabPane
-from textual.containers import Horizontal, Vertical, ScrollableContainer
 from textual.binding import Binding
+from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.widgets import Footer, ListView, TabbedContent, TabPane, TextArea
 
-from ..common import DbtTuiScreen, DbtModel, DbtProject
-from .properties_panel import PropertiesPanel
+from ..common import DbtModel, DbtProject, DbtTuiScreen
+from .compile_panel import CompilePanel
 from .doc_panel import DocPanel
 from .git_panel import GitPanel
+from .properties_panel import PropertiesPanel
 from .run_panel import RunPanel
 from .test_panel import TestPanel
-from .compile_panel import CompilePanel
 
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend
@@ -167,8 +167,8 @@ class ModelView(DbtTuiScreen):
             return
 
         # Recollect property claims for this model
-        from ...backend.property_discovery import collect_model_claims
         from ...backend.property_claim import PropertyClaimAggregate
+        from ...backend.property_discovery import collect_model_claims
 
         claims = collect_model_claims(self.app.model)
         aggregate = PropertyClaimAggregate(self.app.model)

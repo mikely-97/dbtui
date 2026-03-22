@@ -1,8 +1,9 @@
 """Column-level lineage extraction using sqlglot."""
 from __future__ import annotations
+
+import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-import re
 
 if TYPE_CHECKING:
     from dbt_tui.backend.model import DbtModel
@@ -25,7 +26,7 @@ def _strip_jinja(sql: str) -> str:
     return sql
 
 
-def extract_columns(model: 'DbtModel') -> list[ColumnLineage]:
+def extract_columns(model: DbtModel) -> list[ColumnLineage]:
     """Extract output columns from a model's SQL with CTE-aware lineage tracing."""
     try:
         import sqlglot

@@ -1,8 +1,9 @@
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from ..common.macro import DbtMacroAbstract
 from ..common.entity import DbtEntityAbstract
+from ..common.macro import DbtMacroAbstract
 
 if TYPE_CHECKING:
     from .project import DbtProject
@@ -16,7 +17,7 @@ class DbtMacro(DbtMacroAbstract):
     def __init__(self, file_path_full: Path, project: 'DbtProject'):
         self._file_path_full = file_path_full
         self.project = project
-        with open(file_path_full, 'r', encoding='utf-8') as f:
+        with open(file_path_full, encoding='utf-8') as f:
             self._text = f.read()
 
     @property

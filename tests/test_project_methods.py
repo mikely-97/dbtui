@@ -1,9 +1,11 @@
-from pathlib import Path
 import shutil
 import tempfile
-from dbt_tui.backend import DbtProject, DbtModelNotFoundException
+from pathlib import Path
+
+from pytest import raises
+
+from dbt_tui.backend import DbtProject
 from dbt_tui.common import IncorrectFileExtensionException
-from pytest import LogCaptureFixture, raises
 
 
 # test that we correctly list all the model folders

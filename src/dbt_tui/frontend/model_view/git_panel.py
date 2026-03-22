@@ -1,12 +1,12 @@
 """Git information panel."""
 from __future__ import annotations
-from textual.app import ComposeResult
-from textual.widgets import DataTable, RichLog, Static, TabbedContent, TabPane
-from textual.widget import Widget
+
 from textual import work
+from textual.app import ComposeResult
+from textual.widget import Widget
+from textual.widgets import DataTable, RichLog, Static, TabbedContent, TabPane
 
-from dbt_tui.backend.git import get_git_status, get_git_log, get_git_blame
-
+from dbt_tui.backend.git import get_git_blame, get_git_log, get_git_status
 
 _STATUS_ICONS = {
     'clean': '✓ clean',

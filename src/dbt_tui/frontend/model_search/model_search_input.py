@@ -1,8 +1,9 @@
-from .model_search_list import ModelSearchList
-from textual.widgets import Input, Checkbox
-from textual.events import Key
 from typing import TYPE_CHECKING
 
+from textual.events import Key
+from textual.widgets import Checkbox, Input
+
+from .model_search_list import ModelSearchList
 
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend

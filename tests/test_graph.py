@@ -1,6 +1,9 @@
-from dbt_tui.backend import DbtProject
-from pytest import LogCaptureFixture
 from logging import WARNING
+
+from pytest import LogCaptureFixture
+
+from dbt_tui.backend import DbtProject
+
 
 def test_multiple_args_in_ref(caplog: LogCaptureFixture):
     with caplog.at_level(WARNING):

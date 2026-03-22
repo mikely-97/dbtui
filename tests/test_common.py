@@ -6,17 +6,15 @@ Tests for:
 - Entity abstraction
 - Text caching
 """
-import pytest
 from pathlib import Path
 
-from dbt_tui.common.errors import (
-    ErrorCollector,
-    LoadError,
-    ErrorSeverity,
-    ErrorCategory,
-)
-from dbt_tui.common.entity import DbtEntityAbstract, EntityType
 from dbt_tui.backend import DbtProject
+from dbt_tui.common.errors import (
+    ErrorCategory,
+    ErrorCollector,
+    ErrorSeverity,
+    LoadError,
+)
 
 
 class TestErrorCollector:

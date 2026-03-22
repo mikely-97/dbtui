@@ -5,13 +5,14 @@ Uses watchdog library to monitor file system changes and notify the application
 when model files, schema files, or dbt_project.yml are modified.
 """
 
+import threading
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
-import threading
+from typing import TYPE_CHECKING
 
+from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent, FileDeletedEvent
 
 from ..common.logging import get_logger
 

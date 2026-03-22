@@ -6,8 +6,8 @@ and graph operations.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from .entity import DbtEntityAbstract, EntityType
 from .model import DbtModelAbstract

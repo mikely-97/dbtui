@@ -1,7 +1,8 @@
 from typing import Literal
-from ..common import ModelList, DbtModel
+
 from ...common.entity import EntityType
-from .constants import PARENTS_ID, CHILDREN_ID
+from ..common import DbtModel, ModelList
+from .constants import CHILDREN_ID, PARENTS_ID
 
 
 class ModelRelativesList(ModelList):

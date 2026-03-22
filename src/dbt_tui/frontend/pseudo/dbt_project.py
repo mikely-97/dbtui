@@ -1,9 +1,9 @@
 import random
-
 from pathlib import Path
 
-from ...common import DbtProjectAbstract, DbtModelAbstract, NonePathException
+from ...common import DbtModelAbstract, DbtProjectAbstract, NonePathException
 from .dbt_model import DbtModel
+
 
 class DbtProject(DbtProjectAbstract):
     name: str

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal, Self, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal, Self
+
 from ..common.logging import get_logger
 
 logger = get_logger('backend.property_claim')
@@ -61,7 +62,7 @@ class PropertyClaimAggregate:
     and determines which claims become effective properties vs which are overridden.
     """
 
-    def __init__(self, model: 'DbtModel'):
+    def __init__(self, model: DbtModel):
         self.model = model
         self._claims: list[PropertyClaim] = []
         self._resolved: dict[str, PropertyClaim] = {}

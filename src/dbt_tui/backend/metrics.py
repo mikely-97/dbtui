@@ -6,8 +6,9 @@ Metrics can be accessed after project load to diagnose performance issues.
 """
 
 import time
-from dataclasses import dataclass, field
-from typing import Callable, TypeVar, ParamSpec
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import ParamSpec, TypeVar
 
 P = ParamSpec('P')
 T = TypeVar('T')

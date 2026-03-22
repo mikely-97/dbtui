@@ -2,10 +2,11 @@
 Tests for model search functionality and cache operations.
 """
 
-from pathlib import Path
-import pytest
 import json
-import tempfile
+from pathlib import Path
+
+import pytest
+
 from dbt_tui.backend import DbtProject
 from dbt_tui.common import DbtTuiCache, load_cache, save_cache
 

@@ -1,11 +1,11 @@
 from textual.app import ComposeResult
-from textual.widgets import Static, Footer, ListView, ListItem, Label
-from textual.containers import ScrollableContainer
 from textual.binding import Binding
+from textual.containers import ScrollableContainer
+from textual.widgets import Footer, Label, ListItem, ListView, Static
 
-from dbt_tui.frontend.common.dbt_tui_screen import DbtTuiScreen
-from dbt_tui.backend.dag import render_dag_ascii, get_dag_node_list, render_dag_mermaid
+from dbt_tui.backend.dag import get_dag_node_list, render_dag_ascii, render_dag_mermaid
 from dbt_tui.backend.model import DbtModel
+from dbt_tui.frontend.common.dbt_tui_screen import DbtTuiScreen
 
 
 class DagView(DbtTuiScreen):
@@ -96,8 +96,8 @@ class DagView(DbtTuiScreen):
             return
         mermaid = render_dag_mermaid(project, model, depth=self._depth)
         # Save to a temp file and notify
-        from pathlib import Path
         import tempfile
+        from pathlib import Path
         out = Path(tempfile.gettempdir()) / f'dag_{model.name}.mmd'
         out.write_text(mermaid)
         self.app.notify(f'Mermaid saved to {out}')

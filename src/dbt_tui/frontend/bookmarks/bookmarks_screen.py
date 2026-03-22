@@ -1,9 +1,9 @@
 """Bookmarked models screen."""
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.screen import ModalScreen
-from textual.widgets import ListView, ListItem, Label
 from textual.containers import Vertical
+from textual.screen import ModalScreen
+from textual.widgets import Label, ListItem, ListView
 
 
 class BookmarksScreen(ModalScreen):

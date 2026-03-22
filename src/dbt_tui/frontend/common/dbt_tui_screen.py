@@ -1,7 +1,9 @@
 import subprocess
 from abc import ABC, ABCMeta
 from typing import TYPE_CHECKING
+
 from textual.screen import Screen
+
 from .isolated import DbtModel, DbtProject
 from .messages import ModelFileChanged
 

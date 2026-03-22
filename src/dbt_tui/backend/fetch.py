@@ -43,8 +43,10 @@ class PropertyClaim:
     value: Any
     kind: Literal["config", "property"]
 
-import yaml
 import re
+
+import yaml
+
 
 def collect_project_configs(
     model_path: Path,

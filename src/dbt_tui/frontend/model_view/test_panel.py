@@ -1,14 +1,15 @@
 """Test results panel — runs dbt test and shows per-test pass/fail."""
 from __future__ import annotations
+
 import asyncio
 import re
 from dataclasses import dataclass
 
+from textual import work
 from textual.app import ComposeResult
-from textual.widgets import Button, DataTable, Static
 from textual.containers import Horizontal
 from textual.widget import Widget
-from textual import work
+from textual.widgets import Button, DataTable, Static
 
 from dbt_tui.backend.runner import DbtRunner
 

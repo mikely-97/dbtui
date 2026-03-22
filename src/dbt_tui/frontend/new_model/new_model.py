@@ -1,17 +1,12 @@
-from os.path import exists
-from typing import TYPE_CHECKING, Literal
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-
-
-from textual import widgets, containers, reactive, binding
 from textual.screen import ModalScreen
 from textual.suggester import SuggestFromList
 from textual.validation import ValidationResult, Validator
-from .select_filepath import SelectFilepath
-
 
 from ..common import DbtModel, DbtProject
+from .select_filepath import SelectFilepath
 
 if TYPE_CHECKING:
     from ..main import DbtTuiFrontend

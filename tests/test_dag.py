@@ -1,6 +1,8 @@
 import pytest
+
 from dbt_tui.backend import DbtProject
-from dbt_tui.backend.dag import render_dag_ascii, get_dag_node_list, render_dag_mermaid
+from dbt_tui.backend.dag import get_dag_node_list, render_dag_ascii, render_dag_mermaid
+
 
 @pytest.fixture(scope='module')
 def project():

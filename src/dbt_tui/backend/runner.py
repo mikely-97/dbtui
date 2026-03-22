@@ -1,9 +1,10 @@
 """Async dbt subprocess runner."""
 from __future__ import annotations
+
 import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
 
 
 @dataclass

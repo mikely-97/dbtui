@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .entity import DbtEntityAbstract
+    pass
 
 
 # Exception classes (moved from exceptions.py for consolidation)
