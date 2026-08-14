@@ -2,7 +2,7 @@
 
 A terminal UI for exploring, navigating, and managing dbt projects.
 
-<!-- Screenshot placeholder: [Insert screenshot of dbt-tui in action] -->
+![dbt-tui screenshot](assets/screenshot.svg)
 
 ## Features
 
