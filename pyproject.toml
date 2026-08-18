@@ -1,6 +1,6 @@
 [project]
 name = "dbt-tui"
-version = "0.5.0"
+version = "0.5.1"
 description = "Terminal UI for exploring and managing dbt projects"
 authors = [
     {name = "Mike", email = "sortia@protonmail.com"}

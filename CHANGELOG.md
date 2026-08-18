@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.1] - 2026-08-18
+
+### Fixed
+- README screenshot used a repo-relative path, which rendered on GitHub but broke on the PyPI project page; switched to an absolute `raw.githubusercontent.com` URL
+
 ## [0.5.0] - 2026-08-18
 
 ### Added
