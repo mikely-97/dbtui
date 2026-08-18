@@ -50,8 +50,8 @@ pip install dbt-tui
 ### From Source
 
 ```bash
-git clone https://github.com/sortia/dbt-tui.git
-cd dbt-tui
+git clone https://github.com/mikely-97/dbtui.git
+cd dbtui
 pip install -e ".[dev]"
 ```
 

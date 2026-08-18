@@ -1,6 +1,6 @@
 [project]
 name = "dbt-tui"
-version = "0.4.0"
+version = "0.5.0"
 description = "Terminal UI for exploring and managing dbt projects"
 authors = [
     {name = "Mike", email = "sortia@protonmail.com"}
@@ -32,8 +32,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/sortia/dbt-tui"
-Repository = "https://github.com/sortia/dbt-tui"
+Homepage = "https://github.com/mikely-97/dbtui"
+Repository = "https://github.com/mikely-97/dbtui"
 
 [project.optional-dependencies]
 dev = [
